@@ -29,7 +29,7 @@ spring:
     drop-first: false
   application:
     name: authorization-app
-application:
+app:
   jwt:
     secret-key: nawEFeYYKPTxjDZOF+eoepmPza+CLhJd+g9m3GHcvro=
 

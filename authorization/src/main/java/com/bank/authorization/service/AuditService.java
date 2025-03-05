@@ -1,7 +1,6 @@
 package com.bank.authorization.service;
 
 import com.bank.authorization.dto.AuditDto;
-import com.bank.authorization.entity.Audit;
 import java.util.List;
 import java.util.Optional;
 

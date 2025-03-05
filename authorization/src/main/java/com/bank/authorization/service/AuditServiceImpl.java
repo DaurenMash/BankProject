@@ -4,7 +4,6 @@ import com.bank.authorization.dto.AuditDto;
 import com.bank.authorization.entity.Audit;
 import com.bank.authorization.mapper.AuditMapper;
 import com.bank.authorization.repository.AuditRepository;
-import com.bank.authorization.service.AuditService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
