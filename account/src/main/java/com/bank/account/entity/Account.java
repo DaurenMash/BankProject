@@ -38,6 +38,4 @@ public class Account {
     @Column(name="profile_id")
     @NotNull
     private int profileId;
-
-
 }
