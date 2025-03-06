@@ -2,9 +2,16 @@ package com.bank.account.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name="account_details")
 public class Account {
@@ -32,7 +39,6 @@ public class Account {
     private BigDecimal money;
 
     @Column(name = "negative_balance")
-    @NotNull
     private boolean negativeBalance;
 
     @Column(name="profile_id")

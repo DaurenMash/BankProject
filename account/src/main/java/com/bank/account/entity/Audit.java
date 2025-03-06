@@ -2,9 +2,15 @@ package com.bank.account.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name="audit")
 public class Audit {
@@ -31,10 +37,10 @@ public class Audit {
     private String modifiedBy;
 
     @Column(name="created_at")
-    private Timestamp createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name="modified_at")
-    private Timestamp modifiedAt;
+    private LocalDateTime modifiedAt;
 
     @Column(name="new_entity_json")
     private String newEntityJson;
