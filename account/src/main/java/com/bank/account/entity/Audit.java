@@ -6,7 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.security.Timestamp;
 
 @Data
 @AllArgsConstructor
@@ -37,10 +37,10 @@ public class Audit {
     private String modifiedBy;
 
     @Column(name="created_at")
-    private LocalDateTime createdAt;
+    private Timestamp createdAt;
 
     @Column(name="modified_at")
-    private LocalDateTime modifiedAt;
+    private Timestamp modifiedAt;
 
     @Column(name="new_entity_json")
     private String newEntityJson;
