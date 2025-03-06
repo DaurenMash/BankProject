@@ -15,17 +15,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class User {
 
+    private static final int ROLE_LENGTH = 40; // Длина поля role
+    private static final int PASSWORD_LENGTH = 500; // Длина поля password
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "role", length = 40, nullable = false)
+    @Column(name = "role", length = ROLE_LENGTH, nullable = false)
     private String role;
 
     @Column(name = "profile_id", nullable = false)
     private Long profileId;
 
-    @Column(name = "password", length = 500, nullable = false)
+    @Column(name = "password", length = PASSWORD_LENGTH, nullable = false)
     private String password;
 }

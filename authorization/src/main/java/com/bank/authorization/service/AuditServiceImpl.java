@@ -37,8 +37,8 @@ public class AuditServiceImpl implements AuditService {
     @Override
     @Transactional
     public AuditDto save(AuditDto auditDto) {
-        Audit audit = auditMapper.toEntity(auditDto);
-        Audit savedAudit = auditRepository.save(audit);
+        final Audit audit = auditMapper.toEntity(auditDto);
+        final Audit savedAudit = auditRepository.save(audit);
         return auditMapper.toDto(savedAudit);
     }
 

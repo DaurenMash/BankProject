@@ -6,7 +6,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Column;
 import jakarta.persistence.Table;
-import jakarta.persistence.Lob;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.OffsetDateTime;
@@ -17,21 +16,24 @@ import java.time.OffsetDateTime;
 @NoArgsConstructor
 public class Audit {
 
+    private static final int ENTITY_TYPE_LENGTH = 40; // Длина поля entity_type
+    private static final int SEVERAL_FIELDS_LENGTH = 255; // Длина остальных нескольких полей
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "entity_type", length = 40, nullable = false)
+    @Column(name = "entity_type", length = ENTITY_TYPE_LENGTH, nullable = false)
     private String entityType;
 
-    @Column(name = "operation_type", length = 255, nullable = false)
+    @Column(name = "operation_type", length = SEVERAL_FIELDS_LENGTH, nullable = false)
     private String operationType;
 
-    @Column(name = "created_by", length = 255, nullable = false)
+    @Column(name = "created_by", length = SEVERAL_FIELDS_LENGTH, nullable = false)
     private String createdBy;
 
-    @Column(name = "modified_by", length = 255)
+    @Column(name = "modified_by", length = SEVERAL_FIELDS_LENGTH)
     private String modifiedBy;
 
     @Column(name = "created_at", nullable = false)
@@ -40,11 +42,9 @@ public class Audit {
     @Column(name = "modified_at")
     private OffsetDateTime modifiedAt;
 
-    @Lob
-    @Column(name = "new_entity_json")
+    @Column(name = "new_entity_json", columnDefinition = "TEXT")
     private String newEntityJson;
 
-    @Lob
-    @Column(name = "entity_json", nullable = false)
+    @Column(name = "entity_json", nullable = false, columnDefinition = "TEXT")
     private String entityJson;
 }

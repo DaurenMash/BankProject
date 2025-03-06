@@ -29,7 +29,11 @@ spring:
     drop-first: false
   application:
     name: authorization-app
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 app:
   jwt:
     secret-key: nawEFeYYKPTxjDZOF+eoepmPza+CLhJd+g9m3GHcvro=
+
 

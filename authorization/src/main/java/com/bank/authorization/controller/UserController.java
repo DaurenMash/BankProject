@@ -7,7 +7,15 @@ import com.bank.authorization.service.UserService;
 import com.bank.authorization.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,6 +24,10 @@ import java.util.Optional;
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
 public class UserController {
+
+    private static final String SYSTEM_USER = "SYSTEM";
+
+    private static final String ENTITY_USER = "User";
 
     private final UserService userService;
     private final AuditService auditService;
@@ -34,12 +46,12 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto createUser(@RequestBody UserDto userDto) {
 
-        UserDto savedUserDto = userService.save(userDto);
+        final UserDto savedUserDto = userService.save(userDto);
 
-        AuditDto auditDto = new AuditDto();
-        auditDto.setEntityType("User");
+        final AuditDto auditDto = new AuditDto();
+        auditDto.setEntityType(ENTITY_USER);
         auditDto.setOperationType("CREATE");
-        auditDto.setCreatedBy("SYSTEM");
+        auditDto.setCreatedBy(SYSTEM_USER);
         auditDto.setNewEntityJson(JsonUtils.toJson(savedUserDto));
         auditService.save(auditDto);
 
@@ -52,12 +64,12 @@ public class UserController {
             throw new IllegalArgumentException("ID in path must match ID in request body");
         }
 
-        UserDto updatedUserDto = userService.save(userDto);
+        final UserDto updatedUserDto = userService.save(userDto);
 
-        AuditDto auditDto = new AuditDto();
-        auditDto.setEntityType("User");
+        final AuditDto auditDto = new AuditDto();
+        auditDto.setEntityType(ENTITY_USER);
         auditDto.setOperationType("UPDATE");
-        auditDto.setModifiedBy("SYSTEM");
+        auditDto.setModifiedBy(SYSTEM_USER);
         auditDto.setEntityJson(JsonUtils.toJson(updatedUserDto));
         auditService.save(auditDto);
 

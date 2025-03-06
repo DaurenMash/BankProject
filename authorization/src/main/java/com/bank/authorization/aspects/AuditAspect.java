@@ -16,23 +16,27 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class AuditAspect {
 
+    private static final String SYSTEM_USER = "SYSTEM";
+
     private final AuditService auditService;
 
     @Pointcut("execution(* com.bank.authorization.service.UserServiceImpl.save(..))")
-    public void saveUserPointcut() {}
+    public void saveUserPointcut() {
+
+    }
 
     @AfterReturning(pointcut = "saveUserPointcut()", returning = "result")
     public void logSave(JoinPoint joinPoint, User result) {
-        AuditDto auditDto = new AuditDto();
+        final AuditDto auditDto = new AuditDto();
         auditDto.setEntityType("User");
 
         if (result.getId() == null || result.getId() <= 0) { // Новый пользователь
             auditDto.setOperationType("CREATE");
-            auditDto.setCreatedBy("SYSTEM");
+            auditDto.setCreatedBy(SYSTEM_USER);
             auditDto.setNewEntityJson(JsonUtils.toJson(result));
         } else { // Обновленный пользователь
             auditDto.setOperationType("UPDATE");
-            auditDto.setModifiedBy("SYSTEM");
+            auditDto.setModifiedBy(SYSTEM_USER);
             auditDto.setEntityJson(JsonUtils.toJson(result));
         }
 
