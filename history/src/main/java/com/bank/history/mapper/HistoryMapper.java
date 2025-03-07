@@ -6,12 +6,9 @@ import org.mapstruct.InheritInverseConfiguration;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.Mappings;
-import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
 public interface HistoryMapper {
-
-    HistoryMapper INSTANCE = Mappers.getMapper(HistoryMapper.class);
 
     @Mappings({
             @Mapping(source = "id", target = "id"),
@@ -26,4 +23,5 @@ public interface HistoryMapper {
 
     @InheritInverseConfiguration
     History toEntity(HistoryDto historyDto);
+
 }

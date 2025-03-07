@@ -1,6 +1,8 @@
 package com.bank.history.controller;
 
 import com.bank.history.dto.HistoryDto;
+import com.bank.history.entity.History;
+import com.bank.history.mapper.HistoryMapper;
 import com.bank.history.service.HistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -9,38 +11,30 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
-import java.util.List;
-
 @RestController
 @RequestMapping()
 public class HistoryController {
 
     private final HistoryService historyService;
+    private final HistoryMapper historyMapper;
 
     @Autowired
-    public HistoryController(HistoryService historyService) {
+    public HistoryController(HistoryService historyService, HistoryMapper historyMapper) {
         this.historyService = historyService;
-    }
-
-    @GetMapping("/")
-    public ResponseEntity<List<HistoryDto>> getAllHistory() {
-        return ResponseEntity.ok(historyService.getAllHistory());
+        this.historyMapper = historyMapper;
     }
 
     @GetMapping("/aggregate")
     public ResponseEntity<HistoryDto> getAggregatedHistory() {
-        return ResponseEntity.ok(historyService.getAggregatedHistory());
+        History aggregatedHistory = historyService.getAggregatedHistory();
+        HistoryDto dto = historyMapper.toDto(aggregatedHistory);
+        return ResponseEntity.ok(dto);
     }
 
     @GetMapping("/{microservice}")
     public ResponseEntity<HistoryDto> getHistoryByMicroservice(@PathVariable String microservice) {
-        return ResponseEntity.ok(historyService.getHistoryByMicroservice(microservice));
-    }
-
-    @GetMapping("/id/{id}")
-    public ResponseEntity<HistoryDto> getHistoryById(@PathVariable Long id) {
-        final HistoryDto historyDto = historyService.getHistoryById(id);
-        return ResponseEntity.ok(historyDto);
+        History history = historyService.getHistoryByMicroservice(microservice);
+        HistoryDto dto = historyMapper.toDto(history);
+        return ResponseEntity.ok(dto);
     }
 }

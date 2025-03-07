@@ -1,17 +1,13 @@
 package com.bank.history.service;
 
-import com.bank.history.dto.HistoryDto;
+import com.bank.history.entity.History;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 
 @Service
 public interface HistoryService {
-    List<HistoryDto> getAllHistory();
 
-    HistoryDto getHistoryById(Long id);
+    History getAggregatedHistory();
 
-    HistoryDto getAggregatedHistory();
-
-    HistoryDto getHistoryByMicroservice(String microservice);
+    History getHistoryByMicroservice(String microservice);
 }
