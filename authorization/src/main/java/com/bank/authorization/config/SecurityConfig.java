@@ -29,7 +29,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -37,7 +36,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
@@ -63,7 +61,6 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/api/authorization/swagger-ui.html",
                                 "/api/authorization/swagger-ui/**", // Разрешаем все ресурсы Swagger UI
-                                "/api/authorization/v3/api-docs",
                                 "/api/authorization/v3/api-docs/**", // Разрешаем JSON-документацию
                                 "/api/authorization/webjars/**",
                                 "/api/authorization/auth/**",

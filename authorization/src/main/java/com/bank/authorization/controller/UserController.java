@@ -5,8 +5,6 @@ import com.bank.authorization.dto.UserDto;
 import com.bank.authorization.service.AuditService;
 import com.bank.authorization.service.UserService;
 import com.bank.authorization.utils.JsonUtils;
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +24,6 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
-@Api(value = "REST API для User", description = "Выполняет REST API операции для User")
 public class UserController {
 
     private static final String SYSTEM_USER = "SYSTEM";
@@ -37,20 +34,17 @@ public class UserController {
     private final AuditService auditService;
 
     @GetMapping
-    @ApiOperation(value = "Возвращает список всех пользователей", response = List.class)
     public List<UserDto> getAllUsers() {
         return userService.getAllUsers();
     }
 
     @GetMapping("/{id}")
-    @ApiOperation(value = "Возвращает пользователя по его ID", response = UserDto.class)
     public Optional<UserDto> getUserById(@PathVariable("id") Long id) {
         return userService.getUserById(id);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    @ApiOperation(value = "Создает нового пользователя", response = UserDto.class)
     public UserDto createUser(@RequestBody UserDto userDto) {
 
         final UserDto savedUserDto = userService.save(userDto);
@@ -72,7 +66,6 @@ public class UserController {
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    @ApiOperation(value = "Обновляет информацию о пользователе по его ID", response = UserDto.class)
     public UserDto updateUser(@PathVariable("id") Long id, @RequestBody UserDto userDto) {
         if (!id.equals(userDto.getId())) {
             throw new IllegalArgumentException("ID in path must match ID in request body");
@@ -96,7 +89,6 @@ public class UserController {
     }
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    @ApiOperation(value = "Удаляет пользователя по его ID")
     public void deleteUser(@PathVariable("id") Long id) {
         userService.deleteById(id);
     }
