@@ -20,7 +20,7 @@ public class AuditAspect {
 
     private final AuditService auditService;
 
-    @Pointcut("execution(* com.bank.authorization.service.UserServiceImpl.save(..))")
+    @Pointcut("execution(* com.bank.authorization.service.UserServiceImpl.*(..))")
     public void saveUserPointcut() {
 
     }

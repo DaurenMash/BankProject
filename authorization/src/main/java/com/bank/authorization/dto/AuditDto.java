@@ -3,7 +3,8 @@ package com.bank.authorization.dto;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.time.OffsetDateTime;
+
+import java.time.LocalDateTime;
 
 @Data
 @AllArgsConstructor
@@ -15,8 +16,8 @@ public class AuditDto {
     private String operationType;
     private String createdBy;
     private String modifiedBy;
-    private OffsetDateTime createdAt;
-    private OffsetDateTime modifiedAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
     private String newEntityJson;
     private String entityJson;
 }

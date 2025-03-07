@@ -19,17 +19,28 @@ public class TestDataInitializer implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        // Проверяем, существует ли уже тестовый пользователь
+
         if (userRepository.findByProfileId(1L).isEmpty()) {
-            // Создаем тестового пользователя
+
             User adminUser = new User();
             adminUser.setProfileId(1L);
             adminUser.setRole("ROLE_ADMIN");
             adminUser.setPassword(passwordEncoder.encode("admin123"));
 
-            // Сохраняем пользователя в базу данных
             userRepository.save(adminUser);
-            System.out.println("Test admin user created.");
+            System.out.println("Test ADMIN user created.");
         }
+
+        if (userRepository.findByProfileId(2L).isEmpty()) {
+
+            User adminUser = new User();
+            adminUser.setProfileId(2L);
+            adminUser.setRole("ROLE_USER");
+            adminUser.setPassword(passwordEncoder.encode("user123"));
+
+            userRepository.save(adminUser);
+            System.out.println("Test USER user created.");
+        }
+
     }
 }

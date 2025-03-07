@@ -35,5 +35,9 @@ spring:
 app:
   jwt:
     secret-key: nawEFeYYKPTxjDZOF+eoepmPza+CLhJd+g9m3GHcvro=
+logging:
+  level:
+    root: INFO
+    org.springframework.security: DEBUG
 
 

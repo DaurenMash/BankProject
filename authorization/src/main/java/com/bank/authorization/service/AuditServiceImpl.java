@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AuditServiceImpl implements AuditService {
 
+    private static final String SYSTEM_USER = "SYSTEM";
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
 
@@ -37,6 +38,13 @@ public class AuditServiceImpl implements AuditService {
     @Override
     @Transactional
     public AuditDto save(AuditDto auditDto) {
+        if (auditDto.getCreatedBy() == null) {
+            auditDto.setCreatedBy(SYSTEM_USER);
+        }
+        if (auditDto.getNewEntityJson() == null) {
+            auditDto.setNewEntityJson("");
+        }
+
         final Audit audit = auditMapper.toEntity(auditDto);
         final Audit savedAudit = auditRepository.save(audit);
         return auditMapper.toDto(savedAudit);

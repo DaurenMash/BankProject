@@ -8,6 +8,8 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 @Entity
@@ -37,10 +39,10 @@ public class Audit {
     private String modifiedBy;
 
     @Column(name = "created_at", nullable = false)
-    private OffsetDateTime createdAt;
+    private LocalDateTime createdAt;
 
     @Column(name = "modified_at")
-    private OffsetDateTime modifiedAt;
+    private LocalDateTime modifiedAt;
 
     @Column(name = "new_entity_json", columnDefinition = "TEXT")
     private String newEntityJson;

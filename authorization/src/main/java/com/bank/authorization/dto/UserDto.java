@@ -12,4 +12,5 @@ public class UserDto {
     private Long id;
     private String role;
     private Long profileId;
+    private String password;
 }

@@ -13,14 +13,20 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,9 +35,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @Configuration
 @EnableWebSecurity
+@Order(SecurityProperties.DEFAULT_FILTER_ORDER)
 public class SecurityConfig {
 
     private static final int BEARER_PREFIX_LENGTH = 7; // Длина префикса "Bearer"
@@ -46,11 +56,22 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((requests) -> requests
-                        .requestMatchers("/swagger-ui.html", "/v2/api-docs", "/configuration/ui",
-                                "/swagger-resources/**", "/configuration/security", "/webjars/**", "/auth/**")
-                        .permitAll()
-                        .requestMatchers("/api/users").authenticated() // Явно указываем, что /api/users требует аутентификации
-                        .anyRequest().authenticated()
+                        .requestMatchers(
+                                "/swagger-ui.html",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/webjars/**",
+                                "/api/authorization/swagger-ui.html",
+                                "/api/authorization/swagger-ui/**", // Разрешаем все ресурсы Swagger UI
+                                "/api/authorization/v3/api-docs",
+                                "/api/authorization/v3/api-docs/**", // Разрешаем JSON-документацию
+                                "/api/authorization/webjars/**",
+                                "/api/authorization/auth/**",
+                                "/auth/**"
+                        )
+                        .permitAll() // Разрешаем доступ без аутентификации
+                        .requestMatchers("/api/authorization/api/users/**").hasRole("ADMIN")
+                        .anyRequest().authenticated() // Требуем аутентификацию для всех остальных запросов
                 )
                 .sessionManagement((session) ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -85,8 +106,13 @@ public class SecurityConfig {
             final String requestURI = request.getRequestURI();
             logger.debug("Processing request to: " + requestURI);
 
-            if (requestURI.endsWith("/auth/login")) {
-                logger.debug("Skipping JWT filter for /auth/login");
+            // Пропускаем запросы к Swagger UI и API-документации
+            if (requestURI.startsWith("/api/authorization/swagger-ui") ||
+                    requestURI.startsWith("/api/authorization/v3/api-docs") ||
+                    requestURI.startsWith("/api/authorization/webjars") ||
+                    requestURI.startsWith("/api/authorization/auth") ||
+                    requestURI.endsWith("/auth/login")) {
+                logger.debug("Skipping JWT filter for Swagger UI or auth endpoints");
                 filterChain.doFilter(request, response);
                 return;
             }
@@ -106,7 +132,16 @@ public class SecurityConfig {
 
                     if (claims != null && claims.getSubject() != null) {
                         logger.debug("JWT token is valid. Username: " + claims.getSubject());
-                        request.setAttribute("username", claims.getSubject());
+
+                        // Создаем объект аутентификации
+                        String username = claims.getSubject();
+                        List<GrantedAuthority> authorities = extractAuthoritiesFromClaims(claims); // Извлечь роли/права из claims
+                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                                username, null, authorities);
+
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+                        request.setAttribute("username", username);
                     } else {
                         logger.error("JWT token is invalid. No subject found.");
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
@@ -128,6 +163,27 @@ public class SecurityConfig {
             }
 
             filterChain.doFilter(request, response);
+        }
+
+
+        private List<GrantedAuthority> extractAuthoritiesFromClaims(Claims claims) {
+            List<GrantedAuthority> authorities = new ArrayList<>();
+
+            // Предполагаем, что authoritiesList — это List<String>
+            List<String> roles = claims.get("authorities", List.class);
+            logger.debug("Authorities from claims: " + roles);
+
+            if (roles != null) {
+                for (String role : roles) {
+                    logger.debug("Extracted role: " + role);
+                    if (role != null) {
+                        authorities.add(new SimpleGrantedAuthority(role));
+                    }
+                }
+            }
+
+            logger.debug("Final authorities: " + authorities);
+            return authorities;
         }
     }
 }
