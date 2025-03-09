@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface AccountRepository extends JpaRepository<Account, Long> {
-    Account findAccountByAccountNumber(@NotNull int accountNumber);
+    Account findAccountByAccountNumber(@NotNull Long accountNumber);
 
-    Account findAccountById(@NotNull int id);
+    Account findAccountById(@NotNull Long id);
 }

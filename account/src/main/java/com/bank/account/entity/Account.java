@@ -20,19 +20,19 @@ public class Account {
     @Column(name="id")
     @NotNull
     @GeneratedValue(strategy=GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(name = "passport_id")
     @NotNull
-    private int passportId;
+    private Long passportId;
 
     @Column(name="account_number")
     @NotNull
-    private int accountNumber;
+    private Long accountNumber;
 
     @Column(name="bank_details_id")
     @NotNull
-    private int bankDetailsId;
+    private Long bankDetailsId;
 
     @Column(name="money")
     @NotNull
@@ -43,5 +43,5 @@ public class Account {
 
     @Column(name="profile_id")
     @NotNull
-    private int profileId;
+    private Long profileId;
 }

@@ -1,5 +1,6 @@
 package com.bank.account.service;
 
+import com.bank.account.dto.AccountDto;
 import com.bank.account.entity.Account;
 import com.bank.account.repository.AccountRepository;
 import com.bank.account.repository.AuditRepository;
@@ -12,16 +13,10 @@ import java.util.List;
 @Service
 public class AccountServiceImpl implements AccountService{
     private final AccountRepository accountRepository;
-    private final AuditRepository auditRepository;
-    private final AuditService auditService;
 
     @Autowired
-    public AccountServiceImpl(AccountRepository accountRepository,
-                              AuditRepository auditRepository,
-                              AuditService auditService) {
+    public AccountServiceImpl(AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
-        this.auditRepository = auditRepository;
-        this.auditService = auditService;
     }
 
     @Override
@@ -32,17 +27,17 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional
-    public void updateCurrentAccount(Account account) {
-        Account existingAccount = accountRepository.findAccountByAccountNumber(account.getAccountNumber());
+    public void updateCurrentAccount(Long id, Account accountUpdated) {
+        Account account = accountRepository.findAccountById(id);
 
-        existingAccount.setAccountNumber(account.getAccountNumber());
-        existingAccount.setMoney(account.getMoney());
-        existingAccount.setPassportId(account.getPassportId());
-        existingAccount.setNegativeBalance(account.isNegativeBalance());
-        existingAccount.setBankDetailsId(account.getBankDetailsId());
-        existingAccount.setProfileId(account.getProfileId());
+        account.setAccountNumber(accountUpdated.getAccountNumber());
+        account.setMoney(accountUpdated.getMoney());
+        account.setPassportId(accountUpdated.getPassportId());
+        account.setNegativeBalance(accountUpdated.isNegativeBalance());
+        account.setBankDetailsId(accountUpdated.getBankDetailsId());
+        account.setProfileId(accountUpdated.getProfileId());
 
-        accountRepository.save(existingAccount);
+        accountRepository.save(account);
     }
 
     @Override
@@ -53,8 +48,8 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional(readOnly = true)
-    public Account getAccountById(int accountNumber) {
-        return accountRepository.findAccountByAccountNumber(accountNumber);
+    public Account getAccountById(Long id) {
+        return accountRepository.findAccountById(id);
     }
 
     @Override
