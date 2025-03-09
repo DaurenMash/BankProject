@@ -31,6 +31,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -53,6 +54,13 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> cors.configurationSource(request -> {
+                    CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of("*")); // Разрешить все источники
+                    config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE")); // Разрешить методы
+                    config.setAllowedHeaders(List.of("*")); // Разрешить все заголовки
+                    return config;
+                }))
                 .authorizeHttpRequests((requests) -> requests
                         .requestMatchers(
                                 "/swagger-ui.html",
@@ -60,14 +68,16 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/webjars/**",
                                 "/api/authorization/swagger-ui.html",
-                                "/api/authorization/swagger-ui/**", // Разрешаем все ресурсы Swagger UI
-                                "/api/authorization/v3/api-docs/**", // Разрешаем JSON-документацию
+                                "/api/authorization/swagger-ui/**",
+                                "/api/authorization/v3/api-docs/**",
                                 "/api/authorization/webjars/**",
-                                "/api/authorization/auth/**",
-                                "/auth/**"
+                                "/auth/**",
+                                "/api/authorization/auth/**"
                         )
                         .permitAll() // Разрешаем доступ без аутентификации
+                        .requestMatchers("/api/authorization/swagger-ui/index.html").permitAll()
                         .requestMatchers("/api/authorization/api/users/**").hasRole("ADMIN")
+                        //.anyRequest().permitAll() // Разрешаем доступ без аутентификации для всех остальных запросов
                         .anyRequest().authenticated() // Требуем аутентификацию для всех остальных запросов
                 )
                 .sessionManagement((session) ->
@@ -103,12 +113,15 @@ public class SecurityConfig {
             final String requestURI = request.getRequestURI();
             logger.debug("Processing request to: " + requestURI);
 
-            // Пропускаем запросы к Swagger UI и API-документации
-            if (requestURI.startsWith("/api/authorization/swagger-ui") ||
+            if (requestURI.startsWith("/swagger-ui") ||
+                    requestURI.startsWith("/v3/api-docs") ||
+                    requestURI.startsWith("/webjars") ||
+                    requestURI.startsWith("/auth") ||
+                    requestURI.startsWith("/api/authorization/swagger-ui") ||
                     requestURI.startsWith("/api/authorization/v3/api-docs") ||
                     requestURI.startsWith("/api/authorization/webjars") ||
-                    requestURI.startsWith("/api/authorization/auth") ||
-                    requestURI.endsWith("/auth/login")) {
+                    requestURI.startsWith("/api/authorization/auth")
+            ) {
                 logger.debug("Skipping JWT filter for Swagger UI or auth endpoints");
                 filterChain.doFilter(request, response);
                 return;

@@ -35,9 +35,30 @@ spring:
 app:
   jwt:
     secret-key: nawEFeYYKPTxjDZOF+eoepmPza+CLhJd+g9m3GHcvro=
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html  # Путь к Swagger UI
+    enabled: true           # Включить Swagger UI
+  api-docs:
+    path: /v3/api-docs      # Путь к OpenAPI JSON
+    enabled: true           # Включить OpenAPI JSON
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  cache:
+    disabled: true          # Отключить кэширование (для разработки)
+  show-actuator: true       # Показывать эндпоинты Actuator в Swagger UI
+  group-configs:
+    - group: authorization  # Группа API (опционально)
+      display-name: Bank Authorization API
+      packages-to-scan: com.bank.authorization.controller  # Пакет с контроллерами
+  servers:
+    - url: /api/authorization  # Указываем контекст приложения
+      description: Bank Authorization API
 logging:
   level:
     root: INFO
+    org.springdoc: DEBUG
     org.springframework.security: DEBUG
+    org.springframework.web: DEBUG
 
 
