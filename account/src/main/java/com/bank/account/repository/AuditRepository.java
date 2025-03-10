@@ -4,7 +4,9 @@ import com.bank.account.entity.Audit;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface AuditRepository extends JpaRepository<Audit, Long> {
-    Audit findAuditsById(int id);
+    List<Audit> findAuditsByEntityId(Long entityId);
 }

@@ -17,6 +17,7 @@ public class AuditMapper {
         auditDto.setOperationType(audit.getOperationType());
         auditDto.setNewEntityJson(audit.getNewEntityJson());
         auditDto.setEntityJson(audit.getEntityJson());
+        auditDto.setEntityId(auditDto.getEntityId());
         return auditDto;
     }
 
@@ -31,6 +32,7 @@ public class AuditMapper {
         audit.setOperationType(auditDto.getOperationType());
         audit.setNewEntityJson(auditDto.getNewEntityJson());
         audit.setEntityJson(auditDto.getEntityJson());
+        audit.setEntityId(auditDto.getEntityId());
         return audit;
     }
 }

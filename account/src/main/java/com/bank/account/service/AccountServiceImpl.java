@@ -1,9 +1,7 @@
 package com.bank.account.service;
 
-import com.bank.account.dto.AccountDto;
 import com.bank.account.entity.Account;
 import com.bank.account.repository.AccountRepository;
-import com.bank.account.repository.AuditRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,7 +25,7 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional
-    public void updateCurrentAccount(Long id, Account accountUpdated) {
+    public Account updateCurrentAccount(Long id, Account accountUpdated) {
         Account account = accountRepository.findAccountById(id);
 
         account.setAccountNumber(accountUpdated.getAccountNumber());
@@ -38,6 +36,8 @@ public class AccountServiceImpl implements AccountService{
         account.setProfileId(accountUpdated.getProfileId());
 
         accountRepository.save(account);
+        accountRepository.flush();
+        return account;
     }
 
     @Override
@@ -53,6 +53,7 @@ public class AccountServiceImpl implements AccountService{
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Account> getAllAccounts() {
         return accountRepository.findAll();
     }

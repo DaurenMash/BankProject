@@ -22,13 +22,11 @@ public class AuditDto {
     @NotNull
     private String operationType;
 
-    @NotNull
     private String createdBy;
 
     @NotNull
     private String modifiedBy;
 
-    @NotNull
     private Timestamp createdAt;
 
     @NotNull
@@ -39,4 +37,7 @@ public class AuditDto {
 
     @NotNull
     private String entityJson;
+
+    @NotNull
+    private Long entityId;
 }

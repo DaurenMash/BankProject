@@ -8,7 +8,7 @@ import java.util.List;
 public interface AccountService {
     void createNewAccount(Account account);
 
-    void updateCurrentAccount(Long id, Account accountUpdated);
+    Account updateCurrentAccount(Long id, Account accountUpdated);
 
     void deleteAccount(Account account);
 
