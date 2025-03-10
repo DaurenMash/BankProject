@@ -37,28 +37,33 @@ app:
     secret-key: nawEFeYYKPTxjDZOF+eoepmPza+CLhJd+g9m3GHcvro=
 springdoc:
   swagger-ui:
-    path: /swagger-ui.html  # Путь к Swagger UI
-    enabled: true           # Включить Swagger UI
+    path: /swagger-ui.html
+    enabled: true
   api-docs:
-    path: /v3/api-docs      # Путь к OpenAPI JSON
-    enabled: true           # Включить OpenAPI JSON
+    path: /v3/api-docs
+    enabled: true
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
   cache:
-    disabled: true          # Отключить кэширование (для разработки)
-  show-actuator: true       # Показывать эндпоинты Actuator в Swagger UI
+    disabled: true
+  show-actuator: true
   group-configs:
-    - group: authorization  # Группа API (опционально)
+    - group: authorization
       display-name: Bank Authorization API
-      packages-to-scan: com.bank.authorization.controller  # Пакет с контроллерами
+      packages-to-scan: com.bank.authorization.controller
   servers:
-    - url: /api/authorization  # Указываем контекст приложения
+    - url: /api/authorization
       description: Bank Authorization API
 logging:
   level:
+    com.bank.authorization: DEBUG
     root: INFO
-    org.springdoc: DEBUG
-    org.springframework.security: DEBUG
-    org.springframework.web: DEBUG
-
-
+#    org.springdoc: DEBUG
+#    org.springframework.security: DEBUG
+#    org.springframework.web: DEBUG
+  file:
+    name: authorization.log
+    path: logs
+  pattern:
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
