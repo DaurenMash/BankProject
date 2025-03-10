@@ -38,7 +38,8 @@ public class AuthController {
     private static final String AUTHORITY = "authorities";
 
     // Готовим время жизни токена
-    private static final Date TOKEN_LIFETIME = new Date(System.currentTimeMillis() + 3600000); // Срок действия - 1 час
+    private static final Date TOKEN_LIFETIME =
+            new Date(System.currentTimeMillis() + 36000000);
 
     // Берём из настроек секретный ключ для подписи JWT-токена
     @Value("${app.jwt.secret-key}")
