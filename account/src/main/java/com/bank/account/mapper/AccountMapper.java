@@ -6,7 +6,7 @@ import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")
 public class AccountMapper {
-    public AccountDto setDataToDto(Account account) {
+    public AccountDto setDataFromEntityToDto(Account account) {
         AccountDto accountDto = new AccountDto();
 
         accountDto.setAccountNumber(account.getAccountNumber());
