@@ -1,6 +1,5 @@
 package com.bank.authorization.service;
 
-import com.bank.authorization.dto.KafkaRequest;
 import com.bank.authorization.dto.KafkaResponse;
 import com.bank.authorization.dto.UserDto;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -20,75 +19,125 @@ public class KafkaConsumerService {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    @KafkaListener(topics = "authorization-requests", groupId = "authorization-group")
-    public void handleRequest(KafkaRequest request) {
-        log.info("Received Kafka request: requestId={}, operation={}", request.getRequestId(), request.getOperation());
+    // Обработка создания пользователя
+    @KafkaListener(topics = "user.create", groupId = "authorization-group")
+    public void handleCreateUser(UserDto userDto) {
+        log.info("Received CREATE_USER request for profileId={}", userDto.getProfileId());
 
         KafkaResponse response = new KafkaResponse();
-        response.setRequestId(request.getRequestId());
+        response.setRequestId(userDto.getProfileId().toString()); // Используем profileId как requestId
 
         try {
-            switch (request.getOperation()) {
-                case "GET_ALL_USERS":
-                    log.debug("Processing GET_ALL_USERS request");
-                    response.setData(userService.getAllUsers());
-                    response.setSuccess(true);
-                    response.setMessage("Users fetched successfully");
-                    log.info("GET_ALL_USERS request processed successfully");
-                    break;
-
-                case "GET_USER_BY_ID":
-                    Long userId = Long.valueOf(request.getPayload().toString());
-                    log.debug("Processing GET_USER_BY_ID request for userId={}", userId);
-                    response.setData(userService.getUserById(userId));
-                    response.setSuccess(true);
-                    response.setMessage("User fetched successfully");
-                    log.info("GET_USER_BY_ID request processed successfully for userId={}", userId);
-                    break;
-
-                case "CREATE_USER":
-                    UserDto userDto = (UserDto) request.getPayload();
-                    log.debug("Processing CREATE_USER request for profileId={}", userDto.getProfileId());
-                    response.setData(userService.save(userDto));
-                    response.setSuccess(true);
-                    response.setMessage("User created successfully");
-                    log.info("CREATE_USER request processed successfully for profileId={}", userDto.getProfileId());
-                    break;
-
-                case "UPDATE_USER":
-                    UserDto updateUserDto = (UserDto) request.getPayload();
-                    log.debug("Processing UPDATE_USER request for userId={}", updateUserDto.getId());
-                    response.setData(userService.updateUser(updateUserDto.getId(), updateUserDto));
-                    response.setSuccess(true);
-                    response.setMessage("User updated successfully");
-                    log.info("UPDATE_USER request processed successfully for userId={}", updateUserDto.getId());
-                    break;
-
-                case "DELETE_USER":
-                    Long deleteUserId = Long.valueOf(request.getPayload().toString());
-                    log.debug("Processing DELETE_USER request for userId={}", deleteUserId);
-                    userService.deleteById(deleteUserId);
-                    response.setSuccess(true);
-                    response.setMessage("User deleted successfully");
-                    log.info("DELETE_USER request processed successfully for userId={}", deleteUserId);
-                    break;
-
-                default:
-                    log.warn("Unsupported operation: {}", request.getOperation());
-                    response.setSuccess(false);
-                    response.setMessage("Unsupported operation: " + request.getOperation());
-                    break;
-            }
+            UserDto createdUser = userService.save(userDto);
+            response.setData(createdUser);
+            response.setSuccess(true);
+            response.setMessage("User created successfully");
+            log.info("CREATE_USER request processed successfully for profileId={}", userDto.getProfileId());
         } catch (Exception e) {
-            log.error("Error processing request: requestId={}, operation={}, error={}",
-                    request.getRequestId(), request.getOperation(), e.getMessage(), e);
+            log.error("Error processing CREATE_USER request: profileId={}, error={}",
+                    userDto.getProfileId(), e.getMessage(), e);
             response.setSuccess(false);
-            response.setMessage("Error processing request: " + e.getMessage());
+            response.setMessage("Error creating user: " + e.getMessage());
         }
 
         // Отправка ответа в топик для ответов
-        log.debug("Sending Kafka response: requestId={}, success={}, message={}",
-                response.getRequestId(), response.isSuccess(), response.getMessage());
-        kafkaTemplate.send("authorization-responses", response);
+        kafkaTemplate.send("user.create.response", response);
+    }
+
+    // Обработка обновления пользователя
+    @KafkaListener(topics = "user.update", groupId = "authorization-group")
+    public void handleUpdateUser(UserDto userDto) {
+        log.info("Received UPDATE_USER request for userId={}", userDto.getId());
+
+        KafkaResponse response = new KafkaResponse();
+        response.setRequestId(userDto.getId().toString()); // Используем userId как requestId
+
+        try {
+            UserDto updatedUser = userService.updateUser(userDto.getId(), userDto);
+            response.setData(updatedUser);
+            response.setSuccess(true);
+            response.setMessage("User updated successfully");
+            log.info("UPDATE_USER request processed successfully for userId={}", userDto.getId());
+        } catch (Exception e) {
+            log.error("Error processing UPDATE_USER request: userId={}, error={}",
+                    userDto.getId(), e.getMessage(), e);
+            response.setSuccess(false);
+            response.setMessage("Error updating user: " + e.getMessage());
+        }
+
+        // Отправка ответа в топик для ответов
+        kafkaTemplate.send("user.update.response", response);
+    }
+
+    // Обработка удаления пользователя
+    @KafkaListener(topics = "user.delete", groupId = "authorization-group")
+    public void handleDeleteUser(Long userId) {
+        log.info("Received DELETE_USER request for userId={}", userId);
+
+        KafkaResponse response = new KafkaResponse();
+        response.setRequestId(userId.toString()); // Используем userId как requestId
+
+        try {
+            userService.deleteById(userId);
+            response.setSuccess(true);
+            response.setMessage("User deleted successfully");
+            log.info("DELETE_USER request processed successfully for userId={}", userId);
+        } catch (Exception e) {
+            log.error("Error processing DELETE_USER request: userId={}, error={}",
+                    userId, e.getMessage(), e);
+            response.setSuccess(false);
+            response.setMessage("Error deleting user: " + e.getMessage());
+        }
+
+        // Отправка ответа в топик для ответов
+        kafkaTemplate.send("user.delete.response", response);
+    }
+
+    // Обработка получения пользователя по ID
+    @KafkaListener(topics = "user.get", groupId = "authorization-group")
+    public void handleGetUser(Long userId) {
+        log.info("Received GET_USER request for userId={}", userId);
+
+        KafkaResponse response = new KafkaResponse();
+        response.setRequestId(userId.toString()); // Используем userId как requestId
+
+        try {
+            UserDto user = userService.getUserById(userId);
+            response.setData(user);
+            response.setSuccess(true);
+            response.setMessage("User fetched successfully");
+            log.info("GET_USER request processed successfully for userId={}", userId);
+        } catch (Exception e) {
+            log.error("Error processing GET_USER request: userId={}, error={}",
+                    userId, e.getMessage(), e);
+            response.setSuccess(false);
+            response.setMessage("Error fetching user: " + e.getMessage());
+        }
+
+        // Отправка ответа в топик для ответов
+        kafkaTemplate.send("user.get.response", response);
+    }
+
+    // Обработка получения всех пользователей
+    @KafkaListener(topics = "user.get.all", groupId = "authorization-group")
+    public void handleGetAllUsers() {
+        log.info("Received GET_ALL_USERS request");
+
+        KafkaResponse response = new KafkaResponse();
+        response.setRequestId("ALL_USERS"); // Уникальный идентификатор для запроса всех пользователей
+
+        try {
+            response.setData(userService.getAllUsers());
+            response.setSuccess(true);
+            response.setMessage("Users fetched successfully");
+            log.info("GET_ALL_USERS request processed successfully");
+        } catch (Exception e) {
+            log.error("Error processing GET_ALL_USERS request: error={}", e.getMessage(), e);
+            response.setSuccess(false);
+            response.setMessage("Error fetching users: " + e.getMessage());
+        }
+
+        // Отправка ответа в топик для ответов
+        kafkaTemplate.send("user.get.all.response", response);
     }
 }
