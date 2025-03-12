@@ -3,11 +3,13 @@ package com.bank.history.service;
 import com.bank.history.entity.History;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 
 @Service
 public interface HistoryService {
 
-    History getAggregatedHistory();
+    void saveHistory(History history);
 
-    History getHistoryByMicroservice(String microservice);
+    List<History> getAuditHistory();
+
 }

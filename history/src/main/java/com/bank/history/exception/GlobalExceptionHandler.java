@@ -1,5 +1,6 @@
 package com.bank.history.exception;
 
+import io.fabric8.kubernetes.client.ResourceNotFoundException;
 import io.micrometer.core.instrument.config.validate.ValidationException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.http.HttpStatus;
@@ -11,8 +12,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(EntityNotFoundException.class)
-    public ResponseEntity<String> handleEntityNotFound(EntityNotFoundException ex) {
+    @ExceptionHandler({ResourceNotFoundException.class, EntityNotFoundException.class})
+    public ResponseEntity<String> handleNotFoundExceptions(RuntimeException ex) {
         ex.printStackTrace();
         return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
