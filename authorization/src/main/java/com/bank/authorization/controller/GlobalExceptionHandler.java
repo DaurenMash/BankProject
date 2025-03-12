@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ConstraintViolationException.class)
     public ErrorDetails handleConstraintViolationException(ConstraintViolationException ex) {
-        String message = ex.getConstraintViolations().stream()
+        final String message = ex.getConstraintViolations().stream()
                 .map(violation -> violation.getPropertyPath() + ": " + violation.getMessage())
                 .collect(Collectors.joining(", "));
 

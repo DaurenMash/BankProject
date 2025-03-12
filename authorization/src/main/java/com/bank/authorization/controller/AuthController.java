@@ -33,7 +33,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthController.class);
 
     private static final String AUTHORITY = "authorities";
 
@@ -57,7 +57,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest authRequest) {
         try {
-            logger.debug("Attempting to authenticate user: " + authRequest.getUsername());
+            LOGGER.debug("Attempting to authenticate user: " + authRequest.getUsername());
             final Authentication authenticate = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(),
                             authRequest.getPassword()));
@@ -72,7 +72,7 @@ public class AuthController {
 
             return ResponseEntity.ok(new AuthResponse(data));
         } catch (BadCredentialsException ex) {
-            logger.error("Authentication failed for user: " + authRequest.getUsername(), ex);
+            LOGGER.error("Authentication failed for user: " + authRequest.getUsername(), ex);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }

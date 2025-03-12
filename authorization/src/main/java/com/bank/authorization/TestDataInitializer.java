@@ -22,7 +22,7 @@ public class TestDataInitializer implements CommandLineRunner {
 
         if (userRepository.findByProfileId(1L).isEmpty()) {
 
-            User adminUser = new User();
+            final User adminUser = new User();
             adminUser.setProfileId(1L);
             adminUser.setRole("ROLE_ADMIN");
             adminUser.setPassword(passwordEncoder.encode("admin123"));
@@ -33,12 +33,12 @@ public class TestDataInitializer implements CommandLineRunner {
 
         if (userRepository.findByProfileId(2L).isEmpty()) {
 
-            User adminUser = new User();
-            adminUser.setProfileId(2L);
-            adminUser.setRole("ROLE_USER");
-            adminUser.setPassword(passwordEncoder.encode("user123"));
+            final User userUser = new User();
+            userUser.setProfileId(2L);
+            userUser.setRole("ROLE_USER");
+            userUser.setPassword(passwordEncoder.encode("user123"));
 
-            userRepository.save(adminUser);
+            userRepository.save(userUser);
             System.out.println("Test USER user created.");
         }
 

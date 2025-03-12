@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 @Slf4j // Добавлено для логирования
 public class UserServiceImpl implements UserService {
 
+    private static final String USER_NOT_FOUND_MESSAGE = "User not found with id: ";
+
     private final UserRepository userRepository;
     private final UserMapper userMapper;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -28,7 +30,7 @@ public class UserServiceImpl implements UserService {
     public List<UserDto> getAllUsers() {
         log.info("Fetching all users from the database");
         try {
-            List<UserDto> users = userRepository.findAll().stream()
+            final List<UserDto> users = userRepository.findAll().stream()
                     .map(userMapper::toDto)
                     .collect(Collectors.toList());
             log.info("Successfully fetched {} users", users.size());
@@ -44,9 +46,9 @@ public class UserServiceImpl implements UserService {
     public UserDto getUserById(Long id) {
         log.info("Fetching user by id: {}", id);
         try {
-            UserDto user = userRepository.findById(id)
+            final UserDto user = userRepository.findById(id)
                     .map(userMapper::toDto)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+                    .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE + id));
             log.info("Successfully fetched user with id: {}", id);
             return user;
         } catch (Exception e) {
@@ -60,7 +62,7 @@ public class UserServiceImpl implements UserService {
     public UserDto save(UserDto userDto) {
         log.info("Saving user with profileId: {}", userDto.getProfileId());
         try {
-            String encodedPassword = passwordEncoder.encode(userDto.getPassword());
+            final String encodedPassword = passwordEncoder.encode(userDto.getPassword());
             userDto.setPassword(encodedPassword);
 
             final User user = userMapper.toEntity(userDto);
@@ -78,17 +80,17 @@ public class UserServiceImpl implements UserService {
     public UserDto updateUser(Long id, UserDto userDto) {
         log.info("Updating user with id: {}", id);
         try {
-            User existingUser = userRepository.findById(id)
-                    .orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+            final User existingUser = userRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE + id));
 
             // Если пароль изменён, шифруем его
             if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
-                String encodedPassword = passwordEncoder.encode(userDto.getPassword());
+                final String encodedPassword = passwordEncoder.encode(userDto.getPassword());
                 userDto.setPassword(encodedPassword);
             }
 
             userMapper.updateEntityFromDto(userDto, existingUser);
-            User updatedUser = userRepository.save(existingUser);
+            final User updatedUser = userRepository.save(existingUser);
             log.info("User updated successfully with id: {}", id);
             return userMapper.toDto(updatedUser);
         } catch (Exception e) {
@@ -103,7 +105,7 @@ public class UserServiceImpl implements UserService {
         log.info("Deleting user with id: {}", id);
         try {
             if (!userRepository.existsById(id)) {
-                throw new EntityNotFoundException("User not found with id: " + id);
+                throw new EntityNotFoundException(USER_NOT_FOUND_MESSAGE + id);
             }
             userRepository.deleteById(id);
             log.info("User deleted successfully with id: {}", id);

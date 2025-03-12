@@ -45,6 +45,7 @@ spring:
 app:
   jwt:
     secret-key: nawEFeYYKPTxjDZOF+eoepmPza+CLhJd+g9m3GHcvro=
+    expiration-time: 36000000
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

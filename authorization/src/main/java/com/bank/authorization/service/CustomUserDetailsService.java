@@ -18,14 +18,14 @@ import java.util.List;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private static final Logger logger = LoggerFactory.getLogger(CustomUserDetailsService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CustomUserDetailsService.class);
 
     @Autowired
     private UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String profileId) throws UsernameNotFoundException {
-        logger.debug("Loading user by profileId: " + profileId);
+        LOGGER.debug("Loading user by profileId: " + profileId);
         // Преобразуем profileId из String в Long
         final Long profileIdLong = Long.parseLong(profileId);
 

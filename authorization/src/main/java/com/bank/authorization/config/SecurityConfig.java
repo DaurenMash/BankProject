@@ -44,6 +44,10 @@ import java.util.List;
 public class SecurityConfig {
 
     private static final int BEARER_PREFIX_LENGTH = 7; // Длина префикса "Bearer"
+    private static final String ASTERISK = "*";
+    private static final String JWT_TOKEN_IS_INVALID = "JWT token is invalid. No subject found.";
+    private static final String INVALID_OR_EXPIRED_JWT_TOKEN = "Invalid or expired JWT token";
+    private static final String NO_VALID_AUTHORIZATION_HEADER_FOUND = "No valid Authorization header found";
 
     @Autowired
     private UserDetailsService userDetailsService;
@@ -55,10 +59,10 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(request -> {
-                    CorsConfiguration config = new CorsConfiguration();
-                    config.setAllowedOrigins(List.of("*")); // Разрешить все источники
+                    final CorsConfiguration config = new CorsConfiguration();
+                    config.setAllowedOrigins(List.of(ASTERISK)); // Разрешить все источники
                     config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE")); // Разрешить методы
-                    config.setAllowedHeaders(List.of("*")); // Разрешить все заголовки
+                    config.setAllowedHeaders(List.of(ASTERISK)); // Разрешить все заголовки
                     return config;
                 }))
                 .authorizeHttpRequests((requests) -> requests
@@ -105,34 +109,55 @@ public class SecurityConfig {
      * Фильтр для авторизации по JWT
      */
     private class JwtAuthorizationFilter extends OncePerRequestFilter {
-        private static final Logger logger = LoggerFactory.getLogger(JwtAuthorizationFilter.class);
+        private static final Logger LOGGER = LoggerFactory.getLogger(JwtAuthorizationFilter.class);
 
         @Override
         protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
                                         FilterChain filterChain) throws ServletException, IOException {
             final String requestURI = request.getRequestURI();
-            logger.debug("Processing request to: " + requestURI);
+            LOGGER.debug("Processing request to: " + requestURI);
 
-            if (requestURI.startsWith("/swagger-ui") ||
+            // Шаг 1: Проверка исключений для URL
+            if (isExcludedPath(requestURI)) {
+                LOGGER.debug("Skipping JWT filter for Swagger UI or auth endpoints");
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            // Шаг 2: Обработка заголовков аутентификации
+            final String jwtToken = getAndValidateJwtToken(request, response);
+            if (jwtToken == null) {
+                return; // Ошибка уже обработана в методе getAndValidateJwtToken
+            }
+
+            // Шаг 3: Создание объекта аутентификации
+            setSecurityContext(jwtToken, request, response);
+
+            // Передача управления следующему фильтру
+            filterChain.doFilter(request, response);
+        }
+
+        // Метод для проверки исключенных путей
+        private boolean isExcludedPath(String requestURI) {
+            return requestURI.startsWith("/swagger-ui") ||
                     requestURI.startsWith("/v3/api-docs") ||
                     requestURI.startsWith("/webjars") ||
                     requestURI.startsWith("/auth") ||
                     requestURI.startsWith("/api/authorization/swagger-ui") ||
                     requestURI.startsWith("/api/authorization/v3/api-docs") ||
                     requestURI.startsWith("/api/authorization/webjars") ||
-                    requestURI.startsWith("/api/authorization/auth")
-            ) {
-                logger.debug("Skipping JWT filter for Swagger UI or auth endpoints");
-                filterChain.doFilter(request, response);
-                return;
-            }
+                    requestURI.startsWith("/api/authorization/auth");
+        }
 
+        // Метод для получения и валидации JWT-токена
+        private String getAndValidateJwtToken(HttpServletRequest request, HttpServletResponse response)
+                throws IOException {
             final String authorizationHeader = request.getHeader("Authorization");
-            logger.debug("Authorization header: " + authorizationHeader);
+            LOGGER.debug("Authorization header: " + authorizationHeader);
 
             if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
                 final String token = authorizationHeader.substring(BEARER_PREFIX_LENGTH);
-                logger.debug("JWT token: " + token);
+                LOGGER.debug("JWT token: " + token);
 
                 try {
                     final Claims claims = Jwts.parser()
@@ -141,58 +166,71 @@ public class SecurityConfig {
                             .getBody();
 
                     if (claims != null && claims.getSubject() != null) {
-                        logger.debug("JWT token is valid. Username: " + claims.getSubject());
-
-                        // Создаем объект аутентификации
-                        String username = claims.getSubject();
-                        List<GrantedAuthority> authorities = extractAuthoritiesFromClaims(claims); // Извлечь роли/права из claims
-                        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                username, null, authorities);
-
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                        request.setAttribute("username", username);
+                        LOGGER.debug("JWT token is valid. Username: " + claims.getSubject());
+                        return token;
                     } else {
-                        logger.error("JWT token is invalid. No subject found.");
+                        LOGGER.error(JWT_TOKEN_IS_INVALID);
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
-                        response.getWriter().write("JWT token is invalid. No subject found.");
-                        return;
+                        response.getWriter().write(JWT_TOKEN_IS_INVALID);
+                        return null;
                     }
                 } catch (ExpiredJwtException | MalformedJwtException | UnsupportedJwtException |
-                         IllegalArgumentException e) {
-                    logger.error("Invalid or expired JWT token", e);
+                         IllegalArgumentException | IOException e) {
+                    LOGGER.error(INVALID_OR_EXPIRED_JWT_TOKEN, e);
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
-                    response.getWriter().write("Invalid or expired JWT token");
-                    return;
+                    response.getWriter().write(INVALID_OR_EXPIRED_JWT_TOKEN);
+                    return null;
                 }
             } else {
-                logger.error("No valid Authorization header found");
+                LOGGER.error(NO_VALID_AUTHORIZATION_HEADER_FOUND);
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
-                response.getWriter().write("No valid Authorization header found");
-                return;
+                response.getWriter().write(NO_VALID_AUTHORIZATION_HEADER_FOUND);
+                return null;
             }
-
-            filterChain.doFilter(request, response);
         }
 
+        // Метод для установки контекста безопасности
+        private void setSecurityContext(String jwtToken, HttpServletRequest request, HttpServletResponse response)
+                throws IOException {
+            try {
+                final Claims claims = Jwts.parser()
+                        .setSigningKey(secretKey.getBytes())
+                        .parseClaimsJws(jwtToken)
+                        .getBody();
+
+                if (claims != null && claims.getSubject() != null) {
+                    final String username = claims.getSubject();
+                    final List<GrantedAuthority> authorities = extractAuthoritiesFromClaims(claims);
+                    final UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(username, null, authorities);
+
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    request.setAttribute("username", username);
+                }
+            } catch (Exception e) {
+                LOGGER.error(INVALID_OR_EXPIRED_JWT_TOKEN, e);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); // 401 Unauthorized
+                response.getWriter().write(INVALID_OR_EXPIRED_JWT_TOKEN);
+            }
+        }
 
         private List<GrantedAuthority> extractAuthoritiesFromClaims(Claims claims) {
-            List<GrantedAuthority> authorities = new ArrayList<>();
+            final List<GrantedAuthority> authorities = new ArrayList<>();
 
             // Предполагаем, что authoritiesList — это List<String>
-            List<String> roles = claims.get("authorities", List.class);
-            logger.debug("Authorities from claims: " + roles);
+            final List<String> roles = claims.get("authorities", List.class);
+            LOGGER.debug("Authorities from claims: " + roles);
 
             if (roles != null) {
                 for (String role : roles) {
-                    logger.debug("Extracted role: " + role);
+                    LOGGER.debug("Extracted role: " + role);
                     if (role != null) {
                         authorities.add(new SimpleGrantedAuthority(role));
                     }
                 }
             }
 
-            logger.debug("Final authorities: " + authorities);
+            LOGGER.debug("Final authorities: " + authorities);
             return authorities;
         }
     }
