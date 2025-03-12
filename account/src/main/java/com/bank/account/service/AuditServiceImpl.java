@@ -2,80 +2,164 @@ package com.bank.account.service;
 
 import com.bank.account.dto.AuditDto;
 import com.bank.account.entity.Audit;
-import com.bank.account.mapper.AccountMapper;
 import com.bank.account.mapper.AuditMapper;
 import com.bank.account.repository.AuditRepository;
+import com.bank.account.utils.JsonUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.util.Comparator;
 import java.util.List;
 
+@Slf4j
 @Service
 public class AuditServiceImpl implements AuditService{
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
-    private final AccountMapper accountMapper;
 
-    public AuditServiceImpl(AuditRepository auditRepository, AuditMapper auditMapper, AccountMapper accountMapper) {
+    public AuditServiceImpl(AuditRepository auditRepository, AuditMapper auditMapper) {
         this.auditRepository = auditRepository;
         this.auditMapper = auditMapper;
-        this.accountMapper = accountMapper;
     }
 
     @Override
     @Transactional
     public void logAudit(AuditDto auditDto) {
-        Audit audit = auditMapper.setAuditDtoToAudit(auditDto);
-        auditRepository.save(audit);
+        try {
+            if (auditDto.getOperationType().equals("createNewAccount")) {
+                auditRepository.save(auditMapper.toAudit(auditDto));
+            } else if (auditDto.getOperationType().equals("updateCurrentAccount")) {
+                Audit existingAudit = auditRepository.findAuditById(auditDto.getId());
 
+                existingAudit.setOperationType(auditDto.getOperationType());
+                existingAudit.setEntityType(auditDto.getEntityType());
+                existingAudit.setModifiedAt(auditDto.getModifiedAt());
+                existingAudit.setCreatedAt(existingAudit.getCreatedAt());
+                existingAudit.setCreatedBy(existingAudit.getCreatedBy());
+                existingAudit.setModifiedBy(auditDto.getModifiedBy());
+                existingAudit.setNewEntityJson(auditDto.getNewEntityJson());
+                existingAudit.setEntityJson(existingAudit.getEntityJson());
+
+                auditRepository.save(existingAudit);
+            }
+
+            log.info("Audit log successfully saved");
+        } catch (Exception e) {
+            log.error("Audit log failed {}", e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AuditDto getAuditByEntityId(Long entityIdFromCurrentAccount) {
+        try {
+            List<AuditDto> auditDtoList = getAllAudits();
+            AuditDto resultAuditDto = auditDtoList.stream()
+                    .filter(auditDto -> {
+                        try {
+                            Long entityIdFromJson = JsonUtils.extractEntityIdFromJson(auditDto.getEntityJson());
+                            return entityIdFromJson.equals(entityIdFromCurrentAccount);
+                        } catch (Exception e) {
+                            throw new RuntimeException("Failed to parse entityJson", e);
+                        }
+                    })
+                    .findFirst()
+                    .orElse(null);
+
+            if (resultAuditDto != null) {
+                log.info("Successfully retrieved audit for entity ID: {}", entityIdFromCurrentAccount);
+            } else {
+                log.warn("No audit found for entity ID: {}", entityIdFromCurrentAccount);
+            }
+            return resultAuditDto;
+        } catch (Exception e) {
+            log.error("Failed to retrieve audit for entity ID: {}", entityIdFromCurrentAccount);
+            throw e;
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AuditDto> getAllAudits() {
+        try {
+            List<AuditDto> resultAuditDtoList = auditRepository.findAll()
+                    .stream()
+                    .map(auditMapper::toAuditDto)
+                    .toList();
+
+            log.info("Successfully retrieved all audits");
+            return resultAuditDtoList;
+        } catch (Exception e) {
+            log.error("Failed to retrieve all audits");
+            throw e;
+        }
     }
 
     @Override
     @Transactional
-    public AuditDto getAuditByEntityId(Long entityId) {
-        return auditRepository.findAuditsByEntityId(entityId)
-                .stream()
-                .max(Comparator.comparing(audit ->
-                        audit.getModifiedAt() != null ? audit.getModifiedAt() : audit.getCreatedAt()))
-                .map(auditMapper::setDataToAuditDto)
-                .orElse(null);
-    }
-
-    @Override
-    public List<AuditDto> getAllAudits() {
-        return auditRepository.findAll()
-                .stream()
-                .map(auditMapper::setDataToAuditDto)
-                .toList();
-    }
-
-    @Override
     public void deleteAllData() {
-        auditRepository.deleteAll();
+        try {
+            auditRepository.deleteAll();
+
+            log.info("Successfully deleted all audits");
+        } catch (Exception e) {
+            log.error("Failed to delete all audits");
+        }
     }
 
     @Override
-    public AuditDto setDataToAuditDtoForAspect(String entityType,
+    public AuditDto setDataToAuditDtoForNewAudit(String entityType,
                                       String operationType,
                                       String createdBy,
                                       String modifiedBy,
                                       Timestamp createdAt,
                                       Timestamp modifiedAt,
                                       String newAccount,
-                                      String oldAccount,
-                                      Long entityId) {
-        AuditDto auditDtoAspect = new AuditDto();
-        auditDtoAspect.setEntityType(entityType);
-        auditDtoAspect.setOperationType(operationType);
-        auditDtoAspect.setCreatedBy(createdBy);
-        auditDtoAspect.setModifiedBy(modifiedBy);
-        auditDtoAspect.setCreatedAt(createdAt);
-        auditDtoAspect.setModifiedAt(modifiedAt);
-        auditDtoAspect.setNewEntityJson(newAccount);
-        auditDtoAspect.setEntityJson(oldAccount);
-        auditDtoAspect.setEntityId(entityId);
-        return auditDtoAspect;
+                                      String oldAccount) {
+        try {
+            AuditDto auditDtoAspect = new AuditDto();
+            auditDtoAspect.setEntityType(entityType);
+            auditDtoAspect.setOperationType(operationType);
+            auditDtoAspect.setCreatedBy(createdBy);
+            auditDtoAspect.setModifiedBy(modifiedBy);
+            auditDtoAspect.setCreatedAt(createdAt);
+            auditDtoAspect.setModifiedAt(modifiedAt);
+            auditDtoAspect.setNewEntityJson(newAccount);
+            auditDtoAspect.setEntityJson(oldAccount);
+
+            log.info("Successfully created new audit DTO for entity type: {}", entityType);
+            return auditDtoAspect;
+        } catch (Exception e) {
+            log.error("Failed to create new audit DTO for entity type: {}", entityType, e);
+            throw e;
+        }
+    }
+
+    @Override
+    public AuditDto setDataToAuditDto(AuditDto auditDto,
+                                  String operationType,
+                                  String modifiedBy,
+                                  Timestamp modifiedAt,
+                                  String newEntityJson,
+                                  String oldEntityJson) {
+        try {
+            AuditDto auditDtoAspect = auditMapper.toAuditDto(auditRepository.findAuditById(auditDto.getId()));
+
+            auditDtoAspect.setEntityType(auditDto.getEntityType());
+            auditDtoAspect.setOperationType(operationType);
+            auditDtoAspect.setCreatedBy(auditDto.getCreatedBy());
+            auditDtoAspect.setModifiedBy(modifiedBy);
+            auditDtoAspect.setModifiedAt(modifiedAt);
+            auditDtoAspect.setNewEntityJson(newEntityJson);
+            auditDtoAspect.setEntityJson(oldEntityJson);
+            auditDtoAspect.setCreatedAt(auditDto.getCreatedAt());
+
+            log.info("Successfully updated audit DTO for entity ID: {}", auditDto.getId());
+            return auditDtoAspect;
+        } catch (Exception e) {
+            log.error("Failed to update audit DTO for entity ID: {}", auditDto.getId(), e);
+            throw e;
+        }
     }
 }

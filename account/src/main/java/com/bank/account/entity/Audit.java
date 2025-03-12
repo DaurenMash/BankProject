@@ -12,13 +12,13 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="audit")
+@Table(name="audit", schema = "account")
 public class Audit {
 
     @Id
     @Column(name="id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
     @Column(name="entity_type")
     @Size(max=50)
@@ -47,7 +47,4 @@ public class Audit {
 
     @Column(name="entity_json")
     private String entityJson;
-
-    @Column(name="entity_id")
-    private Long entityId;
 }

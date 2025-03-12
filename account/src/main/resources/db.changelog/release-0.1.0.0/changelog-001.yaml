@@ -112,12 +112,6 @@ databaseChangeLog:
                   remarks: "json, заполняется при изменение и при сохранении"
                   constraints:
                     nullable: false
-              - column:
-                  name: entity_id
-                  type: BIGINT
-                  remarks: "id сущности, который будет использоваться для поиска записей"
-                  constraints:
-                    nullable: false
 
   - changeSet:
       id: 1711448567123-3

@@ -16,6 +16,13 @@ public class JsonUtils {
             throw new RuntimeException("Failed to convert object to JSON", e);
         }
     }
+
+    public static Long extractEntityIdFromJson(String json) {
+        try {
+            return mapper.readTree(json).get("id").asLong();
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to extract entity id from JSON", e);
+        }
+    }
 }
 
-//SET search_path TO account;

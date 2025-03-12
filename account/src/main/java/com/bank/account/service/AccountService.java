@@ -6,13 +6,13 @@ import com.bank.account.entity.Account;
 import java.util.List;
 
 public interface AccountService {
-    void createNewAccount(Account account);
+    void createNewAccount(AccountDto accountDto);
 
-    Account updateCurrentAccount(Long id, Account accountUpdated);
+    AccountDto updateCurrentAccount(Long id, AccountDto accountDtoUpdated);
 
-    void deleteAccount(Account account);
+    void deleteAccount(AccountDto accountDto);
 
-    Account getAccountById(Long id);
+    AccountDto getAccountById(Long id);
 
-    List<Account> getAllAccounts();
+    List<AccountDto> getAllAccounts();
 }

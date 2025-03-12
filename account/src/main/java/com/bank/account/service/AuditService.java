@@ -10,20 +10,26 @@ import java.util.List;
 public interface AuditService {
     void logAudit(AuditDto auditDto);
 
-    AuditDto getAuditByEntityId(Long entityId);
+    AuditDto getAuditByEntityId(Long entityIdFromCurrentAccount);
 
     List<AuditDto> getAllAudits();
 
     void deleteAllData();
 
-    AuditDto setDataToAuditDtoForAspect(String entityType,
+    AuditDto setDataToAuditDtoForNewAudit(String entityType,
                                String operationType,
                                String createdBy,
                                String modifiedBy,
                                Timestamp createdAt,
                                Timestamp modifiedAt,
                                String newAccount,
-                               String oldAccount,
-                               Long entityId);
+                               String oldAccount);
+
+    AuditDto setDataToAuditDto(AuditDto auditDto,
+                           String operationType,
+                           String modifiedBy,
+                           Timestamp modifiedAt,
+                           String newEntityJson,
+                           String oldEntityJson);
 }
 

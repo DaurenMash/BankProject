@@ -1,6 +1,7 @@
 package com.bank.account.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
@@ -17,23 +18,30 @@ public class AccountDto {
 
     @NotNull
     @Positive
+    @JsonProperty("id")
     private Long id;
 
     @NotNull
+    @JsonProperty("passportId")
     private Long passportId;
 
     @NotNull
+    @JsonProperty("accountNumber")
     private Long accountNumber;
 
     @NotNull
+    @JsonProperty("money")
     private BigDecimal money;
 
     @NotNull
+    @JsonProperty("negativeBalance")
     private boolean negativeBalance;
 
     @NotNull
+    @JsonProperty("bankDetailsId")
     private Long bankDetailsId;
 
     @NotNull
+    @JsonProperty("profileId")
     private Long profileId;
 }
