@@ -4,6 +4,7 @@ import com.bank.history.dto.HistoryDto;
 import com.bank.history.entity.History;
 import com.bank.history.mapper.HistoryMapper;
 import com.bank.history.repository.HistoryRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +12,7 @@ import java.util.List;
 
 
 @Service
+@Slf4j
 public class HistoryServiceImpl implements HistoryService {
 
     private final HistoryRepository historyRepository;
@@ -27,10 +29,12 @@ public class HistoryServiceImpl implements HistoryService {
 
     @Override
     public void saveHistory(History history) {
+
+        log.info("Save history");
+
         historyRepository.save(history);
 
-        final HistoryDto historyDto = historyMapper.toDto(history);
-        kafkaTemplate.send("audit.history", historyDto);
+        log.info("History saved");
     }
 
     @Override
