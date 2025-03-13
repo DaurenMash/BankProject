@@ -32,21 +32,22 @@ public class KafkaConsumerService {
         this.jwtTokenProvider = jwtTokenProvider;
         this.authenticationManager = authenticationManager;
     }
-    @KafkaListener(topics = "auth.login", groupId = "authorization-group")
+    @KafkaListener(topics = "auth.login", groupId = "authorization-group",
+            containerFactory = "kafkaListenerContainerFactory")
     public void handleLoginRequest(AuthRequest authRequest) {
-        log.info("Received LOGIN request for user: {}", authRequest.getUsername());
+        log.info("Received LOGIN request for user: {}", authRequest.getProfileId());
 
         final KafkaResponse response = new KafkaResponse();
-        response.setRequestId(authRequest.getUsername());
+        response.setRequestId(String.valueOf(authRequest.getProfileId()));
 
         try {
             // Аутентификация пользователя
             final Authentication authenticate = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
+                    new UsernamePasswordAuthenticationToken(authRequest.getProfileId(), authRequest.getPassword())
             );
 
             // Генерация JWT-токена
-            final String jwt = jwtTokenProvider.generateToken(authRequest.getUsername(), authenticate.getAuthorities());
+            final String jwt = jwtTokenProvider.generateToken(String.valueOf(authRequest.getProfileId()), authenticate.getAuthorities());
 
             // Формирование ответа
             final AuthResponse authResponse = new AuthResponse();
@@ -58,9 +59,9 @@ public class KafkaConsumerService {
             response.setData(authResponse);
             response.setSuccess(true);
             response.setMessage("Login successful");
-            log.info("LOGIN request processed successfully for user: {}", authRequest.getUsername());
+            log.info("LOGIN request processed successfully for user: {}", authRequest.getProfileId());
         } catch (BadCredentialsException e) {
-            log.error("Authentication failed for user: {}", authRequest.getUsername(), e);
+            log.error("Authentication failed for user: {}", authRequest.getProfileId(), e);
             response.setSuccess(false);
             response.setMessage("Invalid username or password");
         } catch (Exception e) {
