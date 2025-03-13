@@ -2,13 +2,10 @@ package com.bank.authorization.dto;
 
 import lombok.Data;
 
-import java.util.Map;
+import java.util.List;
 
 @Data
 public class AuthResponse {
-    private Map<String, Object> data;
-
-    public AuthResponse(Map<String, Object> data) {
-        this.data = data;
-    }
+    private String jwt;
+    private List<String> authorities;
 }
