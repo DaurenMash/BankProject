@@ -3,6 +3,7 @@ package com.bank.account.service;
 import com.bank.account.dto.AccountDto;
 import com.bank.account.entity.Account;
 import com.bank.account.mapper.AccountMapper;
+import com.bank.account.producers.AccountProducer;
 import com.bank.account.repository.AccountRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,24 +18,30 @@ import java.util.stream.Collectors;
 public class AccountServiceImpl implements AccountService{
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
+    private final AccountProducer accountProducer;
 
     @Autowired
-    public AccountServiceImpl(AccountRepository accountRepository, AccountMapper accountMapper) {
+    public AccountServiceImpl(AccountRepository accountRepository,
+                              AccountMapper accountMapper,
+                              AccountProducer accountProducer) {
         this.accountRepository = accountRepository;
         this.accountMapper = accountMapper;
+        this.accountProducer = accountProducer;
     }
 
     @Override
     @Transactional
-    public void createNewAccount(AccountDto accountDto) {
+    public AccountDto createNewAccount(AccountDto accountDto) {
         try {
-            accountRepository.save(accountMapper.toAccount(accountDto));
+            Account accountExternal = accountRepository.save(accountMapper.toAccount(accountDto));
+            accountProducer.sendCreatedAccountExternalEvent(accountMapper.toDto(accountExternal));
 
             log.info("New account created successfully");
+            return accountMapper.toDto(accountExternal);
         } catch (Exception e) {
             log.error("Service. Failed to create new account {}", e.getMessage());
+            throw e;
         }
-
     }
 
     @Override
@@ -43,6 +50,7 @@ public class AccountServiceImpl implements AccountService{
         try {
             Account account = accountRepository.findAccountById(id);
 
+
             account.setAccountNumber(accountDtoUpdated.getAccountNumber());
             account.setMoney(accountDtoUpdated.getMoney());
             account.setPassportId(accountDtoUpdated.getPassportId());
@@ -50,11 +58,12 @@ public class AccountServiceImpl implements AccountService{
             account.setBankDetailsId(accountDtoUpdated.getBankDetailsId());
             account.setProfileId(accountDtoUpdated.getProfileId());
 
-            accountRepository.save(account);
+            Account accountExternal = accountRepository.save(account);
             accountRepository.flush();
+            accountProducer.sendUpdatedAccountExternalEvent(accountMapper.toDto(accountExternal));
 
             log.info("Account successfully updated ");
-            return accountMapper.toDto(account);
+            return accountMapper.toDto(accountExternal);
         } catch (Exception e) {
             log.error("Service. Failed to update account {}", e.getMessage());
             throw e;
@@ -63,11 +72,13 @@ public class AccountServiceImpl implements AccountService{
 
     @Override
     @Transactional
-    public void deleteAccount(AccountDto accountDto) {
+    public void deleteAccount(Long id) {
         try {
-            accountRepository.delete(accountMapper.toAccount(accountDto));
+            Account account = accountRepository.findAccountById(id);
+            accountRepository.delete(account);
+            accountProducer.sendDeletedAccountExternalEvent("Account successfully deleted");
 
-            log.info("Account successfully deleted ");
+            log.info("Account successfully deleted");
         } catch (Exception e) {
             log.error("Service. Failed to delete account {}", e.getMessage());
         }
@@ -78,6 +89,8 @@ public class AccountServiceImpl implements AccountService{
     public AccountDto getAccountById(Long id) {
         try {
             AccountDto result = accountMapper.toDto(accountRepository.findAccountById(id));
+            accountProducer.sendGetOneAccountByIdExternalEvent(result);
+
             log.info("Account successfully retrieved ");
             return result;
         } catch (Exception e) {
@@ -101,6 +114,8 @@ public class AccountServiceImpl implements AccountService{
             } else {
                 log.warn("List of accounts is null");
             }
+            accountProducer.sendGetAccountsExternalEvent(result);
+
             return result;
         } catch (Exception e) {
             log.error("Service. Failed to retrieve accounts {}", e.getMessage());

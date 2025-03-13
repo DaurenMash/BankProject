@@ -44,9 +44,9 @@ public class AuditServiceImpl implements AuditService{
                 auditRepository.save(existingAudit);
             }
 
-            log.info("Audit log successfully saved");
+            log.info("Service. Audit log successfully saved");
         } catch (Exception e) {
-            log.error("Audit log failed {}", e.getMessage());
+            log.error("Service. Audit log failed {}", e.getMessage());
         }
     }
 
@@ -68,13 +68,13 @@ public class AuditServiceImpl implements AuditService{
                     .orElse(null);
 
             if (resultAuditDto != null) {
-                log.info("Successfully retrieved audit for entity ID: {}", entityIdFromCurrentAccount);
+                log.info("Service. Successfully retrieved audit for entity ID: {}", entityIdFromCurrentAccount);
             } else {
-                log.warn("No audit found for entity ID: {}", entityIdFromCurrentAccount);
+                log.warn("Service. No audit found for entity ID: {}", entityIdFromCurrentAccount);
             }
             return resultAuditDto;
         } catch (Exception e) {
-            log.error("Failed to retrieve audit for entity ID: {}", entityIdFromCurrentAccount);
+            log.error("Service. Failed to retrieve audit for entity ID: {}", entityIdFromCurrentAccount);
             throw e;
         }
     }
@@ -88,10 +88,10 @@ public class AuditServiceImpl implements AuditService{
                     .map(auditMapper::toAuditDto)
                     .toList();
 
-            log.info("Successfully retrieved all audits");
+            log.info("Service. Successfully retrieved all audits");
             return resultAuditDtoList;
         } catch (Exception e) {
-            log.error("Failed to retrieve all audits");
+            log.error("Service. Failed to retrieve all audits");
             throw e;
         }
     }
@@ -102,9 +102,9 @@ public class AuditServiceImpl implements AuditService{
         try {
             auditRepository.deleteAll();
 
-            log.info("Successfully deleted all audits");
+            log.info("Service. Successfully deleted all audits");
         } catch (Exception e) {
-            log.error("Failed to delete all audits");
+            log.error("Service. Failed to delete all audits");
         }
     }
 
@@ -128,10 +128,10 @@ public class AuditServiceImpl implements AuditService{
             auditDtoAspect.setNewEntityJson(newAccount);
             auditDtoAspect.setEntityJson(oldAccount);
 
-            log.info("Successfully created new audit DTO for entity type: {}", entityType);
+            log.info("Service. Successfully created new audit DTO for entity type: {}", entityType);
             return auditDtoAspect;
         } catch (Exception e) {
-            log.error("Failed to create new audit DTO for entity type: {}", entityType, e);
+            log.error("Service. Failed to create new audit DTO for entity type: {}", entityType, e);
             throw e;
         }
     }
@@ -155,10 +155,10 @@ public class AuditServiceImpl implements AuditService{
             auditDtoAspect.setEntityJson(oldEntityJson);
             auditDtoAspect.setCreatedAt(auditDto.getCreatedAt());
 
-            log.info("Successfully updated audit DTO for entity ID: {}", auditDto.getId());
+            log.info("Service. Successfully updated audit DTO for entity ID: {}", auditDto.getId());
             return auditDtoAspect;
         } catch (Exception e) {
-            log.error("Failed to update audit DTO for entity ID: {}", auditDto.getId(), e);
+            log.error("Service. Failed to update audit DTO for entity ID: {}", auditDto.getId(), e);
             throw e;
         }
     }

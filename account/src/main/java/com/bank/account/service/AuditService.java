@@ -1,8 +1,6 @@
 package com.bank.account.service;
 
 import com.bank.account.dto.AuditDto;
-import com.bank.account.entity.Account;
-import jakarta.validation.constraints.NotNull;
 
 import java.sql.Timestamp;
 import java.util.List;

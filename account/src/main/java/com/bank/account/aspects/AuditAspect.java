@@ -1,13 +1,12 @@
 package com.bank.account.aspects;
 
+import com.bank.account.dto.AccountDto;
 import com.bank.account.dto.AuditDto;
-import com.bank.account.entity.Account;
 import com.bank.account.producers.AuditProducer;
 import com.bank.account.service.AuditService;
 import com.bank.account.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
-import org.aspectj.lang.annotation.After;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
@@ -28,11 +27,12 @@ public class AuditAspect {
         this.auditProducer = auditProducer;
     }
 
-    @After("execution(* com.bank.account.service.AccountServiceImpl.createNewAccount(com.bank.account.entity.Account))")
-    public void logCreateAccount(JoinPoint joinPoint) {
+    @AfterReturning(pointcut = "execution(* com.bank.account.service.AccountServiceImpl.createNewAccount(..))",
+            returning = "result")
+    public void logCreateAccount(JoinPoint joinPoint, Object result) {
         try {
-            Account account = (Account) joinPoint.getArgs()[0];
-            String entityJson = JsonUtils.convertToJson(account);
+            AccountDto accountDto = (AccountDto) result;
+            String entityJson = JsonUtils.convertToJson(accountDto);
 
             AuditDto auditDto = auditService.setDataToAuditDtoForNewAudit(
                     ENTITY_TYPE,
@@ -45,20 +45,20 @@ public class AuditAspect {
                     entityJson);
             auditProducer.sendAuditLogEvent(auditDto);
 
-            log.info("Successfully created new account {}", account.getAccountNumber());
+            log.info("Successfully created new account {}", accountDto.getAccountNumber());
         } catch (Exception e) {
             log.error("Failed to create new account {}", e.getMessage());
         }
 
     }
 
-    @AfterReturning(pointcut = "execution(* com.bank.account.service.AccountServiceImpl.updateCurrentAccount(Long, " +
-            "com.bank.account.entity.Account))", returning = "result")
+    @AfterReturning(pointcut = "execution(* com.bank.account.service.AccountServiceImpl.updateCurrentAccount(Long,..))",
+            returning = "result")
     public void logUpdateCurrentAccount(JoinPoint joinPoint, Object result) {
         try {
             Long accountId = (Long) joinPoint.getArgs()[0];
-            Account account = (Account) result;
-            String newEntityJson = JsonUtils.convertToJson(account);
+            AccountDto accountDto = (AccountDto) result;
+            String newEntityJson = JsonUtils.convertToJson(accountDto);
 
             String oldEntityJson;
             AuditDto oldAuditDto = auditService.getAuditByEntityId(accountId);
@@ -77,7 +77,7 @@ public class AuditAspect {
                     oldEntityJson);
             auditProducer.sendAuditLogEvent(auditDto);
 
-            log.info("Successfully updated account {}", account.getId());
+            log.info("Successfully updated account {}", accountDto.getAccountNumber());
         } catch (Exception e) {
             log.error("Failed to update account {}", e.getMessage());
         }
