@@ -1,6 +1,8 @@
 package com.bank.authorization.service;
 
 import com.bank.authorization.dto.*;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -83,9 +85,11 @@ public class KafkaConsumerService {
 
         try {
             // Проверка JWT-токена и прав доступа
-            validateTokenAndCheckPermissions(request.getJwtToken(), "ADMIN");
+            validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
             // Извлечение данных из payload
-            UserDto userDto = (UserDto) request.getPayload();
+            ObjectMapper objectMapper = new ObjectMapper();
+            UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
+            //UserDto userDto = (UserDto) request.getPayload();
 
             // Создание пользователя
             final UserDto createdUser = userService.save(userDto);
@@ -227,8 +231,12 @@ public class KafkaConsumerService {
         // Извлечение ролей из токена
         List<String> authorities = jwtTokenProvider.getAuthoritiesFromToken(jwtToken);
 
+//        // Проверка прав доступа
+//        if (!authorities.contains(new SimpleGrantedAuthority(requiredRole))) {
+//            throw new SecurityException("User does not have permission to perform this operation");
+//        }
         // Проверка прав доступа
-        if (!authorities.contains(new SimpleGrantedAuthority(requiredRole))) {
+        if (!authorities.contains(requiredRole)) {
             throw new SecurityException("User does not have permission to perform this operation");
         }
     }
