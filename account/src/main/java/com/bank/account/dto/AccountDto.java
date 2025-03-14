@@ -33,7 +33,6 @@ public class AccountDto {
     @JsonProperty("money")
     private BigDecimal money;
 
-    @NotNull
     @JsonProperty("negativeBalance")
     private boolean negativeBalance;
 

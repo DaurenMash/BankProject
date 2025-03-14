@@ -2,7 +2,6 @@ package com.bank.account.config;
 
 import com.bank.account.dto.AccountDto;
 import com.bank.account.dto.AuditDto;
-import com.bank.account.exception.ErrorResponse;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;

@@ -21,6 +21,8 @@ public class AuditAspect {
     private final AuditProducer auditProducer;
     private final String ENTITY_TYPE = "Account";
     private final String CURRENT_USER = "SYSTEM";
+    private final String CREATE_OPERATION = "CREATION";
+    private final String UPDATE_OPERATION = "UPDATE";
 
     public AuditAspect(AuditService auditService, AuditProducer auditProducer) {
         this.auditService = auditService;
@@ -36,7 +38,7 @@ public class AuditAspect {
 
             AuditDto auditDto = auditService.setDataToAuditDtoForNewAudit(
                     ENTITY_TYPE,
-                    "createNewAccount",
+                    CREATE_OPERATION,
                     CURRENT_USER,
                     null,
                     new Timestamp(System.currentTimeMillis()),
@@ -70,7 +72,7 @@ public class AuditAspect {
             }
 
             AuditDto auditDto = auditService.setDataToAuditDto(oldAuditDto,
-                    "updateCurrentAccount",
+                    UPDATE_OPERATION,
                     CURRENT_USER,
                     new Timestamp(System.currentTimeMillis()),
                     newEntityJson,

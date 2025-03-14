@@ -12,8 +12,6 @@ public interface AuditService {
 
     List<AuditDto> getAllAudits();
 
-    void deleteAllData();
-
     AuditDto setDataToAuditDtoForNewAudit(String entityType,
                                String operationType,
                                String createdBy,
