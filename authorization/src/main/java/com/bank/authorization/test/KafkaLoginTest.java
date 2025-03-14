@@ -49,7 +49,8 @@ public class KafkaLoginTest {
         consumer.subscribe(Collections.singletonList(TOPIC_AUTH_LOGIN_RESPONSE));
 
         // Отправляем AuthRequest
-        AuthRequest authRequest = new AuthRequest(1L, "admin123");
+        final String requestId = UUID.randomUUID().toString();
+        AuthRequest authRequest = new AuthRequest(requestId,1L, "admin123");
         ProducerRecord<String, AuthRequest> record = new ProducerRecord<>(TOPIC_AUTH_LOGIN, authRequest);
         producer.send(record);
         producer.flush();
@@ -58,7 +59,7 @@ public class KafkaLoginTest {
         ConsumerRecords<String, KafkaResponse> records = consumer.poll(Duration.ofSeconds(30));
         for (ConsumerRecord<String, KafkaResponse> consumerRecord : records) {
             KafkaResponse response = consumerRecord.value();
-            if (response.getRequestId().equals(String.valueOf(authRequest.getProfileId()))) {
+            if (response.getRequestId().equals(requestId)) {
                 System.out.println("Received response: " + response);
                 break;
             }

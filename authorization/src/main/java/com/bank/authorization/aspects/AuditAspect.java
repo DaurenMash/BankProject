@@ -1,7 +1,9 @@
 package com.bank.authorization.aspects;
 
 import com.bank.authorization.dto.AuditDto;
-import com.bank.authorization.entity.User;
+import com.bank.authorization.dto.KafkaRequest;
+import com.bank.authorization.dto.KafkaResponse;
+import com.bank.authorization.dto.UserDto;
 import com.bank.authorization.service.AuditService;
 import com.bank.authorization.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
@@ -20,26 +22,54 @@ public class AuditAspect {
 
     private final AuditService auditService;
 
-    @Pointcut("execution(* com.bank.authorization.service.UserServiceImpl.*(..))")
-    public void saveUserPointcut() {
+    @Pointcut("execution(* com.bank.authorization.service.KafkaConsumerService.handleCreateUser(..))")
+    public void saveUserPointcut() {}
 
-    }
+    @AfterReturning(pointcut = "saveUserPointcut()", returning = "response")
+    public void logSave(JoinPoint joinPoint, KafkaResponse response) {
+        // Получаем аргументы метода
+        Object[] args = joinPoint.getArgs();
+        if (args.length > 0 && args[0] instanceof KafkaRequest) {
+            KafkaRequest request = (KafkaRequest) args[0];
+            Object payload = request.getPayload();
 
-    @AfterReturning(pointcut = "saveUserPointcut()", returning = "result")
-    public void logSave(JoinPoint joinPoint, User result) {
-        final AuditDto auditDto = new AuditDto();
-        auditDto.setEntityType("User");
+            if (payload instanceof UserDto) {
+                UserDto userDto = (UserDto) payload;
 
-        if (result.getId() == null || result.getId() <= 0) { // Новый пользователь
-            auditDto.setOperationType("CREATE");
-            auditDto.setCreatedBy(SYSTEM_USER);
-            auditDto.setNewEntityJson(JsonUtils.toJson(result));
-        } else { // Обновленный пользователь
-            auditDto.setOperationType("UPDATE");
-            auditDto.setModifiedBy(SYSTEM_USER);
-            auditDto.setEntityJson(JsonUtils.toJson(result));
+                final AuditDto auditDto = new AuditDto();
+                auditDto.setEntityType("User");
+
+                // Определяем тип операции на основе имени метода
+                String methodName = joinPoint.getSignature().getName();
+                switch (methodName) {
+                    case "handleCreateUser":
+                        if (response.isSuccess()) {
+                            auditDto.setOperationType("CREATE");
+                            auditDto.setCreatedBy(SYSTEM_USER);
+                            auditDto.setEntityJson(JsonUtils.toJson(userDto));
+                        } else {
+                            auditDto.setOperationType("CREATE_FAILED");
+                            auditDto.setCreatedBy(SYSTEM_USER);
+                            auditDto.setEntityJson(JsonUtils.toJson(userDto));
+                        }
+                        auditService.save(auditDto);
+                        break;
+
+                    case "handleUpdateUser":
+                        if (response.isSuccess()) {
+                            auditDto.setOperationType("UPDATE");
+                            auditDto.setModifiedBy(SYSTEM_USER);
+                            auditDto.setNewEntityJson(JsonUtils.toJson(userDto));
+                            auditService.updateAuditForUser(userDto.getId(), auditDto);
+                        } else {
+                            auditDto.setOperationType("UPDATE_FAILED");
+                            auditDto.setModifiedBy(SYSTEM_USER);
+                            auditDto.setNewEntityJson(JsonUtils.toJson(userDto));
+                            auditService.save(auditDto);
+                        }
+                        break;
+                }
+            }
         }
-
-        auditService.save(auditDto);
     }
 }

@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class KafkaRequest {
+    private String requestId;
     private String jwtToken;
     private Object payload;
 }

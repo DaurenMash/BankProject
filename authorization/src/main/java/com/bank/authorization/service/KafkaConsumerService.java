@@ -1,7 +1,6 @@
 package com.bank.authorization.service;
 
 import com.bank.authorization.dto.*;
-import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -10,7 +9,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,7 +21,7 @@ public class KafkaConsumerService {
 
     private final UserService userService;
     private final KafkaTemplate<String, KafkaResponse> kafkaTemplate;
-    private final JwtTokenProvider jwtTokenProvider; // Сервис для работы с JWT
+    private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
 
     public KafkaConsumerService(UserService userService,
@@ -40,18 +38,15 @@ public class KafkaConsumerService {
         log.info("Received LOGIN request for user: {}", authRequest.getProfileId());
 
         final KafkaResponse response = new KafkaResponse();
-        response.setRequestId(String.valueOf(authRequest.getProfileId()));
+        response.setRequestId(authRequest.getRequestId()); // Передаём requestId от клиента
 
         try {
-            // Аутентификация пользователя
             final Authentication authenticate = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authRequest.getProfileId(), authRequest.getPassword())
             );
 
-            // Генерация JWT-токена
             final String jwt = jwtTokenProvider.generateToken(String.valueOf(authRequest.getProfileId()), authenticate.getAuthorities());
 
-            // Формирование ответа
             final AuthResponse authResponse = new AuthResponse();
             authResponse.setJwt(jwt);
             authResponse.setAuthorities(authenticate.getAuthorities().stream()
@@ -72,26 +67,23 @@ public class KafkaConsumerService {
             response.setMessage("Error processing login request");
         }
 
-        // Отправка ответа в топик для ответов
         kafkaTemplate.send("auth.login.response", response);
     }
-    // Обработка создания пользователя
+
     @KafkaListener(topics = "user.create", groupId = "authorization-group")
     public void handleCreateUser(KafkaRequest request) {
         log.info("Received CREATE_USER request");
 
         final KafkaResponse response = new KafkaResponse();
-        response.setRequestId(request.getJwtToken()); // Используем JWT-токен как requestId
+        response.setRequestId(request.getRequestId()); // Передаем правильный requestId
 
         try {
-            // Проверка JWT-токена и прав доступа
+
             validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
-            // Извлечение данных из payload
+
             ObjectMapper objectMapper = new ObjectMapper();
             UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
-            //UserDto userDto = (UserDto) request.getPayload();
 
-            // Создание пользователя
             final UserDto createdUser = userService.save(userDto);
             response.setData(createdUser);
             response.setSuccess(true);
@@ -103,25 +95,23 @@ public class KafkaConsumerService {
             response.setMessage("Error creating user: " + e.getMessage());
         }
 
-        // Отправка ответа в топик для ответов
         kafkaTemplate.send("user.create.response", response);
     }
 
-    // Обработка обновления пользователя
     @KafkaListener(topics = "user.update", groupId = "authorization-group")
     public void handleUpdateUser(KafkaRequest request) {
         log.info("Received UPDATE_USER request");
 
         final KafkaResponse response = new KafkaResponse();
-        response.setRequestId(request.getPayload().toString());
+        response.setRequestId(request.getRequestId()); // Передаем правильный requestId
 
         try {
-            // Проверка JWT-токена и прав доступа
-            validateTokenAndCheckPermissions(request.getJwtToken(), "ADMIN");
-            // Извлечение данных из payload
-            UserDto userDto = (UserDto) request.getPayload();
 
-            // Обновление пользователя
+            validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
+
+            ObjectMapper objectMapper = new ObjectMapper();
+            UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
+
             final UserDto updatedUser = userService.updateUser(userDto.getId(), userDto);
             response.setData(updatedUser);
             response.setSuccess(true);
@@ -133,25 +123,22 @@ public class KafkaConsumerService {
             response.setMessage("Error updating user: " + e.getMessage());
         }
 
-        // Отправка ответа в топик для ответов
         kafkaTemplate.send("user.update.response", response);
     }
 
-    // Обработка удаления пользователя
     @KafkaListener(topics = "user.delete", groupId = "authorization-group")
     public void handleDeleteUser(KafkaRequest request) {
         log.info("Received DELETE_USER request");
 
         final KafkaResponse response = new KafkaResponse();
-        response.setRequestId(request.getPayload().toString());
+        response.setRequestId(request.getRequestId()); // Передаем правильный requestId
 
         try {
-            // Проверка JWT-токена и прав доступа
-            validateTokenAndCheckPermissions(request.getJwtToken(), "ADMIN");
-            // Извлечение данных из payload
+
+            validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
+
             Long userId = Long.valueOf(request.getPayload().toString());
 
-            // Удаление пользователя
             userService.deleteById(userId);
             response.setSuccess(true);
             response.setMessage("User deleted successfully");
@@ -162,25 +149,22 @@ public class KafkaConsumerService {
             response.setMessage("Error deleting user: " + e.getMessage());
         }
 
-        // Отправка ответа в топик для ответов
         kafkaTemplate.send("user.delete.response", response);
     }
 
-    // Обработка получения пользователя по ID
     @KafkaListener(topics = "user.get", groupId = "authorization-group")
     public void handleGetUser(KafkaRequest request) {
         log.info("Received GET_USER request");
 
         final KafkaResponse response = new KafkaResponse();
-        response.setRequestId(request.getPayload().toString());
+        response.setRequestId(request.getRequestId()); // Передаем правильный requestId
 
         try {
-            // Проверка JWT-токена и прав доступа
-            validateTokenAndCheckPermissions(request.getJwtToken(), "ADMIN");
-            // Извлечение данных из payload
+
+            validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
+
             Long userId = Long.valueOf(request.getPayload().toString());
 
-            // Получение пользователя
             final UserDto user = userService.getUserById(userId);
             response.setData(user);
             response.setSuccess(true);
@@ -192,23 +176,20 @@ public class KafkaConsumerService {
             response.setMessage("Error fetching user: " + e.getMessage());
         }
 
-        // Отправка ответа в топик для ответов
         kafkaTemplate.send("user.get.response", response);
     }
 
-    // Обработка получения всех пользователей
     @KafkaListener(topics = "user.get.all", groupId = "authorization-group")
     public void handleGetAllUsers(KafkaRequest request) {
         log.info("Received GET_ALL_USERS request");
 
         final KafkaResponse response = new KafkaResponse();
-        response.setRequestId("ALL_USERS"); // Уникальный идентификатор для запроса всех пользователей
+        response.setRequestId(request.getRequestId()); // Передаем правильный requestId
 
         try {
-            // Проверка JWT-токена и прав доступа
-            validateTokenAndCheckPermissions(request.getJwtToken(), "ADMIN");
 
-            // Получение всех пользователей
+            validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
+
             response.setData(userService.getAllUsers());
             response.setSuccess(true);
             response.setMessage("Users fetched successfully");
@@ -219,23 +200,16 @@ public class KafkaConsumerService {
             response.setMessage("Error fetching users: " + e.getMessage());
         }
 
-        // Отправка ответа в топик для ответов
         kafkaTemplate.send("user.get.all.response", response);
     }
     private void validateTokenAndCheckPermissions(String jwtToken, String requiredRole) {
-        // Проверка JWT-токена
+
         if (!jwtTokenProvider.validateToken(jwtToken)) {
             throw new SecurityException("Invalid JWT token");
         }
 
-        // Извлечение ролей из токена
         List<String> authorities = jwtTokenProvider.getAuthoritiesFromToken(jwtToken);
 
-//        // Проверка прав доступа
-//        if (!authorities.contains(new SimpleGrantedAuthority(requiredRole))) {
-//            throw new SecurityException("User does not have permission to perform this operation");
-//        }
-        // Проверка прав доступа
         if (!authorities.contains(requiredRole)) {
             throw new SecurityException("User does not have permission to perform this operation");
         }

@@ -2,12 +2,15 @@ package com.bank.authorization.service;
 
 import com.bank.authorization.dto.AuditDto;
 import com.bank.authorization.entity.Audit;
+import com.bank.authorization.entity.User;
 import com.bank.authorization.mapper.AuditMapper;
 import com.bank.authorization.repository.AuditRepository;
+import com.bank.authorization.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -52,7 +55,29 @@ public class AuditServiceImpl implements AuditService {
 
     @Override
     @Transactional
-    public void deleteById(Long id) {
-        auditRepository.deleteById(id);
+    public void updateAuditForUser(Long userId, AuditDto auditDto) {
+        // Поиск записи аудита по ID пользователя
+        List<Audit> audits = auditRepository.findAll();
+        Optional<Audit> existingAuditOpt = audits.stream()
+                .filter(audit -> {
+                    try {
+                        User user = JsonUtils.fromJson(audit.getEntityJson(), User.class);
+                        return user != null && user.getId().equals(userId);
+                    } catch (Exception e) {
+                        return false;
+                    }
+                })
+                .findFirst();
+
+        if (existingAuditOpt.isPresent()) {
+            Audit existingAudit = existingAuditOpt.get();
+            existingAudit.setModifiedBy(auditDto.getModifiedBy());
+            existingAudit.setModifiedAt(new Timestamp(System.currentTimeMillis()).toLocalDateTime());
+            existingAudit.setNewEntityJson(auditDto.getNewEntityJson());
+            auditRepository.save(existingAudit);
+        } else {
+            // Если запись не найдена, создаем новую
+            save(auditDto);
+        }
     }
 }

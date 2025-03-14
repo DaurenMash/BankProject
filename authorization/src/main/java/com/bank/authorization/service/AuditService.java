@@ -8,5 +8,5 @@ public interface AuditService {
     List<AuditDto> getAllAudits();
     Optional<AuditDto> getAuditById(Long id);
     AuditDto save(AuditDto auditDto);
-    void deleteById(Long id);
+    void updateAuditForUser(Long userId, AuditDto auditDto);
 }

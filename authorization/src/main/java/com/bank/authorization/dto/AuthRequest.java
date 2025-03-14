@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AuthRequest {
+    @JsonProperty("requestId")
+    private String requestId;
+
     @JsonProperty("profileId")
     private Long profileId;
 
