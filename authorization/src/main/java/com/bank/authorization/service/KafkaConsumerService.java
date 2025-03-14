@@ -1,7 +1,7 @@
 package com.bank.authorization.service;
 
 import com.bank.authorization.dto.*;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,21 +17,15 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class KafkaConsumerService {
 
     private final UserService userService;
     private final KafkaTemplate<String, KafkaResponse> kafkaTemplate;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
+    private final UserCommandHandler userCommandHandler;
 
-    public KafkaConsumerService(UserService userService,
-                                KafkaTemplate<String, KafkaResponse> kafkaTemplate,
-                                JwtTokenProvider jwtTokenProvider, AuthenticationManager authenticationManager) {
-        this.userService = userService;
-        this.kafkaTemplate = kafkaTemplate;
-        this.jwtTokenProvider = jwtTokenProvider;
-        this.authenticationManager = authenticationManager;
-    }
     @KafkaListener(topics = "auth.login", groupId = "authorization-group",
             containerFactory = "kafkaListenerContainerFactory")
     public void handleLoginRequest(AuthRequest authRequest) {
@@ -69,62 +63,20 @@ public class KafkaConsumerService {
 
         kafkaTemplate.send("auth.login.response", response);
     }
-
+    // Вынес создание пользователя в отдельный класс через бин, чтобы на нём работало AOP
     @KafkaListener(topics = "user.create", groupId = "authorization-group")
-    public void handleCreateUser(KafkaRequest request) {
-        log.info("Received CREATE_USER request");
-
-        final KafkaResponse response = new KafkaResponse();
-        response.setRequestId(request.getRequestId()); // Передаем правильный requestId
-
-        try {
-
-            validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
-
-            final UserDto createdUser = userService.save(userDto);
-            response.setData(createdUser);
-            response.setSuccess(true);
-            response.setMessage("User created successfully");
-            log.info("CREATE_USER request processed successfully for profileId={}", userDto.getProfileId());
-        } catch (Exception e) {
-            log.error("Error processing CREATE_USER request: error={}", e.getMessage(), e);
-            response.setSuccess(false);
-            response.setMessage("Error creating user: " + e.getMessage());
-        }
-
+    public void consumeCreateUserRequest(KafkaRequest request) {
+        KafkaResponse response = userCommandHandler.handleCreateUser(request); // Вызываем через новый бин
         kafkaTemplate.send("user.create.response", response);
     }
 
+    // Вынес изменение пользователя в отдельный класс через бин, чтобы на нём работало AOP
     @KafkaListener(topics = "user.update", groupId = "authorization-group")
-    public void handleUpdateUser(KafkaRequest request) {
-        log.info("Received UPDATE_USER request");
-
-        final KafkaResponse response = new KafkaResponse();
-        response.setRequestId(request.getRequestId()); // Передаем правильный requestId
-
-        try {
-
-            validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
-
-            final UserDto updatedUser = userService.updateUser(userDto.getId(), userDto);
-            response.setData(updatedUser);
-            response.setSuccess(true);
-            response.setMessage("User updated successfully");
-            log.info("UPDATE_USER request processed successfully for userId={}", userDto.getId());
-        } catch (Exception e) {
-            log.error("Error processing UPDATE_USER request: error={}", e.getMessage(), e);
-            response.setSuccess(false);
-            response.setMessage("Error updating user: " + e.getMessage());
-        }
-
+    public void consumeUpdateUserRequest(KafkaRequest request) {
+        KafkaResponse response = userCommandHandler.handleUpdateUser(request); // Вызываем через новый бин
         kafkaTemplate.send("user.update.response", response);
     }
+
 
     @KafkaListener(topics = "user.delete", groupId = "authorization-group")
     public void handleDeleteUser(KafkaRequest request) {

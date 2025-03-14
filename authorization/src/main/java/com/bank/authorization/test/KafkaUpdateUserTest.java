@@ -48,7 +48,7 @@ public class KafkaUpdateUserTest {
         UserDto userDto = new UserDto();
         userDto.setId(13L);
         userDto.setRole("ROLE_USER");
-        userDto.setProfileId(113L);
+        userDto.setProfileId(333L);
         userDto.setPassword("newPassword456");
 
         // Формирование KafkaRequest

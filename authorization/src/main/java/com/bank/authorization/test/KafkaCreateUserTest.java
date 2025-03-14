@@ -55,7 +55,7 @@ public class KafkaCreateUserTest {
         // Создаем тестовый объект UserDto
         UserDto userDto = new UserDto();
         userDto.setRole("ROLE_USER");
-        userDto.setProfileId(113L);
+        userDto.setProfileId(4L);
         userDto.setPassword("password123");
 
         // Создаем KafkaRequest для отправки
