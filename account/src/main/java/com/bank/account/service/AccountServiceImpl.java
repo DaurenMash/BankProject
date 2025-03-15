@@ -16,18 +16,37 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Сервис для управления банковскими аккаунтами.
+ * Предоставляет методы для создания, изменения, удаления и получения информации об аккаунтах.*/
+
 @Slf4j
 @Service
 public class AccountServiceImpl implements AccountService{
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
 
+    /**
+     * Конструктор для создания экземпляра AccountServiceImpl
+     *
+     * @param accountRepository для работы с аккаунтами в базе данных
+     * @param accountMapper для преобразования объектов Account в объекты AccountDto и обратно
+     */
     @Autowired
     public AccountServiceImpl(AccountRepository accountRepository,
                               AccountMapper accountMapper) {
         this.accountRepository = accountRepository;
         this.accountMapper = accountMapper;
     }
+
+    /**
+     * Создает новый банковский счет на основе переданных данных
+     *
+     * @param accountDto аккаунт с переданными данными для создания счета
+     * @return AccountDto созданного счета, внесенного в БД
+     * @throws DataAccessException если произошла непредвиденная ошибка доступа к БД
+     * @throws Exception если произошла непредвиденная ошибка
+     */
 
     @Override
     @Transactional
@@ -49,6 +68,18 @@ public class AccountServiceImpl implements AccountService{
             throw e;
         }
     }
+
+    /**
+     * Обновляет данные существующего аккаунта
+     *
+     * @param id идентификатор счета в БД
+     * @param accountDtoUpdated AccountDto с обновленными данными
+     * @return AccountDto с обновленными данными из БД
+     * @throws EntityNotFoundException если аккаунт с таким id не найден в БД
+     * @throws DataAccessException если произошла непредвиденная ошибка доступа к БД
+     * @throws IllegalArgumentException если переданные некорректные данные в accountDtoUpdated
+     * @throws Exception в случае непредвиденной ошибки
+     */
 
     @Override
     @Transactional
@@ -91,6 +122,14 @@ public class AccountServiceImpl implements AccountService{
         }
     }
 
+    /**
+     * Удаляет аккаунт из БД
+     *
+     * @param id существующего аккаунта в БД
+     * @throws EntityNotFoundException если аккаунт не найден в базе данных
+     * @throws DataAccessException если произошла непредвиденная ошибка во время работы с БД
+     * @throws Exception если произошла непредвиденная ошибка
+     */
     @Override
     @Transactional
     public void deleteAccount(Long id) {
@@ -114,6 +153,14 @@ public class AccountServiceImpl implements AccountService{
         }
     }
 
+    /**
+     * Возвращает аккаунт из БД по номеру id
+     * @param id идентификатор аккаунта в БД
+     * @return AccountDto по номеру идентификатора
+     * @throws EntityNotFoundException если аккаунт не найден в базе данных
+     * @throws DataAccessException если произошла непредвиденная ошибка доступа к БД
+     * @throws Exception если произошла непредвиденная ошибка
+     */
     @Override
     @Transactional(readOnly = true)
     public AccountDto getAccountById(Long id) {
@@ -137,6 +184,13 @@ public class AccountServiceImpl implements AccountService{
         }
     }
 
+    /**
+     * Возвращает список всех аккаунтов в БД
+     *
+     * @return List<AccountDto> с информацией о всех аккаунтах
+     * @throws DataAccessException в случае непредвиденной ошибки при работе с БД
+     * @throws Exception в случае непредвиденных ошибок 
+     */
     @Override
     @Transactional(readOnly = true)
     public List<AccountDto> getAllAccounts() {

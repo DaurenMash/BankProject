@@ -16,7 +16,7 @@ public class AuditProducer {
 
     public void sendAuditLogEvent(AuditDto auditDto) {
         try {
-            kafkaTemplate.send("audit.logs", auditDto);
+            kafkaTemplate.send("external.audit.logs", auditDto);
             log.info("Audit log sent to Kafka successfully");
         } catch (Exception e) {
             log.error("Failed to send audit log {}", e.getMessage());
