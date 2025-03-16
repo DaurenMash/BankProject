@@ -26,10 +26,11 @@ public class AuditAspect {
 
     private final AuditService auditService;
 
-    @Pointcut("execution(* com.bank.authorization.service.UserCommandHandler.*(..))")
+    @Pointcut("execution(* com.bank.authorization.service.UserCommandHandler.handleCreateUser(..)) " +
+            "|| execution(* com.bank.authorization.service.UserCommandHandler.handleUpdateUser(..))")
     public void saveUserPointcut() {
-    }
 
+    }
     @AfterReturning(pointcut = "saveUserPointcut()", returning = "response")
     public void logSave(JoinPoint joinPoint, KafkaResponse response) {
         // Получаем аргументы метода

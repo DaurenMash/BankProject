@@ -7,6 +7,7 @@ import com.bank.authorization.mapper.AuditMapper;
 import com.bank.authorization.repository.AuditRepository;
 import com.bank.authorization.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuditServiceImpl implements AuditService {
@@ -56,28 +58,32 @@ public class AuditServiceImpl implements AuditService {
     @Override
     @Transactional
     public void updateAuditForUser(Long userId, AuditDto auditDto) {
-        // Поиск записи аудита по ID пользователя
-        List<Audit> audits = auditRepository.findAll();
-        Optional<Audit> existingAuditOpt = audits.stream()
-                .filter(audit -> {
-                    try {
-                        User user = JsonUtils.fromJson(audit.getEntityJson(), User.class);
-                        return user != null && user.getId().equals(userId);
-                    } catch (Exception e) {
-                        return false;
-                    }
-                })
-                .findFirst();
 
-        if (existingAuditOpt.isPresent()) {
-            Audit existingAudit = existingAuditOpt.get();
+        List<Audit> audits = auditRepository.findAll();
+
+        Audit existingAudit = null;
+
+        for (Audit audit : audits) {
+            try {
+                User user = JsonUtils.fromJson(audit.getEntityJson(), User.class);
+                if (user != null && user.getId().equals(userId)) {
+                    existingAudit = audit;
+                    break;
+                }
+            } catch (Exception e) {
+                log.error("Ошибка при разборе JSON из audit.entity_json, ID записи: {}, ошибка: {}",
+                        audit.getId(), e.getMessage(), e);
+            }
+        }
+        if (existingAudit != null) {
+            existingAudit.setOperationType(auditDto.getOperationType());
             existingAudit.setModifiedBy(auditDto.getModifiedBy());
             existingAudit.setModifiedAt(new Timestamp(System.currentTimeMillis()).toLocalDateTime());
             existingAudit.setNewEntityJson(auditDto.getNewEntityJson());
             auditRepository.save(existingAudit);
-        } else {
-            // Если запись не найдена, создаем новую
-            save(auditDto);
+        }
+        else {
+            log.error("Нет записи аудита для редактирования для пользователя с ID: {}", userId);
         }
     }
 }

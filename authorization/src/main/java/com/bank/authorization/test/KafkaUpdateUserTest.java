@@ -17,7 +17,7 @@ import java.util.UUID;
 
 public class KafkaUpdateUserTest {
 
-    private static String jwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9BRE1JTiJdLCJpYXQiOjE3NDE5NDQzNDcsImV4cCI6MTc0MTk4MDM0N30.K-5CKDZgIwEGwz5BmBH_EuR2PBNCm5FVyxs3wxlPVxU";
+    private static String jwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9BRE1JTiJdLCJpYXQiOjE3NDIxMjExMDEsImV4cCI6MTc0MjE1NzEwMX0.qdMWpU4JzIBIl_GJZCwymLO2WlYgeXc82XNq8FbbvhU";
 
     private static final String KAFKA_BOOTSTRAP_SERVERS = "localhost:9092";
     private static final String TOPIC_UPDATE_USER = "user.update";
@@ -46,9 +46,9 @@ public class KafkaUpdateUserTest {
 
         // Создание тестового объекта UserDto
         UserDto userDto = new UserDto();
-        userDto.setId(13L);
+        userDto.setId(12L);
         userDto.setRole("ROLE_USER");
-        userDto.setProfileId(333L);
+        userDto.setProfileId(555L);
         userDto.setPassword("newPassword456");
 
         // Формирование KafkaRequest
