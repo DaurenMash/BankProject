@@ -45,7 +45,7 @@ public class KafkaGetUserTest {
         KafkaRequest request = new KafkaRequest();
         request.setRequestId(UUID.randomUUID().toString());
         request.setJwtToken(jwtToken);
-        request.setPayload(1L);
+        request.setPayload(100L);
 
         producer.send(new ProducerRecord<>(TOPIC_GET_USER, request));
         producer.flush();

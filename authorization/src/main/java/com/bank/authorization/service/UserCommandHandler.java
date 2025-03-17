@@ -12,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import com.bank.authorization.handler.KafkaExceptionHandler;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,6 +26,7 @@ public class UserCommandHandler {
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
     private final KafkaTemplate<String, KafkaResponse> kafkaTemplate;
+    private final KafkaExceptionHandler kafkaExceptionHandler;
 
     @KafkaListener(topics = "auth.login", groupId = "authorization-group")
     public void consumeLoginRequest(AuthRequest request) {
@@ -60,6 +62,7 @@ public class UserCommandHandler {
             log.error("Error processing LOGIN request: {}", e.getMessage(), e);
             response.setSuccess(false);
             response.setMessage("Error processing login request");
+            kafkaExceptionHandler.handleException(e, request.getRequestId());
         }
 
         kafkaTemplate.send("auth.login.response", response);
@@ -88,6 +91,7 @@ public class UserCommandHandler {
             log.error("Error processing CREATE_USER request: error={}", e.getMessage(), e);
             response.setSuccess(false);
             response.setMessage("Error creating user: " + e.getMessage());
+            kafkaExceptionHandler.handleException(e, request.getRequestId());
         }
 
         kafkaTemplate.send("user.create.response", response);
@@ -114,6 +118,7 @@ public class UserCommandHandler {
             log.error("Error processing UPDATE_USER request: error={}", e.getMessage(), e);
             response.setSuccess(false);
             response.setMessage("Error updating user: " + e.getMessage());
+            kafkaExceptionHandler.handleException(e, request.getRequestId());
         }
 
         kafkaTemplate.send("user.update.response", response);
@@ -138,6 +143,7 @@ public class UserCommandHandler {
             log.error("Error processing DELETE_USER request: error={}", e.getMessage(), e);
             response.setSuccess(false);
             response.setMessage("Error deleting user: " + e.getMessage());
+            kafkaExceptionHandler.handleException(e, request.getRequestId());
         }
 
         kafkaTemplate.send("user.delete.response", response);
@@ -163,6 +169,7 @@ public class UserCommandHandler {
             log.error("Error processing GET_USER request: error={}", e.getMessage(), e);
             response.setSuccess(false);
             response.setMessage("Error fetching user: " + e.getMessage());
+            kafkaExceptionHandler.handleException(e, request.getRequestId());
         }
 
         kafkaTemplate.send("user.get.response", response);
@@ -185,6 +192,7 @@ public class UserCommandHandler {
             log.error("Error processing GET_ALL_USERS request: error={}", e.getMessage(), e);
             response.setSuccess(false);
             response.setMessage("Error fetching users: " + e.getMessage());
+            kafkaExceptionHandler.handleException(e, request.getRequestId());
         }
 
         kafkaTemplate.send("user.get.all.response", response);
