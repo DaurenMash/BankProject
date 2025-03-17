@@ -64,6 +64,7 @@ public class AuditAspect {
                     null,
                     entityJson);
             auditProducer.sendAuditLogEvent(auditDto);
+            auditService.logAudit(auditDto);
 
             log.info("Successfully created new account {}", accountDto.getAccountNumber());
         } catch (Exception e) {
@@ -72,6 +73,16 @@ public class AuditAspect {
 
     }
 
+    /**
+     * Логирует операцию обновления существующего счета.
+     * Вызывается после успешного выполнения метода updateCurrentAccount в сервисе AccountServiceImpl.
+     * Метод извлекает идентификатор счета из аргументов метода, преобразует обновленные данные счета в JSON,
+     * получает предыдущие данные счета из аудита, создает новую запись аудита с обновленными данными и отправляет событие аудита.
+     *
+     * @param joinPoint точка соединения, предоставляющая информацию о методе и его аргументах
+     * @param result результат выполнения метода updateCurrentAccount (обновленный AccountDto)
+     * @throws Exception если произошла ошибка при обработке данных или отправке события аудита
+     */
     @AfterReturning(pointcut = "execution(* com.bank.account.service.AccountServiceImpl.updateCurrentAccount(Long,..))",
             returning = "result")
     public void logUpdateCurrentAccount(JoinPoint joinPoint, Object result) {
@@ -96,6 +107,7 @@ public class AuditAspect {
                     newEntityJson,
                     oldEntityJson);
             auditProducer.sendAuditLogEvent(auditDto);
+            auditService.logAudit(auditDto);
 
             log.info("Successfully updated account {}", accountDto.getAccountNumber());
         } catch (Exception e) {

@@ -1,5 +1,6 @@
 package com.bank.account.service;
 
+import com.bank.account.aspects.AuditAspect;
 import com.bank.account.dto.AuditDto;
 import com.bank.account.entity.Audit;
 import com.bank.account.exception.DataAccessException;
@@ -19,6 +20,8 @@ import java.util.List;
 public class AuditServiceImpl implements AuditService{
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
+    private final String CREATE_OPERATION = "CREATION"; //Операция создания аккаунта
+    private final String UPDATE_OPERATION = "UPDATE";
 
     public AuditServiceImpl(AuditRepository auditRepository, AuditMapper auditMapper) {
         this.auditRepository = auditRepository;
@@ -29,9 +32,10 @@ public class AuditServiceImpl implements AuditService{
     @Transactional
     public void logAudit(AuditDto auditDto) {
         try {
-            if (auditDto.getOperationType().equals("createNewAccount")) {
-                auditRepository.save(auditMapper.toAudit(auditDto));
-            } else if (auditDto.getOperationType().equals("updateCurrentAccount")) {
+            if (auditDto.getOperationType().equals(CREATE_OPERATION)) {
+                Audit audit = auditRepository.save(auditMapper.toAudit(auditDto));
+                log.info("Audit log successfully saved: {}", audit);
+            } else if (auditDto.getOperationType().equals(UPDATE_OPERATION)) {
                 Audit existingAudit = auditRepository.findAuditById(auditDto.getId());
                 if (existingAudit == null) {
                     throw new EntityNotFoundException("Audit not found with ID: " + auditDto.getId());
@@ -47,9 +51,8 @@ public class AuditServiceImpl implements AuditService{
                 existingAudit.setEntityJson(existingAudit.getEntityJson());
 
                 auditRepository.save(existingAudit);
+                log.info("Audit log successfully updated: {}", existingAudit);
             }
-
-            log.info("Audit log successfully saved");
         }catch (EntityNotFoundException e) {
             log.error("Audit not found: {}", e.getMessage());
             throw e;
@@ -129,9 +132,6 @@ public class AuditServiceImpl implements AuditService{
             }
             if (createdBy == null || createdBy.isEmpty()) {
                 throw new IllegalArgumentException("CreatedBy cannot be null or empty");
-            }
-            if (newAccount == null || newAccount.isEmpty()) {
-                throw new IllegalArgumentException("NewAccount JSON cannot be null or empty");
             }
 
             AuditDto auditDtoAspect = new AuditDto();

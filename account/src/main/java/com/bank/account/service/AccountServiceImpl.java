@@ -18,8 +18,8 @@ import java.util.stream.Collectors;
 
 /**
  * Сервис для управления банковскими аккаунтами.
- * Предоставляет методы для создания, изменения, удаления и получения информации об аккаунтах.*/
-
+ * Предоставляет методы для создания, изменения, удаления и получения информации об аккаунтах.
+ */
 @Slf4j
 @Service
 public class AccountServiceImpl implements AccountService{
@@ -45,9 +45,8 @@ public class AccountServiceImpl implements AccountService{
      * @param accountDto аккаунт с переданными данными для создания счета
      * @return AccountDto созданного счета, внесенного в БД
      * @throws DataAccessException если произошла непредвиденная ошибка доступа к БД
-     * @throws Exception если произошла непредвиденная ошибка
+     * @throws RuntimeException если произошла непредвиденная ошибка
      */
-
     @Override
     @Transactional
     public AccountDto createNewAccount(AccountDto accountDto) {
@@ -65,7 +64,7 @@ public class AccountServiceImpl implements AccountService{
             throw new DataAccessException("Database error while creating account");
         } catch (Exception e) {
             log.error("Unexpected error while while creating account", e);
-            throw e;
+            throw new RuntimeException("Unexpected error while creating account", e);
         }
     }
 
@@ -78,7 +77,7 @@ public class AccountServiceImpl implements AccountService{
      * @throws EntityNotFoundException если аккаунт с таким id не найден в БД
      * @throws DataAccessException если произошла непредвиденная ошибка доступа к БД
      * @throws IllegalArgumentException если переданные некорректные данные в accountDtoUpdated
-     * @throws Exception в случае непредвиденной ошибки
+     * @throws RuntimeException если произошла непредвиденная ошибка
      */
 
     @Override
@@ -89,7 +88,6 @@ public class AccountServiceImpl implements AccountService{
             if (account == null) {
                 throw new EntityNotFoundException("Account not found with id: " + id);
             }
-
 
             account.setAccountNumber(accountDtoUpdated.getAccountNumber());
             account.setMoney(accountDtoUpdated.getMoney());
@@ -118,7 +116,7 @@ public class AccountServiceImpl implements AccountService{
             throw new IllegalArgumentException("Invalid input data for account update");
         } catch (Exception e) {
             log.error("Unexpected error while updating account: {}", id, e);
-            throw e;
+            throw new RuntimeException("Unexpected error while updating account", e);
         }
     }
 
@@ -128,7 +126,7 @@ public class AccountServiceImpl implements AccountService{
      * @param id существующего аккаунта в БД
      * @throws EntityNotFoundException если аккаунт не найден в базе данных
      * @throws DataAccessException если произошла непредвиденная ошибка во время работы с БД
-     * @throws Exception если произошла непредвиденная ошибка
+     * @throws RuntimeException если произошла непредвиденная ошибка
      */
     @Override
     @Transactional
@@ -149,7 +147,7 @@ public class AccountServiceImpl implements AccountService{
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error while deleting account: {}", id, e);
-            throw e;
+            throw new RuntimeException("Unexpected error while deleting account", e);
         }
     }
 
@@ -159,7 +157,7 @@ public class AccountServiceImpl implements AccountService{
      * @return AccountDto по номеру идентификатора
      * @throws EntityNotFoundException если аккаунт не найден в базе данных
      * @throws DataAccessException если произошла непредвиденная ошибка доступа к БД
-     * @throws Exception если произошла непредвиденная ошибка
+     * @throws RuntimeException если произошла непредвиденная ошибка
      */
     @Override
     @Transactional(readOnly = true)
@@ -180,7 +178,7 @@ public class AccountServiceImpl implements AccountService{
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error while getting account: {}", id, e);
-            throw e;
+            throw new RuntimeException("Unexpected error while getting account", e);
         }
     }
 
@@ -189,7 +187,7 @@ public class AccountServiceImpl implements AccountService{
      *
      * @return List<AccountDto> с информацией о всех аккаунтах
      * @throws DataAccessException в случае непредвиденной ошибки при работе с БД
-     * @throws Exception в случае непредвиденных ошибок 
+     * @throws RuntimeException если произошла непредвиденная ошибка
      */
     @Override
     @Transactional(readOnly = true)
@@ -201,7 +199,7 @@ public class AccountServiceImpl implements AccountService{
                     .map(accountMapper::toDto)
                     .collect(Collectors.toList());
 
-            if (result != null) {
+            if (result.isEmpty()) {
                 log.info("List of accounts successfully retrieved");
             } else {
                 log.warn("List of accounts is null");
@@ -212,7 +210,7 @@ public class AccountServiceImpl implements AccountService{
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error while getting all accounts", e);
-            throw e;
+            throw new RuntimeException("Unexpected error while getting accounts list", e);
         }
     }
 }
