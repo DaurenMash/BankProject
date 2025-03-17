@@ -42,17 +42,9 @@ public class AuditServiceImpl implements AuditService {
 
     @Override
     @Transactional
-    public AuditDto save(AuditDto auditDto) {
-        if (auditDto.getCreatedBy() == null) {
-            auditDto.setCreatedBy(SYSTEM_USER);
-        }
-        if (auditDto.getNewEntityJson() == null) {
-            auditDto.setNewEntityJson("");
-        }
-
-        final Audit audit = auditMapper.toEntity(auditDto);
-        final Audit savedAudit = auditRepository.save(audit);
-        return auditMapper.toDto(savedAudit);
+    public void save(AuditDto auditDto) {
+        Audit audit = auditMapper.toEntity(auditDto);
+        auditRepository.save(audit);
     }
 
     @Override
@@ -83,7 +75,7 @@ public class AuditServiceImpl implements AuditService {
             auditRepository.save(existingAudit);
         }
         else {
-            log.error("Нет записи аудита для редактирования для пользователя с ID: {}", userId);
+            log.error("Нет записи аудита для пользователя с ID: {}", userId);
         }
     }
 }

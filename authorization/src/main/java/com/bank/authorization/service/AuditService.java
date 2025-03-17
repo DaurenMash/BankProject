@@ -7,6 +7,6 @@ import java.util.Optional;
 public interface AuditService {
     List<AuditDto> getAllAudits();
     Optional<AuditDto> getAuditById(Long id);
-    AuditDto save(AuditDto auditDto);
+    void save(AuditDto auditDto);
     void updateAuditForUser(Long userId, AuditDto auditDto);
 }

@@ -25,7 +25,7 @@ import java.util.UUID;
 
 public class KafkaCreateUserTest {
 
-    private static String jwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9BRE1JTiJdLCJpYXQiOjE3NDIxMjExMDEsImV4cCI6MTc0MjE1NzEwMX0.qdMWpU4JzIBIl_GJZCwymLO2WlYgeXc82XNq8FbbvhU";
+    private static String jwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9BRE1JTiJdLCJpYXQiOjE3NDIyMDMyMDksImV4cCI6MTc0MjIzOTIwOX0.U65enjOqNGKVOcpSqUpop10d5AV5Hb08Xt79UpV5fGc";
 
     private static final String KAFKA_BOOTSTRAP_SERVERS = "localhost:9092";
     private static final String TOPIC_CREATE_USER = "user.create";
@@ -55,7 +55,7 @@ public class KafkaCreateUserTest {
         // Создаем тестовый объект UserDto
         UserDto userDto = new UserDto();
         userDto.setRole("ROLE_USER");
-        userDto.setProfileId(4L);
+        userDto.setProfileId(333L);
         userDto.setPassword("password123");
 
         // Создаем KafkaRequest для отправки

@@ -17,7 +17,7 @@ import java.util.UUID;
 
 public class KafkaDeleteUserTest {
 
-    private static String jwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9BRE1JTiJdLCJpYXQiOjE3NDE5NDQzNDcsImV4cCI6MTc0MTk4MDM0N30.K-5CKDZgIwEGwz5BmBH_EuR2PBNCm5FVyxs3wxlPVxU";
+    private static String jwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9BRE1JTiJdLCJpYXQiOjE3NDIyMDMyMDksImV4cCI6MTc0MjIzOTIwOX0.U65enjOqNGKVOcpSqUpop10d5AV5Hb08Xt79UpV5fGc";
 
     private static final String KAFKA_BOOTSTRAP_SERVERS = "localhost:9092";
     private static final String TOPIC_DELETE_USER = "user.delete";

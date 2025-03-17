@@ -4,6 +4,8 @@ import com.bank.authorization.dto.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -22,20 +24,20 @@ public class UserCommandHandler {
     private final UserService userService;
     private final JwtTokenProvider jwtTokenProvider;
     private final AuthenticationManager authenticationManager;
+    private final KafkaTemplate<String, KafkaResponse> kafkaTemplate;
 
-    public KafkaResponse handleLoginRequest(AuthRequest authRequest) {
-        log.info("Received LOGIN request for user: {}", authRequest.getProfileId());
-
-        final KafkaResponse response = new KafkaResponse();
-        response.setRequestId(authRequest.getRequestId()); // Передаём requestId от клиента
+    @KafkaListener(topics = "auth.login", groupId = "authorization-group")
+    public void consumeLoginRequest(AuthRequest request) {
+        KafkaResponse response = new KafkaResponse();
+        response.setRequestId(request.getRequestId());
 
         try {
             final Authentication authenticate = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(authRequest.getProfileId(), authRequest.getPassword())
+                    new UsernamePasswordAuthenticationToken(request.getProfileId(), request.getPassword())
             );
 
             final String jwt = jwtTokenProvider.generateToken(
-                    String.valueOf(authRequest.getProfileId()),
+                    String.valueOf(request.getProfileId()),
                     authenticate.getAuthorities()
             );
 
@@ -49,9 +51,9 @@ public class UserCommandHandler {
             response.setSuccess(true);
             response.setMessage("Login successful");
 
-            log.info("LOGIN request processed successfully for user: {}", authRequest.getProfileId());
+            log.info("LOGIN request processed successfully for user: {}", request.getProfileId());
         } catch (BadCredentialsException e) {
-            log.error("Authentication failed for user: {}", authRequest.getProfileId(), e);
+            log.error("Authentication failed for user: {}", request.getProfileId(), e);
             response.setSuccess(false);
             response.setMessage("Invalid username or password");
         } catch (Exception e) {
@@ -60,13 +62,12 @@ public class UserCommandHandler {
             response.setMessage("Error processing login request");
         }
 
-        return response;
+        kafkaTemplate.send("auth.login.response", response);
     }
 
-    public KafkaResponse handleCreateUser(KafkaRequest request) {
-        log.info("Received CREATE_USER request");
-
-        final KafkaResponse response = new KafkaResponse();
+    @KafkaListener(topics = "user.create", groupId = "authorization-group")
+    public void consumeCreateUserRequest(KafkaRequest request) {
+        KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
 
         try {
@@ -81,8 +82,6 @@ public class UserCommandHandler {
             response.setSuccess(true);
             response.setMessage("User created successfully");
 
-            //response.setUserId(createdUser.getId());
-
             log.info("CREATE_USER request processed successfully for profileId={}, userId={}",
                     userDto.getProfileId(), createdUser.getId());
         } catch (Exception e) {
@@ -91,13 +90,12 @@ public class UserCommandHandler {
             response.setMessage("Error creating user: " + e.getMessage());
         }
 
-        return response;
+        kafkaTemplate.send("user.create.response", response);
     }
 
-    public KafkaResponse handleUpdateUser(KafkaRequest request) {
-        log.info("Received UPDATE_USER request");
-
-        final KafkaResponse response = new KafkaResponse();
+    @KafkaListener(topics = "user.update", groupId = "authorization-group")
+    public void consumeUpdateUserRequest(KafkaRequest request) {
+        KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
 
         try {
@@ -118,13 +116,12 @@ public class UserCommandHandler {
             response.setMessage("Error updating user: " + e.getMessage());
         }
 
-        return response;
+        kafkaTemplate.send("user.update.response", response);
     }
 
-    public KafkaResponse handleDeleteUser(KafkaRequest request) {
-        log.info("Received DELETE_USER request");
-
-        final KafkaResponse response = new KafkaResponse();
+    @KafkaListener(topics = "user.delete", groupId = "authorization-group")
+    public void consumeDeleteUserRequest(KafkaRequest request) {
+        KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
 
         try {
@@ -143,13 +140,12 @@ public class UserCommandHandler {
             response.setMessage("Error deleting user: " + e.getMessage());
         }
 
-        return response;
+        kafkaTemplate.send("user.delete.response", response);
     }
 
-    public KafkaResponse handleGetUser(KafkaRequest request) {
-        log.info("Received GET_USER request");
-
-        final KafkaResponse response = new KafkaResponse();
+    @KafkaListener(topics = "user.get", groupId = "authorization-group")
+    public void consumeGetUserRequest(KafkaRequest request) {
+        KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
 
         try {
@@ -169,13 +165,12 @@ public class UserCommandHandler {
             response.setMessage("Error fetching user: " + e.getMessage());
         }
 
-        return response;
+        kafkaTemplate.send("user.get.response", response);
     }
 
-    public KafkaResponse handleGetAllUsers(KafkaRequest request) {
-        log.info("Received GET_ALL_USERS request");
-
-        final KafkaResponse response = new KafkaResponse();
+    @KafkaListener(topics = "user.get.all", groupId = "authorization-group")
+    public void consumeGetAllUsersRequest(KafkaRequest request) {
+        KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
 
         try {
@@ -192,10 +187,10 @@ public class UserCommandHandler {
             response.setMessage("Error fetching users: " + e.getMessage());
         }
 
-        return response;
+        kafkaTemplate.send("user.get.all.response", response);
     }
-    private void validateTokenAndCheckPermissions(String jwtToken, String requiredRole) {
 
+    private void validateTokenAndCheckPermissions(String jwtToken, String requiredRole) {
         if (!jwtTokenProvider.validateToken(jwtToken)) {
             throw new SecurityException("Invalid JWT token");
         }
