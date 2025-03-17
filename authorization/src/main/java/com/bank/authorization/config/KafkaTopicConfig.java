@@ -38,7 +38,7 @@ public class KafkaTopicConfig {
                             new NewTopic("user.get.response", 1, (short) 1),
                             new NewTopic("user.get.all", 1, (short) 1),
                             new NewTopic("user.get.all.response", 1, (short) 1),
-                            new NewTopic("error.responses", 1, (short) 1)
+                            new NewTopic("error.logging", 1, (short) 1)
                     )
             );
         }
