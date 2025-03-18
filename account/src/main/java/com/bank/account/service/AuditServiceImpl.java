@@ -1,10 +1,11 @@
 package com.bank.account.service;
 
-import com.bank.account.aspects.AuditAspect;
+import com.bank.account.dto.AccountDto;
 import com.bank.account.dto.AuditDto;
 import com.bank.account.entity.Audit;
 import com.bank.account.exception.DataAccessException;
 import com.bank.account.exception.EntityNotFoundException;
+import com.bank.account.exception.JsonProcessingException;
 import com.bank.account.mapper.AuditMapper;
 import com.bank.account.repository.AuditRepository;
 import com.bank.account.utils.JsonUtils;
@@ -20,8 +21,10 @@ import java.util.List;
 public class AuditServiceImpl implements AuditService{
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
-    private final String CREATE_OPERATION = "CREATION"; //Операция создания аккаунта
-    private final String UPDATE_OPERATION = "UPDATE";
+    private final String ENTITY_TYPE = "Account";
+    private final String CURRENT_USER = "SYSTEM";
+    private final String CREATION_OPERATION = "CREATION";
+    private final String UPDATING_OPERATION = "UPDATING";
 
     public AuditServiceImpl(AuditRepository auditRepository, AuditMapper auditMapper) {
         this.auditRepository = auditRepository;
@@ -30,38 +33,79 @@ public class AuditServiceImpl implements AuditService{
 
     @Override
     @Transactional
-    public void logAudit(AuditDto auditDto) {
+    public AuditDto createAudit(Object result) {
+        AccountDto accountDto = (AccountDto) result;
         try {
-            if (auditDto.getOperationType().equals(CREATE_OPERATION)) {
-                Audit audit = auditRepository.save(auditMapper.toAudit(auditDto));
-                log.info("Audit log successfully saved: {}", audit);
-            } else if (auditDto.getOperationType().equals(UPDATE_OPERATION)) {
-                Audit existingAudit = auditRepository.findAuditById(auditDto.getId());
-                if (existingAudit == null) {
-                    throw new EntityNotFoundException("Audit not found with ID: " + auditDto.getId());
-                }
+            String entityJson = JsonUtils.convertToJson(accountDto);
 
-                existingAudit.setOperationType(auditDto.getOperationType());
-                existingAudit.setEntityType(auditDto.getEntityType());
-                existingAudit.setModifiedAt(auditDto.getModifiedAt());
-                existingAudit.setCreatedAt(existingAudit.getCreatedAt());
-                existingAudit.setCreatedBy(existingAudit.getCreatedBy());
-                existingAudit.setModifiedBy(auditDto.getModifiedBy());
-                existingAudit.setNewEntityJson(auditDto.getNewEntityJson());
-                existingAudit.setEntityJson(existingAudit.getEntityJson());
+            AuditDto auditDto = new AuditDto();
+            auditDto.setEntityType(ENTITY_TYPE);
+            auditDto.setOperationType(CREATION_OPERATION);
+            auditDto.setCreatedBy(CURRENT_USER);
+            auditDto.setModifiedBy("");
+            auditDto.setCreatedAt(new Timestamp(System.currentTimeMillis()));
+            auditDto.setModifiedAt(null);
+            auditDto.setNewEntityJson(null);
+            auditDto.setEntityJson(entityJson);
+            Audit audit = auditRepository.save(auditMapper.toAudit(auditDto));
 
-                auditRepository.save(existingAudit);
-                log.info("Audit log successfully updated: {}", existingAudit);
+            log.info("Audit log successfully saved: {}", audit);
+            return auditDto;
+        } catch (JsonProcessingException e) {
+            log.error("JSON conversion error while creating audit DTO: {}", e.getMessage());
+            throw new JsonProcessingException("Failed to convert JSON", e);
+        } catch (DataAccessException e) {
+            log.error("Database error while creating audit DTO: {}", e.getMessage());
+            throw new DataAccessException("Failed to create audit DTO due to database error: " + e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid input data in creating method: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Failed to create audit DTO for entity ID: {}", accountDto.getId(), e);
+            throw new RuntimeException("Unexpected error while updating audit DTO", e);
+        }
+    }
+
+    @Override
+    @Transactional
+    public AuditDto updateAudit(Object result) {
+        AccountDto accountDto = (AccountDto) result;
+        try {
+            String newEntityJson = JsonUtils.convertToJson(accountDto);
+            Long accountId = accountDto.getId();
+
+            String oldEntityJson;
+            AuditDto oldAuditDto = getAuditByEntityId(accountId);
+            if (oldAuditDto.getNewEntityJson() == null) {
+                oldEntityJson = oldAuditDto.getEntityJson();
+            } else {
+                oldEntityJson = oldAuditDto.getNewEntityJson();
             }
-        }catch (EntityNotFoundException e) {
+            AuditDto auditDto = new AuditDto();
+            auditDto.setEntityType(oldAuditDto.getEntityType());
+            auditDto.setOperationType(UPDATING_OPERATION);
+            auditDto.setCreatedBy(oldAuditDto.getCreatedBy());
+            auditDto.setModifiedBy(CURRENT_USER);
+            auditDto.setCreatedAt(oldAuditDto.getCreatedAt());
+            auditDto.setModifiedAt(new Timestamp(System.currentTimeMillis()));
+            auditDto.setNewEntityJson(newEntityJson);
+            auditDto.setEntityJson(oldEntityJson);
+
+            auditRepository.save(auditMapper.toAudit(auditDto));
+            log.info("Audit log successfully updated: {}", auditDto);
+            return auditDto;
+        } catch (EntityNotFoundException e) {
             log.error("Audit not found: {}", e.getMessage());
             throw e;
-        }  catch (DataAccessException e) {
-            log.error("Database error while saving audit log: {}", e.getMessage());
-            throw new DataAccessException("Failed to save audit log due to database error" + e);
-        }  catch (Exception e) {
-            log.error("Unexpected error while saving audit log: {}", e.getMessage());
-            throw new RuntimeException("Unexpected error while saving audit log", e);
+        } catch (DataAccessException e) {
+            log.error("Database error while updating audit DTO: {}", e.getMessage());
+            throw new DataAccessException("Failed to update audit DTO due to database error: " + e);
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid input data: {}", e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            log.error("Service. Failed to update audit DTO for entity ID: {}", accountDto.getId(), e);
+            throw new RuntimeException("Unexpected error while updating audit DTO", e);
         }
     }
 
@@ -111,98 +155,6 @@ public class AuditServiceImpl implements AuditService{
         } catch (Exception e) {
             log.error("Unexpected error while retrieving audits: {}", e.getMessage());
             throw new RuntimeException("Unexpected error while retrieving audits", e);
-        }
-    }
-
-    @Override
-    public AuditDto setDataToAuditDtoForNewAudit(String entityType,
-                                      String operationType,
-                                      String createdBy,
-                                      String modifiedBy,
-                                      Timestamp createdAt,
-                                      Timestamp modifiedAt,
-                                      String newAccount,
-                                      String oldAccount) {
-        try {
-            if (entityType == null || entityType.isEmpty()) {
-                throw new IllegalArgumentException("EntityType cannot be null or empty");
-            }
-            if (operationType == null || operationType.isEmpty()) {
-                throw new IllegalArgumentException("OperationType cannot be null or empty");
-            }
-            if (createdBy == null || createdBy.isEmpty()) {
-                throw new IllegalArgumentException("CreatedBy cannot be null or empty");
-            }
-
-            AuditDto auditDtoAspect = new AuditDto();
-            auditDtoAspect.setEntityType(entityType);
-            auditDtoAspect.setOperationType(operationType);
-            auditDtoAspect.setCreatedBy(createdBy);
-            auditDtoAspect.setModifiedBy(modifiedBy);
-            auditDtoAspect.setCreatedAt(createdAt);
-            auditDtoAspect.setModifiedAt(modifiedAt);
-            auditDtoAspect.setNewEntityJson(newAccount);
-            auditDtoAspect.setEntityJson(oldAccount);
-
-            log.info("Successfully created new audit DTO for entity type: {}", entityType);
-            return auditDtoAspect;
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid input data: {}", e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            log.error("Failed to create new audit DTO for entity type: {}", entityType, e);
-            throw new RuntimeException("Unexpected error while creating audit DTO", e);
-        }
-    }
-
-    @Override
-    public AuditDto setDataToAuditDto(AuditDto auditDto,
-                                  String operationType,
-                                  String modifiedBy,
-                                  Timestamp modifiedAt,
-                                  String newEntityJson,
-                                  String oldEntityJson) {
-        try {
-            if (auditDto == null) {
-                throw new IllegalArgumentException("AuditDto cannot be null");
-            }
-            if (operationType == null || operationType.isEmpty()) {
-                throw new IllegalArgumentException("OperationType cannot be null or empty");
-            }
-            if (newEntityJson == null || newEntityJson.isEmpty()) {
-                throw new IllegalArgumentException("NewEntityJson cannot be null or empty");
-            }
-
-            Audit existingAudit = auditRepository.findAuditById(auditDto.getId());
-            if (existingAudit == null) {
-                throw new EntityNotFoundException("Audit not found with ID: " + auditDto.getId());
-            }
-
-            AuditDto auditDtoAspect = auditMapper.toAuditDto(existingAudit);
-
-            auditDtoAspect.setEntityType(auditDto.getEntityType());
-            auditDtoAspect.setOperationType(operationType);
-            auditDtoAspect.setCreatedBy(auditDto.getCreatedBy());
-            auditDtoAspect.setModifiedBy(modifiedBy);
-            auditDtoAspect.setModifiedAt(modifiedAt);
-            auditDtoAspect.setNewEntityJson(newEntityJson);
-            auditDtoAspect.setEntityJson(oldEntityJson);
-            auditDtoAspect.setCreatedAt(auditDto.getCreatedAt());
-
-            log.info("Successfully updated audit DTO for entity ID: {}", auditDto.getId());
-            return auditDtoAspect;
-        } catch (EntityNotFoundException e) {
-            log.error("Audit not found: {}", e.getMessage());
-            throw e;
-        } catch (DataAccessException e) {
-            log.error("Database error while updating audit DTO: {}", e.getMessage());
-            throw new DataAccessException("Failed to update audit DTO due to database error: " + e);
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid input data: {}", e.getMessage());
-            throw e;
-        } catch (Exception e) {
-            log.error("Service. Failed to update audit DTO for entity ID: {}", auditDto.getId(), e);
-            throw new RuntimeException("Unexpected error while updating audit DTO", e);
         }
     }
 }

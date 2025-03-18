@@ -95,7 +95,6 @@ public class AccountServiceImpl implements AccountService{
             int comparisonResult = money.compareTo(BigDecimal.ZERO);
             account.setNegativeBalance(comparisonResult < 0);
 
-            account.setNegativeBalance(accountDtoUpdated.isNegativeBalance());
             account.setPassportId(accountDtoUpdated.getPassportId());
             account.setBankDetailsId(accountDtoUpdated.getBankDetailsId());
             account.setProfileId(accountDtoUpdated.getProfileId());

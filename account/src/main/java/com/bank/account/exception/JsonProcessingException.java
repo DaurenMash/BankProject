@@ -1,7 +1,12 @@
 package com.bank.account.exception;
 
-public class JsonProcessingException extends com.fasterxml.jackson.core.JsonProcessingException {
+public class JsonProcessingException extends RuntimeException {
     public JsonProcessingException(String message) {
         super(message);
+    }
+
+    public JsonProcessingException(String message, Throwable cause) {
+        super(message, cause);
+
     }
 }

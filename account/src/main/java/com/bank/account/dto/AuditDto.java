@@ -1,6 +1,7 @@
 package com.bank.account.dto;
 
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -14,7 +15,6 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 public class AuditDto {
 
-    @NotNull
     @JsonProperty("id")
     private Long id;
 
@@ -34,10 +34,12 @@ public class AuditDto {
     private String modifiedBy;
 
     @JsonProperty("createdAt")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp createdAt;
 
     @NotNull
     @JsonProperty("modifiedAt")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private Timestamp modifiedAt;
 
     @NotNull
