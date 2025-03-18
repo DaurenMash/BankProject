@@ -18,7 +18,7 @@ public class KafkaExceptionHandler {
     private final KafkaTemplate<String, KafkaResponse> kafkaTemplate;
 
     public void handleException(Exception exception, String requestId) {
-        KafkaResponse response = new KafkaResponse();
+        final KafkaResponse response = new KafkaResponse();
         response.setRequestId(requestId);
         response.setSuccess(false);
         response.setMessage(getErrorMessage(exception));

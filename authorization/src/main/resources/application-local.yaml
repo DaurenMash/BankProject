@@ -61,7 +61,7 @@ springdoc:
   group-configs:
     - group: authorization
       display-name: Bank Authorization API
-      packages-to-scan: com.bank.authorization.controller
+      packages-to-scan: com.bank.authorization.service
   servers:
     - url: /api/authorization
       description: Bank Authorization API

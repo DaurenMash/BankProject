@@ -1,6 +1,10 @@
 package com.bank.authorization.service;
 
-import com.bank.authorization.dto.*;
+import com.bank.authorization.dto.AuthRequest;
+import com.bank.authorization.dto.AuthResponse;
+import com.bank.authorization.dto.KafkaRequest;
+import com.bank.authorization.dto.KafkaResponse;
+import com.bank.authorization.dto.UserDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +34,7 @@ public class UserCommandHandler {
 
     @KafkaListener(topics = "auth.login", groupId = "authorization-group")
     public void consumeLoginRequest(AuthRequest request) {
-        KafkaResponse response = new KafkaResponse();
+        final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
 
         try {
@@ -70,14 +74,14 @@ public class UserCommandHandler {
 
     @KafkaListener(topics = "user.create", groupId = "authorization-group")
     public void consumeCreateUserRequest(KafkaRequest request) {
-        KafkaResponse response = new KafkaResponse();
+        final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
 
         try {
             validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
 
             final UserDto createdUser = userService.save(userDto);
 
@@ -99,14 +103,14 @@ public class UserCommandHandler {
 
     @KafkaListener(topics = "user.update", groupId = "authorization-group")
     public void consumeUpdateUserRequest(KafkaRequest request) {
-        KafkaResponse response = new KafkaResponse();
+        final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
 
         try {
             validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
 
             final UserDto updatedUser = userService.updateUser(userDto.getId(), userDto);
             response.setData(updatedUser);
@@ -126,13 +130,13 @@ public class UserCommandHandler {
 
     @KafkaListener(topics = "user.delete", groupId = "authorization-group")
     public void consumeDeleteUserRequest(KafkaRequest request) {
-        KafkaResponse response = new KafkaResponse();
+        final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
 
         try {
             validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
 
-            Long userId = Long.valueOf(request.getPayload().toString());
+            final Long userId = Long.valueOf(request.getPayload().toString());
 
             userService.deleteById(userId);
             response.setSuccess(true);
@@ -151,13 +155,13 @@ public class UserCommandHandler {
 
     @KafkaListener(topics = "user.get", groupId = "authorization-group")
     public void consumeGetUserRequest(KafkaRequest request) {
-        KafkaResponse response = new KafkaResponse();
+        final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
 
         try {
             validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
 
-            Long userId = Long.valueOf(request.getPayload().toString());
+            final Long userId = Long.valueOf(request.getPayload().toString());
 
             final UserDto user = userService.getUserById(userId);
             response.setData(user);
@@ -177,7 +181,7 @@ public class UserCommandHandler {
 
     @KafkaListener(topics = "user.get.all", groupId = "authorization-group")
     public void consumeGetAllUsersRequest(KafkaRequest request) {
-        KafkaResponse response = new KafkaResponse();
+        final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
 
         try {
@@ -203,7 +207,7 @@ public class UserCommandHandler {
             throw new SecurityException("Invalid JWT token");
         }
 
-        List<String> authorities = jwtTokenProvider.getAuthoritiesFromToken(jwtToken);
+        final List<String> authorities = jwtTokenProvider.getAuthoritiesFromToken(jwtToken);
 
         if (!authorities.contains(requiredRole)) {
             throw new SecurityException("User does not have permission to perform this operation");

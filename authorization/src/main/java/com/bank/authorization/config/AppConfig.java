@@ -48,7 +48,7 @@ public class AppConfig {
 
     @Bean
     public ConsumerFactory<String, AuthRequest> authRequestConsumerFactory() {
-        Map<String, Object> props = new HashMap<>();
+        final Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "authorization-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
@@ -60,7 +60,8 @@ public class AppConfig {
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, AuthRequest> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, AuthRequest> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        final ConcurrentKafkaListenerContainerFactory<String, AuthRequest> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(authRequestConsumerFactory());
         return factory;
     }

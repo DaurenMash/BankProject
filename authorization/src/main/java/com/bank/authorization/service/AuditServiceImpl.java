@@ -43,7 +43,7 @@ public class AuditServiceImpl implements AuditService {
     @Override
     @Transactional
     public void save(AuditDto auditDto) {
-        Audit audit = auditMapper.toEntity(auditDto);
+        final Audit audit = auditMapper.toEntity(auditDto);
         auditRepository.save(audit);
     }
 
@@ -51,13 +51,13 @@ public class AuditServiceImpl implements AuditService {
     @Transactional
     public void updateAuditForUser(Long userId, AuditDto auditDto) {
 
-        List<Audit> audits = auditRepository.findAll();
+        final List<Audit> audits = auditRepository.findAll();
 
         Audit existingAudit = null;
 
         for (Audit audit : audits) {
             try {
-                User user = JsonUtils.fromJson(audit.getEntityJson(), User.class);
+                final User user = JsonUtils.fromJson(audit.getEntityJson(), User.class);
                 if (user != null && user.getId().equals(userId)) {
                     existingAudit = audit;
                     break;
@@ -73,8 +73,7 @@ public class AuditServiceImpl implements AuditService {
             existingAudit.setModifiedAt(new Timestamp(System.currentTimeMillis()).toLocalDateTime());
             existingAudit.setNewEntityJson(auditDto.getNewEntityJson());
             auditRepository.save(existingAudit);
-        }
-        else {
+        } else {
             log.error("Нет записи аудита для пользователя с ID: {}", userId);
         }
     }

@@ -19,9 +19,9 @@ public class KafkaTopicConfig {
 
     @PostConstruct
     public void createTopics() {
-        Map<String, Object> configs = new HashMap<>();
+        final Map<String, Object> configs = new HashMap<>();
         configs.put("bootstrap.servers", bootstrapServers);
-        KafkaAdmin kafkaAdmin = new KafkaAdmin(configs);
+        final KafkaAdmin kafkaAdmin = new KafkaAdmin(configs);
 
         try (AdminClient adminClient = AdminClient.create(kafkaAdmin.getConfigurationProperties())) {
             adminClient.createTopics(

@@ -14,10 +14,11 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Properties;
@@ -25,54 +26,74 @@ import java.util.UUID;
 
 public class KafkaCreateUserTest {
 
-    private static String jwtToken = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIiwiYXV0aG9yaXRpZXMiOlsiUk9MRV9BRE1JTiJdLCJpYXQiOjE3NDIyMDMyMDksImV4cCI6MTc0MjIzOTIwOX0.U65enjOqNGKVOcpSqUpop10d5AV5Hb08Xt79UpV5fGc";
+    private static String jwtToken;
 
     private static final String KAFKA_BOOTSTRAP_SERVERS = "localhost:9092";
     private static final String TOPIC_CREATE_USER = "user.create";
     private static final String TOPIC_CREATE_USER_RESPONSE = "user.create.response";
     private static final String GROUP_ID = "authorization-group";
+    private static final Long TIMEOUT = 30L;
+    private static final Long SET_PROFILE_ID = 777L;
 
+
+    static {
+        loadConfig();
+    }
+
+    private static void loadConfig() {
+        final Properties properties = new Properties();
+        try (InputStream input = KafkaCreateUserTest.class.getClassLoader().getResourceAsStream("config.properties")) {
+            if (input != null) {
+                properties.load(input);
+                jwtToken = properties.getProperty("jwt.token");
+            } else {
+                throw new RuntimeException("Файл config.properties не найден!");
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Ошибка загрузки конфигурации", e);
+        }
+    }
     public static void main(String[] args) {
         // Создаем KafkaProducer для отправки KafkaRequest
-        Properties producerProps = new Properties();
+        final Properties producerProps = new Properties();
         producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         producerProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
 
-        Producer<String, KafkaRequest> producer = new KafkaProducer<>(producerProps);
+        final Producer<String, KafkaRequest> producer = new KafkaProducer<>(producerProps);
 
         // Создаем KafkaConsumer для получения ответа
-        Properties consumerProps = new Properties();
+        final Properties consumerProps = new Properties();
         consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
         consumerProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         consumerProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         consumerProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
 
-        Consumer<String, KafkaResponse> consumer = new KafkaConsumer<>(consumerProps);
+        final Consumer<String, KafkaResponse> consumer = new KafkaConsumer<>(consumerProps);
         consumer.subscribe(Collections.singletonList(TOPIC_CREATE_USER_RESPONSE));
 
         // Создаем тестовый объект UserDto
-        UserDto userDto = new UserDto();
+        final UserDto userDto = new UserDto();
         userDto.setRole("ROLE_USER");
-        userDto.setProfileId(333L);
+        userDto.setProfileId(SET_PROFILE_ID);
         userDto.setPassword("password123");
 
         // Создаем KafkaRequest для отправки
-        KafkaRequest request = new KafkaRequest();
+        final KafkaRequest request = new KafkaRequest();
         request.setRequestId(UUID.randomUUID().toString());
         request.setJwtToken(jwtToken);
         request.setPayload(userDto);
 
         // Отправляем KafkaRequest
-        ProducerRecord<String, KafkaRequest> record = new ProducerRecord<>(TOPIC_CREATE_USER, request);
+        final ProducerRecord<String, KafkaRequest> record = new ProducerRecord<>(TOPIC_CREATE_USER, request);
         producer.send(record);
         producer.flush();
 
         // Ожидаем ответ
-        ConsumerRecords<String, KafkaResponse> records = consumer.poll(Duration.ofSeconds(30));
+        final ConsumerRecords<String, KafkaResponse> records = consumer.poll(Duration.ofSeconds(TIMEOUT));
         for (ConsumerRecord<String, KafkaResponse> consumerRecord : records) {
-            KafkaResponse response = consumerRecord.value();
+            final KafkaResponse response = consumerRecord.value();
             if (response.getRequestId().equals(request.getRequestId())) {
                 System.out.println("Received response: " + response);
                 break;

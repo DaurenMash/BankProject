@@ -1,7 +1,6 @@
 package com.bank.authorization.aspects;
 
 import com.bank.authorization.dto.AuditDto;
-import com.bank.authorization.dto.KafkaRequest;
 import com.bank.authorization.dto.UserDto;
 import com.bank.authorization.service.AuditService;
 import com.bank.authorization.utils.JsonUtils;
@@ -25,19 +24,23 @@ public class AuditAspect {
     private final AuditService auditService;
 
     @Pointcut("execution(* com.bank.authorization.service.UserServiceImpl.save(..))")
-    public void saveUserPointcut() {}
+    public void saveUserPointcut() {
+
+    }
 
     @Pointcut("execution(* com.bank.authorization.service.UserServiceImpl.updateUser(..))")
-    public void updateUserPointcut() {}
+    public void updateUserPointcut() {
+
+    }
 
     @AfterReturning(pointcut = "saveUserPointcut() || updateUserPointcut()", returning = "result")
     public void logSaveOrUpdate(JoinPoint joinPoint, Object result) {
 
-        Object[] args = joinPoint.getArgs();
+        final Object[] args = joinPoint.getArgs();
         if (args.length > 0) {
 
-            UserDto userDto = (UserDto) result;
-            String methodName = joinPoint.getSignature().getName();
+            final UserDto userDto = (UserDto) result;
+            final String methodName = joinPoint.getSignature().getName();
 
             final AuditDto auditDto = new AuditDto();
             auditDto.setEntityType("User");
@@ -59,17 +62,15 @@ public class AuditAspect {
                 case "updateUser":
 
                     auditDto.setOperationType("UPDATE");
-                    //auditDto.setCreatedBy(SYSTEM_USER);
-                    //auditDto.setEntityJson(JsonUtils.toJson(userDto));
-                    //auditDto.setEntityType(ENTITY_USER);
                     auditDto.setModifiedBy(SYSTEM_USER);
                     auditDto.setNewEntityJson(JsonUtils.toJson(userDto));
-                    //auditDto.setCreatedAt(LocalDateTime.now());
                     auditDto.setModifiedAt(LocalDateTime.now());
 
                     auditService.updateAuditForUser(userDto.getId(), auditDto);
 
                     break;
+                default:
+                    throw new IllegalArgumentException("Unsupported method: " + methodName);
             }
         }
     }
