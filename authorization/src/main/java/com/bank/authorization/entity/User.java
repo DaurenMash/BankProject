@@ -1,6 +1,8 @@
 package com.bank.authorization.entity;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
@@ -23,6 +25,7 @@ public class User {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "role", length = ROLE_LENGTH, nullable = false)
     private String role;
 

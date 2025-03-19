@@ -5,6 +5,7 @@ import com.bank.authorization.dto.AuthResponse;
 import com.bank.authorization.dto.KafkaRequest;
 import com.bank.authorization.dto.KafkaResponse;
 import com.bank.authorization.dto.UserDto;
+import com.bank.authorization.entity.Role;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -72,13 +73,45 @@ public class UserCommandHandler {
         kafkaTemplate.send("auth.login.response", response);
     }
 
+    @KafkaListener(topics = "auth.validate", groupId = "authorization-group")
+    public void consumeTokenValidationRequest(KafkaRequest request) {
+        final KafkaResponse response = new KafkaResponse();
+        response.setRequestId(request.getRequestId());
+
+        try {
+            validateTokenAndCheckPermissions(request.getJwtToken(), Role.ROLE_ADMIN);
+
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final String jwtTokenToValidate = objectMapper.convertValue(request.getPayload(), String.class);
+
+            if (!jwtTokenProvider.validateToken(jwtTokenToValidate)) {
+                response.setSuccess(false);
+                response.setMessage("Invalid JWT token");
+            } else {
+                List<String> authorities = jwtTokenProvider.getAuthoritiesFromToken(jwtTokenToValidate);
+                response.setSuccess(true);
+                response.setMessage("Valid token");
+                response.setData(authorities);
+            }
+
+            log.info("TOKEN VALIDATION request processed for requestId={}, success={}",
+                    request.getRequestId(), response.isSuccess());
+        } catch (Exception e) {
+            log.error("Error processing TOKEN VALIDATION request: error={}", e.getMessage(), e);
+            response.setSuccess(false);
+            response.setMessage("Error validating token: " + e.getMessage());
+        }
+
+        kafkaTemplate.send("auth.validate.response", response);
+    }
+
     @KafkaListener(topics = "user.create", groupId = "authorization-group")
     public void consumeCreateUserRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
 
         try {
-            validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
+            validateTokenAndCheckPermissions(request.getJwtToken(), Role.ROLE_ADMIN);
 
             final ObjectMapper objectMapper = new ObjectMapper();
             final UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
@@ -107,7 +140,7 @@ public class UserCommandHandler {
         response.setRequestId(request.getRequestId());
 
         try {
-            validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
+            validateTokenAndCheckPermissions(request.getJwtToken(), Role.ROLE_ADMIN);
 
             final ObjectMapper objectMapper = new ObjectMapper();
             final UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
@@ -134,7 +167,7 @@ public class UserCommandHandler {
         response.setRequestId(request.getRequestId());
 
         try {
-            validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
+            validateTokenAndCheckPermissions(request.getJwtToken(), Role.ROLE_ADMIN);
 
             final Long userId = Long.valueOf(request.getPayload().toString());
 
@@ -159,7 +192,7 @@ public class UserCommandHandler {
         response.setRequestId(request.getRequestId());
 
         try {
-            validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
+            validateTokenAndCheckPermissions(request.getJwtToken(), Role.ROLE_ADMIN);
 
             final Long userId = Long.valueOf(request.getPayload().toString());
 
@@ -185,7 +218,7 @@ public class UserCommandHandler {
         response.setRequestId(request.getRequestId());
 
         try {
-            validateTokenAndCheckPermissions(request.getJwtToken(), "ROLE_ADMIN");
+            validateTokenAndCheckPermissions(request.getJwtToken(), Role.ROLE_ADMIN);
 
             response.setData(userService.getAllUsers());
             response.setSuccess(true);
@@ -202,14 +235,14 @@ public class UserCommandHandler {
         kafkaTemplate.send("user.get.all.response", response);
     }
 
-    private void validateTokenAndCheckPermissions(String jwtToken, String requiredRole) {
+    private void validateTokenAndCheckPermissions(String jwtToken, Role requiredRole) {
         if (!jwtTokenProvider.validateToken(jwtToken)) {
             throw new SecurityException("Invalid JWT token");
         }
 
         final List<String> authorities = jwtTokenProvider.getAuthoritiesFromToken(jwtToken);
 
-        if (!authorities.contains(requiredRole)) {
+        if (!authorities.contains(requiredRole.name())) {
             throw new SecurityException("User does not have permission to perform this operation");
         }
     }
