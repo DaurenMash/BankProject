@@ -1,12 +1,11 @@
 package com.bank.authorization.service;
 
 import com.bank.authorization.dto.AuditDto;
-import java.util.List;
-import java.util.Optional;
+import com.bank.authorization.dto.UserDto;
 
 public interface AuditService {
-    List<AuditDto> getAllAudits();
-    Optional<AuditDto> getAuditById(Long id);
     void save(AuditDto auditDto);
-    void updateAuditForUser(Long userId, AuditDto auditDto);
+    void logUserCreation(UserDto userDto);
+    void logUserUpdate(Long userId, UserDto userDto);
+
 }

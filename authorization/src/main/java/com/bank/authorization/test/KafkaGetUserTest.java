@@ -32,7 +32,7 @@ public class KafkaGetUserTest {
     private static final String TOPIC_GET_USER_RESPONSE = "user.get.response";
     private static final String GROUP_ID = "authorization-group";
     private static final Long TIMEOUT = 30L;
-    private static final Long SET_USER_ID = 100L;
+    private static final Long SET_USER_ID = 5L;
 
     static {
         loadConfig();

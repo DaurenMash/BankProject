@@ -1,4 +1,4 @@
-package com.bank.authorization;
+package com.bank.authorization.utils;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;

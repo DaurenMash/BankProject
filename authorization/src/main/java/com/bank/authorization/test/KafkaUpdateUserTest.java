@@ -33,8 +33,8 @@ public class KafkaUpdateUserTest {
     private static final String TOPIC_UPDATE_USER_RESPONSE = "user.update.response";
     private static final String GROUP_ID = "authorization-group";
     private static final Long TIMEOUT = 30L;
-    private static final Long SET_ID = 24L;
-    private static final Long SET_PROFILE_ID = 555L;
+    private static final Long SET_ID = 25L;
+    private static final Long SET_PROFILE_ID = 5L;
 
     static {
         loadConfig();

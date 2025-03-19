@@ -1,6 +1,7 @@
 package com.bank.authorization.service;
 
 import com.bank.authorization.dto.AuditDto;
+import com.bank.authorization.dto.UserDto;
 import com.bank.authorization.entity.Audit;
 import com.bank.authorization.entity.User;
 import com.bank.authorization.mapper.AuditMapper;
@@ -11,10 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -22,35 +21,27 @@ import java.util.stream.Collectors;
 public class AuditServiceImpl implements AuditService {
 
     private static final String SYSTEM_USER = "SYSTEM";
+    private static final String ENTITY_USER = "User";
+
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
 
     @Override
-    @Transactional(readOnly = true)
-    public List<AuditDto> getAllAudits() {
-        return auditRepository.findAll().stream()
-                .map(auditMapper::toDto)
-                .collect(Collectors.toList());
-    }
+    @Transactional
+    public void logUserCreation(UserDto userDto) {
+        AuditDto auditDto = new AuditDto();
+        auditDto.setEntityType(ENTITY_USER);
+        auditDto.setOperationType("CREATE");
+        auditDto.setCreatedBy(SYSTEM_USER);
+        auditDto.setEntityJson(JsonUtils.toJson(userDto));
+        auditDto.setCreatedAt(LocalDateTime.now());
 
-    @Override
-    @Transactional(readOnly = true)
-    public Optional<AuditDto> getAuditById(Long id) {
-        return auditRepository.findById(id)
-                .map(auditMapper::toDto);
+        save(auditDto);
     }
 
     @Override
     @Transactional
-    public void save(AuditDto auditDto) {
-        final Audit audit = auditMapper.toEntity(auditDto);
-        auditRepository.save(audit);
-    }
-
-    @Override
-    @Transactional
-    public void updateAuditForUser(Long userId, AuditDto auditDto) {
-
+    public void logUserUpdate(Long userId, UserDto userDto) {
         final List<Audit> audits = auditRepository.findAll();
 
         Audit existingAudit = null;
@@ -67,14 +58,22 @@ public class AuditServiceImpl implements AuditService {
                         audit.getId(), e.getMessage(), e);
             }
         }
+
         if (existingAudit != null) {
-            existingAudit.setOperationType(auditDto.getOperationType());
-            existingAudit.setModifiedBy(auditDto.getModifiedBy());
-            existingAudit.setModifiedAt(new Timestamp(System.currentTimeMillis()).toLocalDateTime());
-            existingAudit.setNewEntityJson(auditDto.getNewEntityJson());
+            existingAudit.setOperationType("UPDATE");
+            existingAudit.setModifiedBy(SYSTEM_USER);
+            existingAudit.setModifiedAt(LocalDateTime.now());
+            existingAudit.setNewEntityJson(JsonUtils.toJson(userDto));
             auditRepository.save(existingAudit);
         } else {
-            log.error("Нет записи аудита для пользователя с ID: {}", userId);
+            log.error("Не найдена запись аудита для пользователя с ID: {}", userDto.getId());
         }
+    }
+
+    @Override
+    @Transactional
+    public void save(AuditDto auditDto) {
+        Audit audit = auditMapper.toEntity(auditDto);
+        auditRepository.save(audit);
     }
 }
