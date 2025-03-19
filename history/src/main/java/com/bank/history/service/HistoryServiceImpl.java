@@ -3,9 +3,12 @@ package com.bank.history.service;
 import com.bank.history.entity.History;
 import com.bank.history.repository.HistoryRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.time.LocalDateTime;
 
 
 @Service
@@ -19,17 +22,17 @@ public class HistoryServiceImpl implements HistoryService {
     }
 
     @Override
+    @Transactional
     public void saveHistory(History history) {
-
-        log.info("Save history");
 
         historyRepository.save(history);
 
-        log.info("History saved");
+        log.info("History saved: {}", history.getId());
     }
 
+    @Transactional(readOnly = true)
     @Override
-    public List<History> getAuditHistory() {
-        return historyRepository.findAll();
+    public Page<History> getAuditHistory(Pageable pageable) {
+        return historyRepository.findAll(pageable);
     }
 }

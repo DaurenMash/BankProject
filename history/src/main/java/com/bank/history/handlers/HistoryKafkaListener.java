@@ -8,11 +8,13 @@ import com.bank.history.service.HistoryService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.data.domain.*;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -36,12 +38,11 @@ public class HistoryKafkaListener {
     }
 
     @KafkaListener(topics = "audit.history", groupId = "history-group")
-    public void listenAuditHistory(@Payload String jsonMessage) {
+    public void listenAuditHistory(@Payload HistoryDto historyDto) {
         try {
-            log.info("Получено сообщение из audit.history: {}", jsonMessage);
-            HistoryDto historyDto = objectMapper.readValue(jsonMessage, HistoryDto.class);
+            log.info("Получено сообщение из audit.history: {}", historyDto);
             if (historyDto == null) {
-                log.warn("Не удалось десериализовать сообщение в HistoryDto: {}", jsonMessage);
+                log.warn("Сообщение пустое");
                 return;
             }
             log.info("Преобразование HistoryDto в History: {}", historyDto);
@@ -51,31 +52,43 @@ public class HistoryKafkaListener {
             historyService.saveHistory(history);
             log.info("Сохранение успешно выполнено для History: {}", history);
         } catch (Exception e) {
-            log.error("Ошибка при обработке сообщения из audit.history: {}", jsonMessage, e);
+            log.error("Ошибка при обработке сообщения из audit.history: {}", historyDto, e);
         }
     }
 
     @KafkaListener(topics = "audit.history.request", groupId = "history-group")
-    public void listenHistoryRequest(ConsumerRecord<String, String> record) {
+    public void listenHistoryRequest(@Payload HistoryDto historyDto) {
         try {
-            String request = record.value();
-            log.info("Получен запрос на историю изменений: key={}, value={}", record.key(), request);
-            if (request == null) {
-                log.warn("Запрос истории пустой: key={}", record.key());
+            log.info("Получен запрос на историю изменений: {}", historyDto);
+
+            if (historyDto == null || historyDto.getTransferAuditId() == null) {
+                log.warn("Некорректный запрос истории: {}", historyDto);
                 return;
             }
-            final List<History> historyList = historyService.getAuditHistory();
-            log.info("Получено {} записей истории", historyList.size());
-            final List<HistoryDto> historyDtoList = historyList.stream()
+
+            List<History> allHistory = new ArrayList<>();
+            int page = 0;
+            int pageSize = 100;
+            Page<History> historyPage;
+
+            do {
+                Pageable pageable = PageRequest.of(page, pageSize);
+                historyPage = historyService.getAuditHistory(pageable);
+                allHistory.addAll(historyPage.getContent());
+                page++;
+            } while (historyPage.hasNext());
+
+            log.info("Получено {} записей истории", allHistory.size());
+            final List<HistoryDto> historyDtoList = allHistory.stream()
                     .map(historyMapper::toDto)
                     .toList();
 
-            for (HistoryDto historyDto : historyDtoList) {
-                kafkaTemplate.send("audit.history.response", historyDto);
-                log.info("Отправлен ответ: {}", historyDto);
+            for (HistoryDto dto : historyDtoList) {
+                kafkaTemplate.send("audit.history.response", dto);
+                log.info("Отправлен ответ: {}", dto);
             }
         } catch (Exception e) {
-            log.error("Ошибка при обработке запроса истории: key={}, value={}", record.key(), record.value(), e);
+            log.error("Ошибка при обработке запроса истории: {}", historyDto, e);
         }
     }
 }
