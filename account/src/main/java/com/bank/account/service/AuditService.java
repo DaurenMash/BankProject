@@ -2,7 +2,6 @@ package com.bank.account.service;
 
 import com.bank.account.dto.AuditDto;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 public interface AuditService {

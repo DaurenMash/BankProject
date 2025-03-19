@@ -10,5 +10,11 @@ import org.springframework.stereotype.Repository;
 public interface AccountRepository extends JpaRepository<Account, Long> {
     Account findAccountByAccountNumber(@NotNull Long accountNumber);
 
+    Account findAccountByBankDetailsId(@NotNull Long bankDetailsId);
+
     Account findAccountById(@NotNull Long id);
+    
+    boolean existsAccountByAccountNumber(@NotNull Long accountNumber);
+
+    boolean existsAccountByBankDetailsId(@NotNull Long bankDetailsId);
 }

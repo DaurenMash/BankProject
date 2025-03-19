@@ -1,8 +1,11 @@
 package com.bank.account.producers;
 
 import com.bank.account.dto.AccountDto;
+import org.springframework.messaging.Message;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.KafkaHeaders;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,9 +19,14 @@ public class AccountProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void sendCreatedAccountEvent(AccountDto accountDto) {
+    public void sendCreatedAccountEvent(AccountDto accountDto, String jwtToken) {
         try {
-            kafkaTemplate.send("account.create", accountDto);
+            Message<AccountDto> message = MessageBuilder
+                    .withPayload(accountDto)
+                    .setHeader(KafkaHeaders.TOPIC, "account.create")
+                    .setHeader("Authorization", jwtToken)
+                    .build();
+            kafkaTemplate.send(message);
 
             log.info("Created account event successfully finished");
         } catch (Exception e) {
@@ -27,9 +35,14 @@ public class AccountProducer {
 
     }
 
-    public void sendUpdatedAccountEvent(AccountDto accountDto) {
+    public void sendUpdatedAccountEvent(AccountDto accountDto, String jwtToken) {
         try {
-            kafkaTemplate.send("account.update", accountDto);
+            Message<AccountDto> message = MessageBuilder
+                    .withPayload(accountDto)
+                    .setHeader(KafkaHeaders.TOPIC, "account.update")
+                    .setHeader("Authorization", jwtToken)
+                    .build();
+            kafkaTemplate.send(message);
 
             log.info("Updated account event successfully finished");
         } catch (Exception e) {
@@ -37,9 +50,14 @@ public class AccountProducer {
         }
     }
 
-    public void sendDeletedAccountEvent(AccountDto accountDto) {
+    public void sendDeletedAccountEvent(AccountDto accountDto, String jwtToken) {
         try {
-            kafkaTemplate.send("account.delete", accountDto);
+            Message<AccountDto> message = MessageBuilder
+                    .withPayload(accountDto)
+                    .setHeader(KafkaHeaders.TOPIC, "account.delete")
+                    .setHeader("Authorization", jwtToken)
+                    .build();
+            kafkaTemplate.send(message);
 
             log.info("Deleted account event successfully finished");
         } catch (Exception e) {
@@ -47,19 +65,29 @@ public class AccountProducer {
         }
     }
 
-    public void sendGetAccountsEvent(List<AccountDto> accountDtoList) {
+    public void sendGetAccountsEvent(String jwtToken) {
         try {
-            kafkaTemplate.send("account.get", accountDtoList);
+            Message<String> message = MessageBuilder
+                    .withPayload("")
+                    .setHeader(KafkaHeaders.TOPIC, "account.get")
+                    .setHeader("Authorization", jwtToken)
+                    .build();
+            kafkaTemplate.send(message);
 
-            log.info("Get account event successfully finished");
+            log.info("Get accounts event successfully finished");
         } catch (Exception e) {
-            log.error("Failed to send account get event {}", e.getMessage());
+            log.error("Failed to send accounts get event {}", e.getMessage());
         }
     }
 
-    public void sendGetOneAccountByIdEvent(AccountDto accountDto) {
+    public void sendGetOneAccountByIdEvent(String json, String jwtToken) {
         try {
-            kafkaTemplate.send("account.get.byId", accountDto);
+            Message<String> message = MessageBuilder
+                    .withPayload(json)
+                    .setHeader(KafkaHeaders.TOPIC, "account.get.byId")
+                    .setHeader("Authorization", jwtToken)
+                    .build();
+            kafkaTemplate.send(message);
 
             log.info("Get account by ID event successfully finished");
         } catch (Exception e) {

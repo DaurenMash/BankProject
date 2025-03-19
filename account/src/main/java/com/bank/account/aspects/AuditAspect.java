@@ -1,8 +1,6 @@
 package com.bank.account.aspects;
 
-import com.bank.account.dto.AuditDto;
 import com.bank.account.producers.AuditProducer;
-import com.bank.account.service.AuditService;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -23,7 +21,6 @@ public class AuditAspect {
     /**
      * Конструктор для создания экземпляра AuditAspect.
      *
-     * @see com.bank.account.service.AuditServiceImpl
      * @param auditProducer Продьюсер для отправки событий Аудита
      */
     public AuditAspect(AuditProducer auditProducer) {

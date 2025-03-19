@@ -6,7 +6,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 
-
 @Slf4j
 @Component
 public class GlobalExceptionHandler {
@@ -34,7 +33,10 @@ public class GlobalExceptionHandler {
         } else if (exception instanceof JsonProcessingException) {
             errorResponse = new ErrorResponse("JSON_PARSING_ERROR", exception.getMessage());
             log.error("Json parsing error: {}", exception.getMessage());
-        } else {
+        } else if (exception instanceof SecurityException) {
+            errorResponse = new ErrorResponse("SECURITY_EXCEPTION", exception.getMessage());
+            log.error("JWT is invalid: {}", exception.getMessage());
+        }  else {
             errorResponse = new ErrorResponse("INTERNAL_ERROR", exception.getMessage());
             log.error("Unexpected error: {}", exception.getMessage());
         }

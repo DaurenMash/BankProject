@@ -51,20 +51,34 @@ public class AccountServiceImpl implements AccountService{
     @Transactional
     public AccountDto createNewAccount(AccountDto accountDto) {
         try {
+            if (accountRepository.existsAccountByAccountNumber(accountDto.getAccountNumber()) &&
+                    accountRepository.existsAccountByBankDetailsId(accountDto.getBankDetailsId())) {
+                throw new IllegalArgumentException("Account number already exists");
+            }
+            if (accountRepository.existsAccountByBankDetailsId(accountDto.getBankDetailsId())) {
+                throw new IllegalArgumentException("Bank details id already exists");
+            }
+
             BigDecimal money = accountDto.getMoney();
             int comparisonResult = money.compareTo(BigDecimal.ZERO);
             accountDto.setNegativeBalance(comparisonResult < 0);
 
             Account accountExternal = accountRepository.save(accountMapper.toAccount(accountDto));
 
-            log.info("New account created successfully");
+            log.info("New account with account number: {} created successfully", accountDto.getAccountNumber());
             return accountMapper.toDto(accountExternal);
         } catch (DataAccessException e) {
-            log.error("Database error while creating account", e);
-            throw new DataAccessException("Database error while creating account");
+            log.error("Database error while creating account with account number:{}", accountDto.getAccountNumber(), e);
+            throw new DataAccessException("Database error while creating account with account number:"
+                    + accountDto.getAccountNumber());
+        } catch (IllegalArgumentException e) {
+            log.error("Invalid input data for account creation: {}", e.getMessage(), e);
+            throw e;
         } catch (Exception e) {
-            log.error("Unexpected error while while creating account", e);
-            throw new RuntimeException("Unexpected error while creating account", e);
+            log.error("Unexpected error while while creating account with account number: {}",
+                    accountDto.getAccountNumber(), e);
+            throw new RuntimeException("Unexpected error while creating account with account number"
+                    + accountDto.getAccountNumber(), e);
         }
     }
 
@@ -89,6 +103,23 @@ public class AccountServiceImpl implements AccountService{
                 throw new EntityNotFoundException("Account not found with id: " + id);
             }
 
+            if (accountRepository.existsAccountByAccountNumber(accountDtoUpdated.getAccountNumber()) ||
+            accountRepository.existsAccountByBankDetailsId(accountDtoUpdated.getBankDetailsId())) {
+                Account existingAccByAccountNumber = accountRepository
+                        .findAccountByAccountNumber(accountDtoUpdated.getAccountNumber());
+                Account existingAccByBankDetailsId = accountRepository
+                        .findAccountByBankDetailsId(accountDtoUpdated.getBankDetailsId());
+
+                Long existingAccByAccountNumberId = existingAccByAccountNumber.getId();
+                Long existingAccByBankDetailsIdId = existingAccByBankDetailsId.getId();
+
+                if (!existingAccByAccountNumberId.equals(id) || !existingAccByBankDetailsIdId.equals(id)) {
+                    throw new IllegalArgumentException("Account with same AccountNumber or BankDetailsId already exists. " +
+                            "AccountNumber is " + accountDtoUpdated.getAccountNumber() +
+                            ", BankDetailsId is " + accountDtoUpdated.getBankDetailsId());
+                }
+            }
+
             account.setAccountNumber(accountDtoUpdated.getAccountNumber());
             account.setMoney(accountDtoUpdated.getMoney());
             BigDecimal money = accountDtoUpdated.getMoney();
@@ -105,17 +136,17 @@ public class AccountServiceImpl implements AccountService{
             log.info("Account successfully updated ");
             return accountMapper.toDto(accountExternal);
         } catch (EntityNotFoundException e) {
-            log.error("Account not found: {}", id, e);
+            log.error("Account with id={} is not found.", id, e);
             throw new EntityNotFoundException("Account not found with id: " + id);
         } catch (DataAccessException e) {
             log.error("Database error while updating account: {}", id, e);
-            throw new DataAccessException("Database error while updating account");
+            throw new DataAccessException("Database error while updating account with id=" + id);
         } catch (IllegalArgumentException e) {
             log.error("Invalid input data for account update: {}", id, e);
-            throw new IllegalArgumentException("Invalid input data for account update");
+            throw new IllegalArgumentException("Invalid input data for account update" + id);
         } catch (Exception e) {
             log.error("Unexpected error while updating account: {}", id, e);
-            throw new RuntimeException("Unexpected error while updating account", e);
+            throw new RuntimeException("Unexpected error while updating account with id=" + id, e);
         }
     }
 
@@ -140,13 +171,13 @@ public class AccountServiceImpl implements AccountService{
             log.info("Account successfully deleted");
         } catch (EntityNotFoundException e) {
             log.error("Account not found: {}", id, e);
-            throw e;
+            throw new EntityNotFoundException("Account not found with id: " + id);
         } catch (DataAccessException e) {
             log.error("Database error while deleting account: {}", id, e);
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error while deleting account: {}", id, e);
-            throw new RuntimeException("Unexpected error while deleting account", e);
+            throw new RuntimeException("Unexpected error while deleting account with id=" + id, e);
         }
     }
 
@@ -167,17 +198,17 @@ public class AccountServiceImpl implements AccountService{
                 throw new EntityNotFoundException("Account not found with id: " + id);
             }
 
-            log.info("Account successfully retrieved ");
+            log.info("Account with id={} successfully retrieved", id);
             return result;
-        }  catch (EntityNotFoundException e) {
+        } catch (EntityNotFoundException e) {
             log.error("Account not found: {}", id, e);
-            throw e;
+            throw new EntityNotFoundException("Account not found with id: " + id);
         } catch (DataAccessException e) {
             log.error("Database error while getting account: {}", id, e);
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error while getting account: {}", id, e);
-            throw new RuntimeException("Unexpected error while getting account", e);
+            throw new RuntimeException("Unexpected error while getting account with id=" + id, e);
         }
     }
 

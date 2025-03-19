@@ -7,6 +7,7 @@ import com.bank.account.service.AccountService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
@@ -30,8 +31,11 @@ public class AccountConsumer {
     }
 
     @KafkaListener (topics = "account.create", groupId = "account-group")
-    public void handleCreateAccount(@Payload String json) {
+    public void handleCreateAccount(@Payload String json, @Header("Authorization") String jwtToken) {
         try {
+            if (!validateToken(jwtToken)) {
+                throw new SecurityException("Invalid JWT");
+            }
             AccountDto accountDto = objectMapper.readValue(json, AccountDto.class);
             AccountDto responseAccount = accountService.createNewAccount(accountDto);
             accountProducer.sendCreatedAccountExternalEvent(responseAccount);
@@ -44,8 +48,11 @@ public class AccountConsumer {
     }
 
     @KafkaListener(topics = "account.update", groupId = "account-group")
-    public void handleUpdateAccount(@Payload String json) {
+    public void handleUpdateAccount(@Payload String json, @Header("Authorization") String jwtToken) {
         try {
+            if (!validateToken(jwtToken)) {
+                throw new SecurityException("Invalid JWT");
+            }
             AccountDto accountDto = objectMapper.readValue(json, AccountDto.class);
             AccountDto responseAccount = accountService.updateCurrentAccount(accountDto.getId(), accountDto);
 
@@ -59,8 +66,12 @@ public class AccountConsumer {
     }
 
     @KafkaListener(topics = "account.delete", groupId = "account-group")
-    public void handleDeleteAccount(@Payload String json) {
+    public void handleDeleteAccount(@Payload String json, @Header("Authorization") String jwtToken) {
         try {
+            if (!validateToken(jwtToken)) {
+                throw new SecurityException("Invalid JWT");
+            }
+
             Long accountId;
 
             if (json.matches("\\d+")) {
@@ -80,8 +91,11 @@ public class AccountConsumer {
     }
 
     @KafkaListener(topics = "account.get", groupId = "account-group")
-    public void handleGetAccounts() {
+    public void handleGetAccounts(@Header("Authorization") String jwtToken) {
         try {
+            if (!validateToken(jwtToken)) {
+                throw new SecurityException("Invalid JWT");
+            }
             List<AccountDto> accountsDto = accountService.getAllAccounts();
             accountProducer.sendGetAccountsExternalEvent(accountsDto);
 
@@ -93,10 +107,13 @@ public class AccountConsumer {
     }
 
     @KafkaListener(topics = "account.getById", groupId = "account-group")
-    public void handleGetByIdAccount(String json) {
+    public void handleGetByIdAccount(@Payload String json, @Header("Authorization") String jwtToken) {
         try {
-            Long accountId;
+            if (!validateToken(jwtToken)) {
+                throw new SecurityException("Invalid JWT");
+            }
 
+            Long accountId;
             if (json.matches("\\d+")) {
                 accountId = Long.parseLong(json);
             } else {
@@ -112,5 +129,9 @@ public class AccountConsumer {
             log.error("Method 'handleGetByIdAccount' failed {}", e.getMessage());
             globalExceptionHandler.handleException(e, "error.logs");
         }
+    }
+
+    private boolean validateToken(String jwtToken) {
+        return true;
     }
 }
