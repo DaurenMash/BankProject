@@ -5,10 +5,10 @@ import com.bank.history.dto.HistoryDto;
 import com.bank.history.entity.History;
 import com.bank.history.mapper.HistoryMapper;
 import com.bank.history.service.HistoryService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.data.domain.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -25,16 +25,13 @@ public class HistoryKafkaListener {
     private final HistoryService historyService;
     private final HistoryMapper historyMapper;
     private final KafkaTemplate<String, HistoryDto> kafkaTemplate;
-    private final ObjectMapper objectMapper;
 
     public HistoryKafkaListener(HistoryService historyService,
                                 HistoryMapper historyMapper,
-                                KafkaTemplate<String, HistoryDto> kafkaTemplate,
-                                ObjectMapper objectMapper) {
+                                KafkaTemplate<String, HistoryDto> kafkaTemplate) {
         this.historyService = historyService;
         this.historyMapper = historyMapper;
         this.kafkaTemplate = kafkaTemplate;
-        this.objectMapper = objectMapper;
     }
 
     @KafkaListener(topics = "audit.history", groupId = "history-group")
