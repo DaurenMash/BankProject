@@ -15,8 +15,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class User {
 
-    private static final int ROLE_LENGTH = 40; // Длина поля role
-    private static final int PASSWORD_LENGTH = 500; // Длина поля password
+    private static final int ROLE_LENGTH = 40;
+    private static final int PASSWORD_LENGTH = 500;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

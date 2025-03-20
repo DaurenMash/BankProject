@@ -83,7 +83,6 @@ public class UserServiceImpl implements UserService {
             final User existingUser = userRepository.findById(id)
                     .orElseThrow(() -> new EntityNotFoundException(USER_NOT_FOUND_MESSAGE + id));
 
-            // Если пароль изменён, шифруем его
             if (userDto.getPassword() != null && !userDto.getPassword().isEmpty()) {
                 final String encodedPassword = passwordEncoder.encode(userDto.getPassword());
                 userDto.setPassword(encodedPassword);

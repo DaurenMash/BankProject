@@ -26,25 +26,22 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String profileId) throws UsernameNotFoundException {
         LOGGER.debug("Loading user by profileId: " + profileId);
-        // Преобразуем profileId из String в Long
+
         final Long profileIdLong = Long.parseLong(profileId);
 
-        // Ищем пользователя по profile_id
         final User user = (User) userRepository.findByProfileId(profileIdLong)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with profileId: " + profileId));
 
-        // Создаем список authorities на основе роли пользователя
         final List<GrantedAuthority> authorities = Collections
                 .singletonList(new SimpleGrantedAuthority(user.getRole()));
 
-        // Возвращаем UserDetails
         return new org.springframework.security.core.userdetails.User(
-                user.getProfileId().toString(), // Используем profileId как username
+                user.getProfileId().toString(),
                 user.getPassword(),
-                true, // Аккаунт всегда активен
-                true, // Пароль не истек
-                true, // Аккаунт не заблокирован
-                true, // Учетные данные не истекли
+                true,
+                true,
+                true,
+                true,
                 authorities);
     }
 }

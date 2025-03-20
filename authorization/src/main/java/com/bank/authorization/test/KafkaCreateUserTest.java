@@ -54,7 +54,7 @@ public class KafkaCreateUserTest {
         }
     }
     public static void main(String[] args) {
-        // Создаем KafkaProducer для отправки KafkaRequest
+
         final Properties producerProps = new Properties();
         producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -62,7 +62,6 @@ public class KafkaCreateUserTest {
 
         final Producer<String, KafkaRequest> producer = new KafkaProducer<>(producerProps);
 
-        // Создаем KafkaConsumer для получения ответа
         final Properties consumerProps = new Properties();
         consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
@@ -73,24 +72,20 @@ public class KafkaCreateUserTest {
         final Consumer<String, KafkaResponse> consumer = new KafkaConsumer<>(consumerProps);
         consumer.subscribe(Collections.singletonList(TOPIC_CREATE_USER_RESPONSE));
 
-        // Создаем тестовый объект UserDto
         final UserDto userDto = new UserDto();
         userDto.setRole("ROLE_USER");
         userDto.setProfileId(SET_PROFILE_ID);
         userDto.setPassword("password123");
 
-        // Создаем KafkaRequest для отправки
         final KafkaRequest request = new KafkaRequest();
         request.setRequestId(UUID.randomUUID().toString());
         request.setJwtToken(jwtToken);
         request.setPayload(userDto);
 
-        // Отправляем KafkaRequest
         final ProducerRecord<String, KafkaRequest> record = new ProducerRecord<>(TOPIC_CREATE_USER, request);
         producer.send(record);
         producer.flush();
 
-        // Ожидаем ответ
         final ConsumerRecords<String, KafkaResponse> records = consumer.poll(Duration.ofSeconds(TIMEOUT));
         for (ConsumerRecord<String, KafkaResponse> consumerRecord : records) {
             final KafkaResponse response = consumerRecord.value();
@@ -100,7 +95,6 @@ public class KafkaCreateUserTest {
             }
         }
 
-        // Закрываем producer и consumer
         producer.close();
         consumer.close();
     }

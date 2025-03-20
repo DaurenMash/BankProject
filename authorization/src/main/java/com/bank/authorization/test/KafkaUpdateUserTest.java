@@ -55,9 +55,8 @@ public class KafkaUpdateUserTest {
     }
 
     public static void main(String[] args) {
-        System.out.println("JWT Token: " + jwtToken); // Проверяем, загружается ли токен
+        System.out.println("JWT Token: " + jwtToken);
 
-        // Настройки продюсера
         final Properties producerProps = new Properties();
         producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -65,7 +64,6 @@ public class KafkaUpdateUserTest {
 
         final Producer<String, KafkaRequest> producer = new KafkaProducer<>(producerProps);
 
-        // Настройки консюмера
         final Properties consumerProps = new Properties();
         consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
@@ -76,25 +74,21 @@ public class KafkaUpdateUserTest {
         final Consumer<String, KafkaResponse> consumer = new KafkaConsumer<>(consumerProps);
         consumer.subscribe(Collections.singletonList(TOPIC_UPDATE_USER_RESPONSE));
 
-        // Создание тестового объекта UserDto
         final UserDto userDto = new UserDto();
         userDto.setId(SET_ID);
         userDto.setRole("ROLE_USER");
         userDto.setProfileId(SET_PROFILE_ID);
         userDto.setPassword("newPassword456");
 
-        // Формирование KafkaRequest
         final KafkaRequest request = new KafkaRequest();
         request.setRequestId(UUID.randomUUID().toString());
         request.setJwtToken(jwtToken);
         request.setPayload(userDto);
 
-        // Отправка KafkaRequest
         final ProducerRecord<String, KafkaRequest> record = new ProducerRecord<>(TOPIC_UPDATE_USER, request);
         producer.send(record);
         producer.flush();
 
-        // Ожидание ответа
         final ConsumerRecords<String, KafkaResponse> records = consumer.poll(Duration.ofSeconds(TIMEOUT));
         for (ConsumerRecord<String, KafkaResponse> consumerRecord : records) {
             final KafkaResponse response = consumerRecord.value();
@@ -104,7 +98,6 @@ public class KafkaUpdateUserTest {
             }
         }
 
-        // Закрытие ресурсов
         producer.close();
         consumer.close();
     }

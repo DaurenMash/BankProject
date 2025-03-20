@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class KafkaResponse {
-    private String requestId; // Уникальный идентификатор запроса
-    private boolean success; // Успех или ошибка
-    private String message; // Сообщение об ошибке или успехе
-    private Object data; // Данные результата (например, список пользователей или DTO пользователя)
+    private String requestId;
+    private boolean success;
+    private String message;
+    private Object data;
 }

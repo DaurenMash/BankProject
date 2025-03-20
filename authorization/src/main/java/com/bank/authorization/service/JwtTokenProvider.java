@@ -29,14 +29,14 @@ public class JwtTokenProvider {
     public boolean validateToken(String token) {
         try {
             Jwts.parserBuilder()
-                    .setSigningKey(getSigningKey()) // Устанавливаем ключ для проверки подписи
+                    .setSigningKey(getSigningKey())
                     .build()
-                    .parseClaimsJws(token); // Если подпись невалидная (например, токен был подделан или просрочен),
-                                            // будет выброшено исключение io.jsonwebtoken.SignatureException
+                    .parseClaimsJws(token);
+                                           
 
             return true;
         } catch (Exception e) {
-            return false; // Любая ошибка (неверная подпись, просроченный токен и т. д.) => токен невалиден
+            return false;
         }
     }
 

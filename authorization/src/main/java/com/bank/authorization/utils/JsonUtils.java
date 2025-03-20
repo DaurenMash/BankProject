@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class JsonUtils {
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    // Метод для преобразования объекта в JSON-строку
     public static String toJson(Object object) {
         try {
             return MAPPER.writeValueAsString(object);
@@ -15,7 +14,6 @@ public class JsonUtils {
         }
     }
 
-    // Метод для преобразования JSON-строки в объект
     public static <T> T fromJson(String json, Class<T> clazz) {
         try {
             return MAPPER.readValue(json, clazz);

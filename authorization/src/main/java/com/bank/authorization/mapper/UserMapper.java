@@ -11,12 +11,8 @@ import org.mapstruct.factory.Mappers;
 public interface UserMapper {
     UserMapper INSTANCE = Mappers.getMapper(UserMapper.class);
 
-    @Mapping(target = "profileId", source = "profileId")
     UserDto toDto(User user);
-
-    @Mapping(target = "profileId", source = "profileId")
     User toEntity(UserDto userDto);
-
-    @Mapping(target = "id", ignore = true) // Игнорируем поле id
+    @Mapping(target = "id", ignore = true)
     void updateEntityFromDto(UserDto userDto, @MappingTarget User existingUser);
 }

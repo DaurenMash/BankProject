@@ -17,8 +17,8 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Audit {
 
-    private static final int ENTITY_TYPE_LENGTH = 40; // Длина поля entity_type
-    private static final int SEVERAL_FIELDS_LENGTH = 255; // Длина остальных нескольких полей
+    private static final int ENTITY_TYPE_LENGTH = 40;
+    private static final int SEVERAL_FIELDS_LENGTH = 255;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

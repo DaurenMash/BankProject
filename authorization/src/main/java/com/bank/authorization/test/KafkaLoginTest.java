@@ -30,7 +30,7 @@ public class KafkaLoginTest {
     private static final Long TIMEOUT = 30L;
 
     public static void main(String[] args) {
-        // Создаем KafkaProducer для отправки AuthRequest
+
         final Properties producerProps = new Properties();
         producerProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         producerProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
@@ -38,7 +38,6 @@ public class KafkaLoginTest {
 
         final Producer<String, AuthRequest> producer = new KafkaProducer<>(producerProps);
 
-        // Создаем KafkaConsumer для получения ответа
         final Properties consumerProps = new Properties();
         consumerProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, KAFKA_BOOTSTRAP_SERVERS);
         consumerProps.put(ConsumerConfig.GROUP_ID_CONFIG, GROUP_ID);
@@ -49,14 +48,12 @@ public class KafkaLoginTest {
         final Consumer<String, KafkaResponse> consumer = new KafkaConsumer<>(consumerProps);
         consumer.subscribe(Collections.singletonList(TOPIC_AUTH_LOGIN_RESPONSE));
 
-        // Отправляем AuthRequest
         final String requestId = UUID.randomUUID().toString();
         final AuthRequest authRequest = new AuthRequest(requestId, 1L, "admin123");
         final ProducerRecord<String, AuthRequest> record = new ProducerRecord<>(TOPIC_AUTH_LOGIN, authRequest);
         producer.send(record);
         producer.flush();
 
-        // Ожидаем ответ
         final ConsumerRecords<String, KafkaResponse> records = consumer.poll(Duration.ofSeconds(TIMEOUT));
         for (ConsumerRecord<String, KafkaResponse> consumerRecord : records) {
             final KafkaResponse response = consumerRecord.value();
@@ -66,7 +63,6 @@ public class KafkaLoginTest {
             }
         }
 
-        // Закрываем producer и consumer
         producer.close();
         consumer.close();
     }

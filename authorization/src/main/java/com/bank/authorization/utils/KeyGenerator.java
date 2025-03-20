@@ -19,7 +19,7 @@ public class KeyGenerator {
      */
     public static void main(String[] args) {
         final SecureRandom secureRandom = new SecureRandom();
-        final int keySize = 32; // 256 бит (32 байта)
+        final int keySize = 32;
         final byte[] key = new byte[keySize];
         secureRandom.nextBytes(key);
         final String encodedKey = Base64.getEncoder().encodeToString(key);
