@@ -53,16 +53,16 @@ public class AuditServiceImpl implements AuditService{
             return auditDto;
         } catch (JsonProcessingException e) {
             log.error("JSON conversion error while creating audit DTO: {}", e.getMessage());
-            throw new JsonProcessingException("Failed to convert JSON", e);
+            throw e;
         } catch (DataAccessException e) {
             log.error("Database error while creating audit DTO: {}", e.getMessage());
             throw new DataAccessException("Failed to create audit DTO due to database error: " + e);
         } catch (IllegalArgumentException e) {
-            log.error("Invalid input data in creating method: {}", e.getMessage());
+            log.error("Invalid input data in creating method:", e);
             throw e;
         } catch (Exception e) {
             log.error("Failed to create audit DTO for entity ID: {}", accountDto.getId(), e);
-            throw new RuntimeException("Unexpected error while updating audit DTO", e);
+            throw new RuntimeException("Unexpected error while updating audit DTO:", e);
         }
     }
 
@@ -119,8 +119,8 @@ public class AuditServiceImpl implements AuditService{
                         try {
                             Long entityIdFromJson = JsonUtils.extractEntityIdFromJson(auditDto.getEntityJson());
                             return entityIdFromJson.equals(entityIdFromCurrentAccount);
-                        } catch (Exception e) {
-                            throw new RuntimeException("Failed to parse entityJson", e);
+                        } catch (JsonProcessingException e) {
+                            throw new JsonProcessingException("Failed to parse entityJson", e);
                         }
                     })
                     .findFirst()
@@ -129,6 +129,9 @@ public class AuditServiceImpl implements AuditService{
 
             log.info("Successfully retrieved audit for entity ID: {}", entityIdFromCurrentAccount);
             return resultAuditDto;
+        } catch (JsonProcessingException e) {
+            log.error("JSON conversion error while parsing auditDto: {}", e.getMessage());
+            throw e;
         } catch (EntityNotFoundException e) {
             log.error("Audit not found for entity ID: {}", entityIdFromCurrentAccount, e);
             throw e;
