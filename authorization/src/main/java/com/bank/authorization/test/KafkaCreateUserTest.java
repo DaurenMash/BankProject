@@ -33,7 +33,7 @@ public class KafkaCreateUserTest {
     private static final String TOPIC_CREATE_USER_RESPONSE = "user.create.response";
     private static final String GROUP_ID = "authorization-group";
     private static final Long TIMEOUT = 30L;
-    private static final Long SET_PROFILE_ID = 88L;
+    private static final Long SET_PROFILE_ID = 333L;
 
 
     static {

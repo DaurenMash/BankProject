@@ -32,7 +32,7 @@ public class KafkaDeleteUserTest {
     private static final String TOPIC_DELETE_USER_RESPONSE = "user.delete.response";
     private static final String GROUP_ID = "authorization-group";
     private static final Long TIMEOUT = 30L;
-    private static final Long SET_USER_ID = 20L;
+    private static final Long SET_USER_ID = 26L;
 
     static {
         loadConfig();

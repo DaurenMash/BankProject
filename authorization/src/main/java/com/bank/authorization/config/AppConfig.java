@@ -3,7 +3,6 @@ package com.bank.authorization.config;
 import com.bank.authorization.dto.AuthRequest;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -23,9 +22,6 @@ import java.util.Map;
 @SpringBootApplication
 @EnableAspectJAutoProxy
 public class AppConfig {
-
-    @Value("${app.jwt.secret-key}")
-    private String jwtSecret;
 
     @Bean
     public BCryptPasswordEncoder passwordEncoder() {
