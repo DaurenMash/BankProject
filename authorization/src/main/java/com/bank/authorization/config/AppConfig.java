@@ -3,7 +3,6 @@ package com.bank.authorization.config;
 import com.bank.authorization.dto.AuthRequest;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -25,9 +24,6 @@ import java.util.Map;
 @EnableAspectJAutoProxy
 public class AppConfig {
 
-    @Autowired
-    private UserDetailsService userDetailsService;
-
     @Value("${app.jwt.secret-key}")
     private String jwtSecret;
 
@@ -37,7 +33,8 @@ public class AppConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+    public AuthenticationManager authenticationManager(HttpSecurity http,
+                                                       UserDetailsService userDetailsService) throws Exception {
         final AuthenticationManagerBuilder authenticationManagerBuilder =
                 http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder
