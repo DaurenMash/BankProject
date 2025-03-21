@@ -17,39 +17,41 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name="audit", schema = "account")
+@Table(name = "audit", schema = "account")
 public class Audit {
+    private static final int MAX_LENGTH_SHORT = 50;
+    private static final int MAX_LENGTH_LONG = 255;
 
     @Id
-    @Column(name="id")
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name="entity_type")
-    @Size(max=50)
+    @Column(name = "entity_type")
+    @Size(max = MAX_LENGTH_SHORT)
     private String entityType;
 
-    @Column(name="operation_type")
-    @Size(max=255)
+    @Column(name = "operation_type")
+    @Size(max = MAX_LENGTH_LONG)
     private String operationType;
 
-    @Column(name="created_by")
-    @Size(max=255)
+    @Column(name = "created_by")
+    @Size(max = MAX_LENGTH_LONG)
     private String createdBy;
 
-    @Column(name="modified_by")
-    @Size(max=255)
+    @Column(name = "modified_by")
+    @Size(max = MAX_LENGTH_LONG)
     private String modifiedBy;
 
-    @Column(name="created_at")
+    @Column(name = "created_at")
     private Timestamp createdAt;
 
-    @Column(name="modified_at")
+    @Column(name = "modified_at")
     private Timestamp modifiedAt;
 
-    @Column(name="new_entity_json")
+    @Column(name = "new_entity_json")
     private String newEntityJson;
 
-    @Column(name="entity_json")
+    @Column(name = "entity_json")
     private String entityJson;
 }

@@ -18,13 +18,14 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class AuditServiceImpl implements AuditService{
+public class AuditServiceImpl implements AuditService {
+    private static final String ENTITY_TYPE = "Account";
+    private static final String CURRENT_USER = "SYSTEM";
+    private static final String CREATION_OPERATION = "CREATION";
+    private static final String UPDATING_OPERATION = "UPDATING";
+
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
-    private final String ENTITY_TYPE = "Account";
-    private final String CURRENT_USER = "SYSTEM";
-    private final String CREATION_OPERATION = "CREATION";
-    private final String UPDATING_OPERATION = "UPDATING";
 
     public AuditServiceImpl(AuditRepository auditRepository, AuditMapper auditMapper) {
         this.auditRepository = auditRepository;
@@ -34,11 +35,11 @@ public class AuditServiceImpl implements AuditService{
     @Override
     @Transactional
     public AuditDto createAudit(Object result) {
-        AccountDto accountDto = (AccountDto) result;
+        final AccountDto accountDto = (AccountDto) result;
         try {
-            String entityJson = JsonUtils.convertToJson(accountDto);
+            final String entityJson = JsonUtils.convertToJson(accountDto);
 
-            AuditDto auditDto = new AuditDto();
+            final AuditDto auditDto = new AuditDto();
             auditDto.setEntityType(ENTITY_TYPE);
             auditDto.setOperationType(CREATION_OPERATION);
             auditDto.setCreatedBy(CURRENT_USER);
@@ -47,7 +48,7 @@ public class AuditServiceImpl implements AuditService{
             auditDto.setModifiedAt(null);
             auditDto.setNewEntityJson(null);
             auditDto.setEntityJson(entityJson);
-            Audit audit = auditRepository.save(auditMapper.toAudit(auditDto));
+            final Audit audit = auditRepository.save(auditMapper.toAudit(auditDto));
 
             log.info("Audit log successfully saved: {}", audit);
             return auditDto;
@@ -69,19 +70,19 @@ public class AuditServiceImpl implements AuditService{
     @Override
     @Transactional
     public AuditDto updateAudit(Object result) {
-        AccountDto accountDto = (AccountDto) result;
+        final AccountDto accountDto = (AccountDto) result;
         try {
-            String newEntityJson = JsonUtils.convertToJson(accountDto);
-            Long accountId = accountDto.getId();
+            final String newEntityJson = JsonUtils.convertToJson(accountDto);
+            final Long accountId = accountDto.getId();
 
-            String oldEntityJson;
-            AuditDto oldAuditDto = getAuditByEntityId(accountId);
+            final String oldEntityJson;
+            final AuditDto oldAuditDto = getAuditByEntityId(accountId);
             if (oldAuditDto.getNewEntityJson() == null) {
                 oldEntityJson = oldAuditDto.getEntityJson();
             } else {
                 oldEntityJson = oldAuditDto.getNewEntityJson();
             }
-            AuditDto auditDto = new AuditDto();
+            final AuditDto auditDto = new AuditDto();
             auditDto.setEntityType(oldAuditDto.getEntityType());
             auditDto.setOperationType(UPDATING_OPERATION);
             auditDto.setCreatedBy(oldAuditDto.getCreatedBy());
@@ -113,19 +114,19 @@ public class AuditServiceImpl implements AuditService{
     @Transactional(readOnly = true)
     public AuditDto getAuditByEntityId(Long entityIdFromCurrentAccount) {
         try {
-            List<AuditDto> auditDtoList = getAllAudits();
-            AuditDto resultAuditDto = auditDtoList.stream()
+            final List<AuditDto> auditDtoList = getAllAudits();
+            final AuditDto resultAuditDto = auditDtoList.stream()
                     .filter(auditDto -> {
                         try {
-                            Long entityIdFromJson = JsonUtils.extractEntityIdFromJson(auditDto.getEntityJson());
+                            final Long entityIdFromJson = JsonUtils.extractEntityIdFromJson(auditDto.getEntityJson());
                             return entityIdFromJson.equals(entityIdFromCurrentAccount);
                         } catch (JsonProcessingException e) {
                             throw new JsonProcessingException("Failed to parse entityJson", e);
                         }
                     })
                     .findFirst()
-                    .orElseThrow(() -> new EntityNotFoundException("Audit not found for entity ID: "
-                            + entityIdFromCurrentAccount));
+                    .orElseThrow(() -> new EntityNotFoundException("Audit not found for entity ID: " +
+                            entityIdFromCurrentAccount));
 
             log.info("Successfully retrieved audit for entity ID: {}", entityIdFromCurrentAccount);
             return resultAuditDto;
@@ -145,7 +146,7 @@ public class AuditServiceImpl implements AuditService{
     @Transactional(readOnly = true)
     public List<AuditDto> getAllAudits() {
         try {
-            List<AuditDto> resultAuditDtoList = auditRepository.findAll()
+            final List<AuditDto> resultAuditDtoList = auditRepository.findAll()
                     .stream()
                     .map(auditMapper::toAuditDto)
                     .toList();

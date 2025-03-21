@@ -18,35 +18,35 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name="account_details", schema = "account")
+@Table(name = "account_details", schema = "account")
 public class Account {
 
     @Id
-    @Column(name="id")
+    @Column(name = "id")
     @NotNull
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "passport_id")
     @NotNull
     private Long passportId;
 
-    @Column(name="account_number")
+    @Column(name = "account_number")
     @NotNull
     private Long accountNumber;
 
-    @Column(name="bank_details_id")
+    @Column(name = "bank_details_id")
     @NotNull
     private Long bankDetailsId;
 
-    @Column(name="money")
+    @Column(name = "money")
     @NotNull
     private BigDecimal money;
 
     @Column(name = "negative_balance")
     private boolean negativeBalance;
 
-    @Column(name="profile_id")
+    @Column(name = "profile_id")
     @NotNull
     private Long profileId;
 }

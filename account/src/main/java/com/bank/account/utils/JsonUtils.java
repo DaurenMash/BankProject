@@ -9,7 +9,7 @@ import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
 public class JsonUtils {
-    private static final ObjectMapper mapper = new ObjectMapper()
+    private static final ObjectMapper MAPPER = new ObjectMapper()
             .registerModule(new JavaTimeModule())
             .enable(SerializationFeature.INDENT_OUTPUT)
             .setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"))
@@ -18,7 +18,7 @@ public class JsonUtils {
 
     public static String convertToJson(Object obj) {
         try {
-            return mapper.writeValueAsString(obj);
+            return MAPPER.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
             throw new JsonProcessingException("Failed to convert object to JSON: " + e.getMessage(), e);
         } catch (Exception e) {
@@ -28,7 +28,7 @@ public class JsonUtils {
 
     public static Long extractEntityIdFromJson(String json) {
         try {
-            return mapper.readTree(json).get("id").asLong();
+            return MAPPER.readTree(json).get("id").asLong();
         } catch (JsonProcessingException e) {
             throw new JsonProcessingException("Failed to extract entity id from JSON: " + e.getMessage(), e);
         } catch (Exception e) {

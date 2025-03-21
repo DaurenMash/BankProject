@@ -13,6 +13,7 @@ import java.util.List;
 @Slf4j
 @Service
 public class AccountProducer {
+    private static final String TOPIC_AUTHORIZATION = "Authorization";
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     public AccountProducer(KafkaTemplate<String, Object> kafkaTemplate) {
@@ -21,10 +22,10 @@ public class AccountProducer {
 
     public void sendCreatedAccountEvent(AccountDto accountDto, String jwtToken) {
         try {
-            Message<AccountDto> message = MessageBuilder
+            final Message<AccountDto> message = MessageBuilder
                     .withPayload(accountDto)
                     .setHeader(KafkaHeaders.TOPIC, "account.create")
-                    .setHeader("Authorization", jwtToken)
+                    .setHeader(TOPIC_AUTHORIZATION, jwtToken)
                     .build();
             kafkaTemplate.send(message);
 
@@ -37,10 +38,10 @@ public class AccountProducer {
 
     public void sendUpdatedAccountEvent(AccountDto accountDto, String jwtToken) {
         try {
-            Message<AccountDto> message = MessageBuilder
+            final Message<AccountDto> message = MessageBuilder
                     .withPayload(accountDto)
                     .setHeader(KafkaHeaders.TOPIC, "account.update")
-                    .setHeader("Authorization", jwtToken)
+                    .setHeader(TOPIC_AUTHORIZATION, jwtToken)
                     .build();
             kafkaTemplate.send(message);
 
@@ -52,10 +53,10 @@ public class AccountProducer {
 
     public void sendDeletedAccountEvent(AccountDto accountDto, String jwtToken) {
         try {
-            Message<AccountDto> message = MessageBuilder
+            final Message<AccountDto> message = MessageBuilder
                     .withPayload(accountDto)
                     .setHeader(KafkaHeaders.TOPIC, "account.delete")
-                    .setHeader("Authorization", jwtToken)
+                    .setHeader(TOPIC_AUTHORIZATION, jwtToken)
                     .build();
             kafkaTemplate.send(message);
 
@@ -67,10 +68,10 @@ public class AccountProducer {
 
     public void sendGetAccountsEvent(String jwtToken) {
         try {
-            Message<String> message = MessageBuilder
+            final Message<String> message = MessageBuilder
                     .withPayload("")
                     .setHeader(KafkaHeaders.TOPIC, "account.get")
-                    .setHeader("Authorization", jwtToken)
+                    .setHeader(TOPIC_AUTHORIZATION, jwtToken)
                     .build();
             kafkaTemplate.send(message);
 
@@ -82,10 +83,10 @@ public class AccountProducer {
 
     public void sendGetOneAccountByIdEvent(String json, String jwtToken) {
         try {
-            Message<String> message = MessageBuilder
+            final Message<String> message = MessageBuilder
                     .withPayload(json)
                     .setHeader(KafkaHeaders.TOPIC, "account.get.byId")
-                    .setHeader("Authorization", jwtToken)
+                    .setHeader(TOPIC_AUTHORIZATION, jwtToken)
                     .build();
             kafkaTemplate.send(message);
 

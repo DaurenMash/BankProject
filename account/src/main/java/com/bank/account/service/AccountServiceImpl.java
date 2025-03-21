@@ -22,7 +22,8 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
-public class AccountServiceImpl implements AccountService{
+public class AccountServiceImpl implements AccountService {
+    private final String accountNotFoundMessage = "Account not found with id: ";
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
 
@@ -59,26 +60,26 @@ public class AccountServiceImpl implements AccountService{
                 throw new IllegalArgumentException("Bank details id already exists");
             }
 
-            BigDecimal money = accountDto.getMoney();
-            int comparisonResult = money.compareTo(BigDecimal.ZERO);
+            final BigDecimal money = accountDto.getMoney();
+            final int comparisonResult = money.compareTo(BigDecimal.ZERO);
             accountDto.setNegativeBalance(comparisonResult < 0);
 
-            Account accountExternal = accountRepository.save(accountMapper.toAccount(accountDto));
+            final Account accountExternal = accountRepository.save(accountMapper.toAccount(accountDto));
 
             log.info("New account with account number: {} created successfully", accountDto.getAccountNumber());
             return accountMapper.toDto(accountExternal);
         } catch (DataAccessException e) {
             log.error("Database error while creating account with account number:{}", accountDto.getAccountNumber(), e);
-            throw new DataAccessException("Database error while creating account with account number:"
-                    + accountDto.getAccountNumber());
+            throw new DataAccessException("Database error while creating account with account number:" +
+                    accountDto.getAccountNumber());
         } catch (IllegalArgumentException e) {
             log.error("Invalid input data for account creation: {}", e.getMessage(), e);
             throw e;
         } catch (Exception e) {
             log.error("Unexpected error while while creating account with account number: {}",
                     accountDto.getAccountNumber(), e);
-            throw new RuntimeException("Unexpected error while creating account with account number"
-                    + accountDto.getAccountNumber(), e);
+            throw new RuntimeException("Unexpected error while creating account with account number" +
+                    accountDto.getAccountNumber(), e);
         }
     }
 
@@ -98,46 +99,47 @@ public class AccountServiceImpl implements AccountService{
     @Transactional
     public AccountDto updateCurrentAccount(Long id, AccountDto accountDtoUpdated) {
         try {
-            Account account = accountRepository.findAccountById(id);
+            final Account account = accountRepository.findAccountById(id);
             if (account == null) {
-                throw new EntityNotFoundException("Account not found with id: " + id);
+                throw new EntityNotFoundException(accountNotFoundMessage + id);
             }
 
             if (accountRepository.existsAccountByAccountNumber(accountDtoUpdated.getAccountNumber()) ||
-            accountRepository.existsAccountByBankDetailsId(accountDtoUpdated.getBankDetailsId())) {
-                Account existingAccByAccountNumber = accountRepository
+                    accountRepository.existsAccountByBankDetailsId(accountDtoUpdated.getBankDetailsId())) {
+                final Account existingAccByAccountNumber = accountRepository
                         .findAccountByAccountNumber(accountDtoUpdated.getAccountNumber());
-                Account existingAccByBankDetailsId = accountRepository
+                final Account existingAccByBankDetailsId = accountRepository
                         .findAccountByBankDetailsId(accountDtoUpdated.getBankDetailsId());
 
-                Long existingAccByAccountNumberId = existingAccByAccountNumber.getId();
-                Long existingAccByBankDetailsIdId = existingAccByBankDetailsId.getId();
+                final Long existingAccByAccountNumberId = existingAccByAccountNumber.getId();
+                final Long existingAccByBankDetailsIdId = existingAccByBankDetailsId.getId();
 
                 if (!existingAccByAccountNumberId.equals(id) || !existingAccByBankDetailsIdId.equals(id)) {
-                    throw new IllegalArgumentException("Account with same AccountNumber or BankDetailsId already exists. " +
-                            "AccountNumber is " + accountDtoUpdated.getAccountNumber() +
-                            ", BankDetailsId is " + accountDtoUpdated.getBankDetailsId());
+                    throw new IllegalArgumentException("Account with same AccountNumber or " +
+                            "BankDetailsId already exists. " + "AccountNumber is " +
+                            accountDtoUpdated.getAccountNumber() + ", BankDetailsId is " +
+                            accountDtoUpdated.getBankDetailsId());
                 }
             }
 
             account.setAccountNumber(accountDtoUpdated.getAccountNumber());
             account.setMoney(accountDtoUpdated.getMoney());
-            BigDecimal money = accountDtoUpdated.getMoney();
-            int comparisonResult = money.compareTo(BigDecimal.ZERO);
+            final BigDecimal money = accountDtoUpdated.getMoney();
+            final int comparisonResult = money.compareTo(BigDecimal.ZERO);
             account.setNegativeBalance(comparisonResult < 0);
 
             account.setPassportId(accountDtoUpdated.getPassportId());
             account.setBankDetailsId(accountDtoUpdated.getBankDetailsId());
             account.setProfileId(accountDtoUpdated.getProfileId());
 
-            Account accountExternal = accountRepository.save(account);
+            final Account accountExternal = accountRepository.save(account);
             accountRepository.flush();
 
             log.info("Account successfully updated ");
             return accountMapper.toDto(accountExternal);
         } catch (EntityNotFoundException e) {
             log.error("Account with id={} is not found.", id, e);
-            throw new EntityNotFoundException("Account not found with id: " + id);
+            throw new EntityNotFoundException(accountNotFoundMessage + id);
         } catch (DataAccessException e) {
             log.error("Database error while updating account: {}", id, e);
             throw new DataAccessException("Database error while updating account with id=" + id);
@@ -162,16 +164,16 @@ public class AccountServiceImpl implements AccountService{
     @Transactional
     public void deleteAccount(Long id) {
         try {
-            Account account = accountRepository.findAccountById(id);
+            final Account account = accountRepository.findAccountById(id);
             if (account == null) {
-                throw new EntityNotFoundException("Account not found with id: " + id);
+                throw new EntityNotFoundException(accountNotFoundMessage + id);
             }
             accountRepository.delete(account);
 
             log.info("Account successfully deleted");
         } catch (EntityNotFoundException e) {
             log.error("Account not found: {}", id, e);
-            throw new EntityNotFoundException("Account not found with id: " + id);
+            throw e;
         } catch (DataAccessException e) {
             log.error("Database error while deleting account: {}", id, e);
             throw e;
@@ -193,16 +195,16 @@ public class AccountServiceImpl implements AccountService{
     @Transactional(readOnly = true)
     public AccountDto getAccountById(Long id) {
         try {
-            AccountDto result = accountMapper.toDto(accountRepository.findAccountById(id));
+            final AccountDto result = accountMapper.toDto(accountRepository.findAccountById(id));
             if (result == null) {
-                throw new EntityNotFoundException("Account not found with id: " + id);
+                throw new EntityNotFoundException(accountNotFoundMessage + id);
             }
 
             log.info("Account with id={} successfully retrieved", id);
             return result;
         } catch (EntityNotFoundException e) {
             log.error("Account not found: {}", id, e);
-            throw new EntityNotFoundException("Account not found with id: " + id);
+            throw e;
         } catch (DataAccessException e) {
             log.error("Database error while getting account: {}", id, e);
             throw e;
@@ -223,7 +225,7 @@ public class AccountServiceImpl implements AccountService{
     @Transactional(readOnly = true)
     public List<AccountDto> getAllAccounts() {
         try {
-            List<AccountDto> result = accountRepository
+            final List<AccountDto> result = accountRepository
                     .findAll()
                     .stream()
                     .map(accountMapper::toDto)

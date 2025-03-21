@@ -29,7 +29,7 @@ public class AuditProducer {
 
     public void sentAuditLogRequest(Object result, String operationType) {
         try {
-            ProducerRecord<String, Object> record = new ProducerRecord<>("audit.logs", null, result);
+            final ProducerRecord<String, Object> record = new ProducerRecord<>("audit.logs", null, result);
             record.headers().add(new RecordHeader("operationType", operationType.getBytes(StandardCharsets.UTF_8)));
 
             kafkaTemplate.send(record);

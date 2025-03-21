@@ -16,7 +16,7 @@ public class GlobalExceptionHandler {
     }
 
     public void handleException(Exception exception, String topic) {
-        ErrorResponse errorResponse;
+        final ErrorResponse errorResponse;
 
         if (exception instanceof EntityNotFoundException) {
             errorResponse = new ErrorResponse("ENTITY_NOT_FOUND", exception.getMessage());

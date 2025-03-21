@@ -29,17 +29,17 @@ public class AuditConsumer {
     @KafkaListener(topics = "audit.logs", groupId = "audit-group")
     public void handleAuditLogEvent(ConsumerRecord<String, String> record) {
         try {
-            String operationType = new String(
+            final String operationType = new String(
                     record.headers().lastHeader("operationType").value(),
                     StandardCharsets.UTF_8);
-            AccountDto accountDto = objectMapper.readValue(record.value(), AccountDto.class);
+            final AccountDto accountDto = objectMapper.readValue(record.value(), AccountDto.class);
 
             if ("create".equalsIgnoreCase(operationType)) {
-                AuditDto auditDto = auditService.createAudit(accountDto);
+                final AuditDto auditDto = auditService.createAudit(accountDto);
                 auditProducer.sendAuditLogEvent(auditDto);
                 log.info("Create operation processed successfully");
             } else if ("update".equals(operationType)) {
-                AuditDto auditDto = auditService.updateAudit(accountDto);
+                final AuditDto auditDto = auditService.updateAudit(accountDto);
                 auditProducer.sendAuditLogEvent(auditDto);
                 log.info("Update operation processed successfully");
             } else {
