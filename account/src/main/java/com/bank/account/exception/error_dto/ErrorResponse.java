@@ -5,7 +5,6 @@ import lombok.Data;
 
 import java.sql.Timestamp;
 
-
 @Data
 public class ErrorResponse {
     private String errorCode;

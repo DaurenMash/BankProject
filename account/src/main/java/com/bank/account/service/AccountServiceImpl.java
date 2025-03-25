@@ -52,8 +52,7 @@ public class AccountServiceImpl implements AccountService {
     @Transactional
     public AccountDto createNewAccount(AccountDto accountDto) {
         try {
-            if (accountRepository.existsAccountByAccountNumber(accountDto.getAccountNumber()) &&
-                    accountRepository.existsAccountByBankDetailsId(accountDto.getBankDetailsId())) {
+            if (accountRepository.existsAccountByAccountNumber(accountDto.getAccountNumber())) {
                 throw new IllegalArgumentException("Account number already exists");
             }
             if (accountRepository.existsAccountByBankDetailsId(accountDto.getBankDetailsId())) {

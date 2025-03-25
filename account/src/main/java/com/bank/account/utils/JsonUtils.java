@@ -15,7 +15,6 @@ public class JsonUtils {
             .setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"))
             .setTimeZone(TimeZone.getTimeZone("UTC"));
 
-
     public static String convertToJson(Object obj) {
         try {
             return MAPPER.writeValueAsString(obj);

@@ -33,7 +33,6 @@ public class AccountProducer {
         } catch (Exception e) {
             log.error("Failed to send account creation event {}", e.getMessage());
         }
-
     }
 
     public void sendUpdatedAccountEvent(AccountDto accountDto, String jwtToken) {
@@ -96,7 +95,6 @@ public class AccountProducer {
         }
     }
 
-
     public void sendCreatedAccountExternalEvent(AccountDto accountDto) {
         try {
             kafkaTemplate.send("external.account.create", accountDto);
@@ -105,7 +103,6 @@ public class AccountProducer {
         } catch (Exception e) {
             log.error("External Event. Failed to send account creation event {}", e.getMessage());
         }
-
     }
 
     public void sendUpdatedAccountExternalEvent(AccountDto accountDto) {

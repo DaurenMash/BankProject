@@ -41,7 +41,6 @@ public class KafkaConfig {
         return new KafkaTemplate<>(producerFactory());
     }
 
-
     @Bean
     public ConsumerFactory<String, AccountDto> accountConsumerFactory() {
         final Map<String, Object> props = new HashMap<>();

@@ -95,6 +95,9 @@ public class AuditServiceImpl implements AuditService {
             auditRepository.save(auditMapper.toAudit(auditDto));
             log.info("Audit log successfully updated: {}", auditDto);
             return auditDto;
+        } catch (JsonProcessingException e) {
+            log.error("JSON conversion error while parsing updated auditDto: {}", e.getMessage());
+            throw e;
         } catch (EntityNotFoundException e) {
             log.error("Audit not found: {}", e.getMessage());
             throw e;
