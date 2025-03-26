@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @Getter
 @Setter
+@ToString
 public class Audit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,10 +1,6 @@
 package com.bank.antifraud.dto;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @NoArgsConstructor
@@ -12,6 +8,7 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
+@ToString
 public class SuspiciousCardTransferDto {
     int id;
 
@@ -25,16 +22,4 @@ public class SuspiciousCardTransferDto {
     String blockedReason;
 
     String suspiciousReason;
-
-    @Override
-    public String toString() {
-        return "SuspiciousCardTransferDto{" +
-                "id=" + id +
-                ", cardTransferId=" + cardTransferId +
-                ", blocked=" + blocked +
-                ", suspicious=" + suspicious +
-                ", blockedReason='" + blockedReason + '\'' +
-                ", suspiciousReason='" + suspiciousReason + '\'' +
-                '}';
-    }
 }

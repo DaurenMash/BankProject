@@ -11,20 +11,24 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
+@ToString
 public class SuspiciousPhoneTransfer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
 
-    int phone_transfer_id;
+    @Column(name = "phone_transfer_id")
+    int phoneTransferId;
+
     @Column(name = "is_blocked")
     boolean blocked;
 
     @Column(name = "is_suspicious")
     boolean suspicious;
 
-    @Column(nullable = false)
-    String blocked_reason;
+    @Column(name = "blocked_reason")
+    String blockedReason;
 
-    String suspicious_reason;
+    @Column(name = "suspicious_reason")
+    String suspiciousReason;
 }

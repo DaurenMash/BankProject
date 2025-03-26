@@ -1,51 +1,111 @@
 package com.bank.antifraud.globalException;
 
-import com.bank.antifraud.globalException.errorDto.ErrorResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import io.micrometer.core.instrument.config.validate.ValidationException;
+
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+
+import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Slf4j
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
-    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public GlobalExceptionHandler(KafkaTemplate<String, Object> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach(error -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Validation failed",
+                errors
+        );
+
+        log.warn("Validation error: {}", errors);
+        return ResponseEntity.badRequest().body(response);
     }
 
-    public void handleException(Exception exception, String topic) {
-        ErrorResponse errorResponse;
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getConstraintViolations().forEach(violation -> {
+            String fieldName = violation.getPropertyPath().toString();
+            String message = violation.getMessage();
+            errors.put(fieldName, message);
+        });
 
-        if (exception instanceof EntityNotFoundException) {
-            errorResponse = new ErrorResponse("ENTITY_NOT_FOUND", exception.getMessage());
-            log.error("Entity not found: {}", exception.getMessage());
-        } else if (exception instanceof ValidationException) {
-            errorResponse = new ErrorResponse("VALIDATION_ERROR", exception.getMessage());
-            log.error("Validation error: {}", exception.getMessage());
-        } else if (exception instanceof DataAccessException) {
-            errorResponse = new ErrorResponse("DATA_ACCESS_ERROR", exception.getMessage());
-            log.error("Data access error: {}", exception.getMessage());
-        } else if (exception instanceof IllegalArgumentException) {
-            errorResponse = new ErrorResponse("ILLEGAL_ARGUMENT", exception.getMessage());
-            log.error("Illegal argument: {}", exception.getMessage());
-        } else if (exception instanceof JsonProcessingException) {
-            errorResponse = new ErrorResponse("JSON_PARSING_ERROR", exception.getMessage());
-            log.error("Json parsing error: {}", exception.getMessage());
-        } else if (exception instanceof SecurityException) {
-            errorResponse = new ErrorResponse("SECURITY_EXCEPTION", exception.getMessage());
-            log.error("JWT is invalid: {}", exception.getMessage());
-        }  else {
-            errorResponse = new ErrorResponse("INTERNAL_ERROR", exception.getMessage());
-            log.error("Unexpected error: {}", exception.getMessage());
-        }
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Constraint violation",
+                errors
+        );
 
-        kafkaTemplate.send(topic, errorResponse);
+        log.warn("Constraint violation: {}", errors);
+        return ResponseEntity.badRequest().body(response);
     }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidJson(HttpMessageNotReadableException ex) {
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid JSON format",
+                Map.of("error", "Malformed JSON request")
+        );
+
+        log.error("JSON parsing error: {}", ex.getMessage());
+        return ResponseEntity.badRequest().body(response);
+    }
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handleEntityNotFound(EntityNotFoundException ex) {
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.NOT_FOUND.value(),
+                "Entity not found",
+                Map.of("error", ex.getMessage())
+        );
+
+        log.warn("Entity not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ErrorResponse> handleAllExceptions(Exception ex, WebRequest request) {
+        ErrorResponse response = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                "Internal server error",
+                Map.of("path", request.getDescription(false))
+        );
+
+        log.error("Unexpected error: {}", ex.getMessage(), ex);
+        return ResponseEntity.internalServerError().body(response);
+    }
+
+    // DTO для ошибок
+    public record ErrorResponse(
+            LocalDateTime timestamp,
+            int status,
+            String message,
+            Map<String, String> errors
+    ) {}
 }
 

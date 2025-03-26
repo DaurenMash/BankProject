@@ -1,6 +1,7 @@
 package com.bank.antifraud.kafkaProducer;
 
 import com.bank.antifraud.dto.AuditDto;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.header.internals.RecordHeader;
@@ -11,12 +12,10 @@ import java.nio.charset.StandardCharsets;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class AuditProducer {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public AuditProducer(KafkaTemplate<String, Object> kafkaTemplate) {
-        this.kafkaTemplate = kafkaTemplate;
-    }
 
     public void sendAuditLog(AuditDto auditDto) {
         try {

@@ -3,14 +3,14 @@ package com.bank.antifraud.service;
 import com.bank.antifraud.dto.SuspiciousAccountTransferDto;
 import com.bank.antifraud.dto.SuspiciousCardTransferDto;
 import com.bank.antifraud.dto.SuspiciousPhoneTransferDto;
+
 import com.bank.antifraud.mappers.SuspiciousTransferMapper;
-import com.bank.antifraud.model.SuspiciousAccountTransfer;
-import com.bank.antifraud.model.SuspiciousCardTransfer;
-import com.bank.antifraud.model.SuspiciousPhoneTransfer;
 import com.bank.antifraud.repository.SuspiciousAccountTransferRepository;
 import com.bank.antifraud.repository.SuspiciousCardTransferRepository;
-import com.bank.antifraud.repository.SuspiciousPhoneTransferRepository;
 
+
+import com.bank.antifraud.repository.SuspiciousPhoneTransferRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class SuspiciousTransferServiceImpl implements SuspiciousTransferService {
     private static final BigDecimal SUSPICIOUS_AMOUNT_THRESHOLD = new BigDecimal("10000.00");
 
@@ -26,16 +27,6 @@ public class SuspiciousTransferServiceImpl implements SuspiciousTransferService 
     private final SuspiciousCardTransferRepository cardTransferRepository;
     private final SuspiciousPhoneTransferRepository phoneTransferRepository;
     private final SuspiciousTransferMapper mapper;
-
-    public SuspiciousTransferServiceImpl(SuspiciousAccountTransferRepository accountTransferRepository,
-                                         SuspiciousCardTransferRepository cardTransferRepository,
-                                         SuspiciousPhoneTransferRepository phoneTransferRepository,
-                                         SuspiciousTransferMapper mapper) {
-        this.accountTransferRepository = accountTransferRepository;
-        this.cardTransferRepository = cardTransferRepository;
-        this.phoneTransferRepository = phoneTransferRepository;
-        this.mapper = mapper;
-    }
 
     @Override
     @Transactional

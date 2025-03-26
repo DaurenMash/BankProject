@@ -12,6 +12,7 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
+@ToString
 public class SuspiciousCardTransfer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,16 +31,4 @@ public class SuspiciousCardTransfer {
 
     @Column(name = "suspicious_reason")
     String suspiciousReason;
-
-    @Override
-    public String toString() {
-        return "SuspiciousCardTransfer{" +
-                "id=" + id +
-                ", cardTransferId=" + cardTransferId +
-                ", blocked=" + blocked +
-                ", suspicious=" + suspicious +
-                ", blockedReason='" + blockedReason + '\'' +
-                ", suspiciousReason='" + suspiciousReason + '\'' +
-                '}';
-    }
 }

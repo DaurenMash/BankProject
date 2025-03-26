@@ -8,6 +8,7 @@ import com.bank.antifraud.model.Audit;
 import com.bank.antifraud.repository.AuditRepository;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,19 +20,12 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class AuditServiceImpl implements AuditService {
 
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
     private final ObjectMapper objectMapper;
-    private final String ENTITY_TYPE = "Anti_fraud";
-    private final String CURRENT_USER = "SYSTEM";
-
-    public AuditServiceImpl(AuditRepository auditRepository, AuditMapper auditMapper, ObjectMapper objectMapper) {
-        this.auditRepository = auditRepository;
-        this.auditMapper = auditMapper;
-        this.objectMapper = objectMapper;
-    }
 
     @Override
     @Transactional
@@ -91,17 +85,17 @@ public class AuditServiceImpl implements AuditService {
             List<Audit> audits = auditRepository.findAll();
 
             // Преобразуем список сущностей в список DTO
-            List<AuditDto> auditDtos = audits.stream()
+            List<AuditDto> auditDto = audits.stream()
                     .map(auditMapper::toDTO)
                     .collect(Collectors.toList());
 
-            log.info("Retrieved {} audit logs", auditDtos.size());
-            return auditDtos;
+            log.info("Retrieved {} audit logs", auditDto.size());
+            return auditDto;
         } catch (DataAccessException e) {
-            log.error("Database error while retrieving all audit DTOs: {}", e.getMessage());
+            log.error("Database error while retrieving all audit DTOs:", e);
             throw new DataAccessException("Failed to retrieve all audit DTOs due to database error: " + e);
         } catch (Exception e) {
-            log.error("Failed to retrieve all audit DTOs: {}", e);
+            log.error("Failed to retrieve all audit DTOs:", e);
             throw new RuntimeException("Unexpected error while retrieving all audit DTOs", e);
         }
     }

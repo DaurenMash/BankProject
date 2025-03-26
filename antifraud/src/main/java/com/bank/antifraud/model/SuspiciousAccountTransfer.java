@@ -12,20 +12,23 @@ import lombok.*;
 @Builder
 @Getter
 @Setter
+@ToString
 public class SuspiciousAccountTransfer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
+    @Column(name = "account_transfer_id")
+    int accountTransferId;
 
-    int account_transfer_id;
     @Column(name = "is_blocked")
     boolean blocked;
 
     @Column(name = "is_suspicious")
     boolean suspicious;
 
-    @Column(nullable = false)
-    String blocked_reason;
+    @Column(name = "blocked_reason")
+    String blockedReason;
 
-    String suspicious_reason;
+    @Column(name = "suspicious_reason")
+    String suspiciousReason;
 }
