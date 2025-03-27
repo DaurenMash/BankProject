@@ -1,4 +1,4 @@
-package com.bank.authorization.service;
+package com.bank.authorization.handler;
 
 import com.bank.authorization.dto.AuthRequest;
 import com.bank.authorization.dto.AuthResponse;
@@ -6,6 +6,8 @@ import com.bank.authorization.dto.KafkaRequest;
 import com.bank.authorization.dto.KafkaResponse;
 import com.bank.authorization.dto.UserDto;
 import com.bank.authorization.entity.Role;
+import com.bank.authorization.service.UserService;
+import com.bank.authorization.utils.JwtTokenUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +19,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
-import com.bank.authorization.handler.KafkaExceptionHandler;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,10 +26,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class UserCommandHandler {
+public class UserKafkaCommandListener {
 
     private final UserService userService;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtTokenUtil jwtTokenUtil;
     private final AuthenticationManager authenticationManager;
     private final KafkaTemplate<String, KafkaResponse> kafkaTemplate;
     private final KafkaExceptionHandler kafkaExceptionHandler;
@@ -43,7 +44,7 @@ public class UserCommandHandler {
                     new UsernamePasswordAuthenticationToken(request.getProfileId(), request.getPassword())
             );
 
-            final String jwt = jwtTokenProvider.generateToken(
+            final String jwt = jwtTokenUtil.generateToken(
                     String.valueOf(request.getProfileId()),
                     authenticate.getAuthorities()
             );
@@ -84,11 +85,11 @@ public class UserCommandHandler {
             final ObjectMapper objectMapper = new ObjectMapper();
             final String jwtTokenToValidate = objectMapper.convertValue(request.getPayload(), String.class);
 
-            if (!jwtTokenProvider.validateToken(jwtTokenToValidate)) {
+            if (!jwtTokenUtil.validateToken(jwtTokenToValidate)) {
                 response.setSuccess(false);
                 response.setMessage("Invalid JWT token");
             } else {
-                List<String> authorities = jwtTokenProvider.getAuthoritiesFromToken(jwtTokenToValidate);
+                List<String> authorities = jwtTokenUtil.getAuthoritiesFromToken(jwtTokenToValidate);
                 response.setSuccess(true);
                 response.setMessage("Valid token");
                 response.setData(authorities);
@@ -236,11 +237,11 @@ public class UserCommandHandler {
     }
 
     private void validateTokenAndCheckPermissions(String jwtToken, Role requiredRole) {
-        if (!jwtTokenProvider.validateToken(jwtToken)) {
+        if (!jwtTokenUtil.validateToken(jwtToken)) {
             throw new SecurityException("Invalid JWT token");
         }
 
-        final List<String> authorities = jwtTokenProvider.getAuthoritiesFromToken(jwtToken);
+        final List<String> authorities = jwtTokenUtil.getAuthoritiesFromToken(jwtToken);
 
         if (!authorities.contains(requiredRole.name())) {
             throw new SecurityException("User does not have permission to perform this operation");
