@@ -5,6 +5,8 @@ spring:
     active: local
   kafka:
     bootstrap-servers: localhost:9092
+    consumer:
+      group-id: history-group
     properties:
       security:
         protocol: PLAINTEXT

@@ -10,4 +10,6 @@ public interface HistoryService {
     void saveHistory(History history);
 
     Page<History> getAuditHistory(Pageable pageable);
+
+    Page<History> getAuditHistoryByTransferId(Long transferAuditId, Pageable pageable);
 }

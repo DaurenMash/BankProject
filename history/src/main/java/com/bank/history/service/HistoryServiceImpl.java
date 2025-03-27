@@ -33,4 +33,10 @@ public class HistoryServiceImpl implements HistoryService {
     public Page<History> getAuditHistory(Pageable pageable) {
         return historyRepository.findAll(pageable);
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<History> getAuditHistoryByTransferId(Long transferAuditId, Pageable pageable) {
+        return historyRepository.findByTransferAuditId(transferAuditId, pageable);
+    }
 }
