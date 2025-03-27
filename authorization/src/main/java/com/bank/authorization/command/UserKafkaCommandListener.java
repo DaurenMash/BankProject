@@ -58,7 +58,7 @@ public class UserKafkaCommandListener {
     @Value("${topics.user_get_all_response}")
     private String userGetAllResponseTopic;
 
-    @KafkaListener(topics = "${topics.auth_login}", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.auth_login}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeLoginRequest(AuthRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -98,7 +98,7 @@ public class UserKafkaCommandListener {
         kafkaTemplate.send(authLoginResponseTopic, response);
     }
 
-    @KafkaListener(topics = "${topics.auth_validate}", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.auth_validate}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeTokenValidationRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -129,7 +129,7 @@ public class UserKafkaCommandListener {
         kafkaTemplate.send(authValidateResponseTopic, response);
     }
 
-    @KafkaListener(topics = "${topics.user_create}", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.user_create}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeCreateUserRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -157,7 +157,7 @@ public class UserKafkaCommandListener {
         kafkaTemplate.send(userCreateResponseTopic, response);
     }
 
-    @KafkaListener(topics = "${topics.user_update}", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.user_update}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeUpdateUserRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -183,7 +183,7 @@ public class UserKafkaCommandListener {
         kafkaTemplate.send(userUpdateResponseTopic, response);
     }
 
-    @KafkaListener(topics = "${topics.user_delete}", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.user_delete}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeDeleteUserRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -208,7 +208,7 @@ public class UserKafkaCommandListener {
         kafkaTemplate.send(userDeleteResponseTopic, response);
     }
 
-    @KafkaListener(topics = "${topics.user_get}", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.user_get}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeGetUserRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -234,7 +234,7 @@ public class UserKafkaCommandListener {
         kafkaTemplate.send(userGetResponseTopic, response);
     }
 
-    @KafkaListener(topics = "${topics.user_get_all}", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.user_get_all}", groupId = "${spring.kafka.consumer.group-id}")
     public void consumeGetAllUsersRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());

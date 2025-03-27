@@ -50,9 +50,9 @@ logging:
   level:
     com.bank.authorization: DEBUG
     root: INFO
-#    org.springdoc: DEBUG
-#    org.springframework.security: DEBUG
-#    org.springframework.web: DEBUG
+  #    org.springdoc: DEBUG
+  #    org.springframework.security: DEBUG
+  #    org.springframework.web: DEBUG
   file:
     name: authorization.log
     path: logs

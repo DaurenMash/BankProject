@@ -27,7 +27,7 @@ public class AppConfig {
     private static final String AUTHORIZATION_GROUP = "authorization-group";
     private static final String TRUSTED_PACKAGES = "com.bank.authorization.dto";
 
-    @Value("${kafka.bootstrap-servers}")
+    @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     @Bean
