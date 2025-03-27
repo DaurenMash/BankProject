@@ -1,8 +1,9 @@
 package com.bank.account.aspects;
 
+import com.bank.account.ENUM.OperationType;
 import com.bank.account.producers.AuditProducer;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
@@ -15,34 +16,25 @@ import org.springframework.stereotype.Component;
 @Aspect
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class AuditAspect {
     private final AuditProducer auditProducer;
-
-    /**
-     * Конструктор для создания экземпляра AuditAspect.
-     *
-     * @param auditProducer Продьюсер для отправки событий Аудита
-     */
-    public AuditAspect(AuditProducer auditProducer) {
-        this.auditProducer = auditProducer;
-    }
 
     /**
      * Логирует операцию создания нового счета.
      * Вызывается после успешного выполнения метода createNewAccount в сервисе AccountServiceImpl.
      *
-     * @param joinPoint точка соединения, предоставляющая информацию о методе
      * @param result результат выполнения метода createNewAccount (созданный AccountDto)
      */
     @AfterReturning(pointcut = "execution(* com.bank.account.service.AccountServiceImpl.createNewAccount(..))",
             returning = "result")
-    public void logCreateAccount(JoinPoint joinPoint, Object result) {
+    public void logCreateAccount(Object result) {
         try {
-            auditProducer.sentAuditLogRequest(result, "create");
+            auditProducer.sendAuditLogRequest(result, OperationType.CREATE);
 
             log.info("Aspect 'create' completed successfully");
         } catch (Exception e) {
-            log.error("Error in aspect 'create' operation: {}", e.getMessage());
+            log.error("Error in aspect 'create' operation: ", e);
         }
     }
 
@@ -53,18 +45,17 @@ public class AuditAspect {
      * получает предыдущие данные счета из аудита, создает новую запись аудита с обновленными данными
      * и отправляет событие аудита.
      *
-     * @param joinPoint точка соединения, предоставляющая информацию о методе и его аргументах
      * @param result результат выполнения метода updateCurrentAccount (обновленный AccountDto)
      */
     @AfterReturning(pointcut = "execution(* com.bank.account.service.AccountServiceImpl.updateCurrentAccount(Long,..))",
             returning = "result")
-    public void logUpdateCurrentAccount(JoinPoint joinPoint, Object result) {
+    public void logUpdateCurrentAccount(Object result) {
         try {
-            auditProducer.sentAuditLogRequest(result, "update");
+            auditProducer.sendAuditLogRequest(result, OperationType.UPDATE);
 
             log.info("Aspect 'update' completed successfully");
         } catch (Exception e) {
-            log.error("Failed to update audit: {}", e.getMessage());
+            log.error("Failed to update audit: ", e);
         }
     }
 }

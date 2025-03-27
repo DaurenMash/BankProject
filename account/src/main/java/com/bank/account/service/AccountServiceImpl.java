@@ -7,8 +7,8 @@ import com.bank.account.exception.EntityNotFoundException;
 import com.bank.account.exception.IllegalArgumentException;
 import com.bank.account.mapper.AccountMapper;
 import com.bank.account.repository.AccountRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,25 +22,14 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
     private final String accountNotFoundMessage = "Account not found with id: ";
+
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
 
-    /**
-     * Конструктор для создания экземпляра AccountServiceImpl
-     *
-     * @param accountRepository для работы с аккаунтами в базе данных
-     * @param accountMapper для преобразования объектов Account в объекты AccountDto и обратно
-     */
-    @Autowired
-    public AccountServiceImpl(AccountRepository accountRepository,
-                              AccountMapper accountMapper) {
-        this.accountRepository = accountRepository;
-        this.accountMapper = accountMapper;
-    }
-
-    /**
+   /**
      * Создает новый банковский счет на основе переданных данных
      *
      * @param accountDto аккаунт с переданными данными для создания счета
@@ -59,9 +48,7 @@ public class AccountServiceImpl implements AccountService {
                 throw new IllegalArgumentException("Bank details id already exists");
             }
 
-            final BigDecimal money = accountDto.getMoney();
-            final int comparisonResult = money.compareTo(BigDecimal.ZERO);
-            accountDto.setNegativeBalance(comparisonResult < 0);
+            accountDto.setNegativeBalance(isNegativeBalance(accountDto));
 
             final Account accountExternal = accountRepository.save(accountMapper.toAccount(accountDto));
 
@@ -123,10 +110,7 @@ public class AccountServiceImpl implements AccountService {
 
             account.setAccountNumber(accountDtoUpdated.getAccountNumber());
             account.setMoney(accountDtoUpdated.getMoney());
-            final BigDecimal money = accountDtoUpdated.getMoney();
-            final int comparisonResult = money.compareTo(BigDecimal.ZERO);
-            account.setNegativeBalance(comparisonResult < 0);
-
+            account.setNegativeBalance(isNegativeBalance(accountDtoUpdated));
             account.setPassportId(accountDtoUpdated.getPassportId());
             account.setBankDetailsId(accountDtoUpdated.getBankDetailsId());
             account.setProfileId(accountDtoUpdated.getProfileId());
@@ -230,10 +214,10 @@ public class AccountServiceImpl implements AccountService {
                     .map(accountMapper::toDto)
                     .collect(Collectors.toList());
 
-            if (result.isEmpty()) {
+            if (!result.isEmpty()) {
                 log.info("List of accounts successfully retrieved");
             } else {
-                log.warn("List of accounts is null");
+                log.warn("List of accounts is empty");
             }
             return result;
         } catch (DataAccessException e) {
@@ -243,5 +227,10 @@ public class AccountServiceImpl implements AccountService {
             log.error("Unexpected error while getting all accounts", e);
             throw new RuntimeException("Unexpected error while getting accounts list", e);
         }
+    }
+
+    private boolean isNegativeBalance(AccountDto accountWithMoney) {
+        BigDecimal money = accountWithMoney.getMoney();
+        return money.compareTo(BigDecimal.ZERO) < 0;
     }
 }

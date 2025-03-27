@@ -9,6 +9,7 @@ import com.bank.account.exception.JsonProcessingException;
 import com.bank.account.mapper.AuditMapper;
 import com.bank.account.repository.AuditRepository;
 import com.bank.account.utils.JsonUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuditServiceImpl implements AuditService {
     private static final String ENTITY_TYPE = "Account";
     private static final String CURRENT_USER = "SYSTEM";
@@ -26,11 +28,6 @@ public class AuditServiceImpl implements AuditService {
 
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
-
-    public AuditServiceImpl(AuditRepository auditRepository, AuditMapper auditMapper) {
-        this.auditRepository = auditRepository;
-        this.auditMapper = auditMapper;
-    }
 
     @Override
     @Transactional
@@ -53,10 +50,10 @@ public class AuditServiceImpl implements AuditService {
             log.info("Audit log successfully saved: {}", audit);
             return auditDto;
         } catch (JsonProcessingException e) {
-            log.error("JSON conversion error while creating audit DTO: {}", e.getMessage());
+            log.error("JSON conversion error while creating audit DTO: ", e);
             throw e;
         } catch (DataAccessException e) {
-            log.error("Database error while creating audit DTO: {}", e.getMessage());
+            log.error("Database error while creating audit DTO: ", e);
             throw new DataAccessException("Failed to create audit DTO due to database error: " + e);
         } catch (IllegalArgumentException e) {
             log.error("Invalid input data in creating method:", e);
@@ -96,7 +93,7 @@ public class AuditServiceImpl implements AuditService {
             log.info("Audit log successfully updated: {}", auditDto);
             return auditDto;
         } catch (JsonProcessingException e) {
-            log.error("JSON conversion error while parsing updated auditDto: {}", e.getMessage());
+            log.error("JSON conversion error while parsing updated auditDto: ", e);
             throw e;
         } catch (EntityNotFoundException e) {
             log.error("Audit not found: {}", e.getMessage());
@@ -105,7 +102,7 @@ public class AuditServiceImpl implements AuditService {
             log.error("Database error while updating audit DTO: {}", e.getMessage());
             throw new DataAccessException("Failed to update audit DTO due to database error: " + e);
         } catch (IllegalArgumentException e) {
-            log.error("Invalid input data: {}", e.getMessage());
+            log.error("Invalid input data: ", e);
             throw e;
         } catch (Exception e) {
             log.error("Service. Failed to update audit DTO for entity ID: {}", accountDto.getId(), e);
