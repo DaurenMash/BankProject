@@ -1,4 +1,4 @@
-package com.bank.authorization.handler;
+package com.bank.authorization.command;
 
 import com.bank.authorization.dto.AuthRequest;
 import com.bank.authorization.dto.AuthResponse;
@@ -6,11 +6,13 @@ import com.bank.authorization.dto.KafkaRequest;
 import com.bank.authorization.dto.KafkaResponse;
 import com.bank.authorization.dto.UserDto;
 import com.bank.authorization.entity.Role;
+import com.bank.authorization.handler.KafkaExceptionHandler;
 import com.bank.authorization.service.UserService;
 import com.bank.authorization.utils.JwtTokenUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,13 +30,35 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserKafkaCommandListener {
 
+    private final ObjectMapper objectMapper;
     private final UserService userService;
     private final JwtTokenUtil jwtTokenUtil;
     private final AuthenticationManager authenticationManager;
     private final KafkaTemplate<String, KafkaResponse> kafkaTemplate;
     private final KafkaExceptionHandler kafkaExceptionHandler;
 
-    @KafkaListener(topics = "auth.login", groupId = "authorization-group")
+    @Value("${topics.auth_login_response}")
+    private String authLoginResponseTopic;
+
+    @Value("${topics.auth_validate_response}")
+    private String authValidateResponseTopic;
+
+    @Value("${topics.user_create_response}")
+    private String userCreateResponseTopic;
+
+    @Value("${topics.user_update_response}")
+    private String userUpdateResponseTopic;
+
+    @Value("${topics.user_delete_response}")
+    private String userDeleteResponseTopic;
+
+    @Value("${topics.user_get_response}")
+    private String userGetResponseTopic;
+
+    @Value("${topics.user_get_all_response}")
+    private String userGetAllResponseTopic;
+
+    @KafkaListener(topics = "${topics.auth_login}", groupId = "authorization-group")
     public void consumeLoginRequest(AuthRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -71,10 +95,10 @@ public class UserKafkaCommandListener {
             kafkaExceptionHandler.handleException(e, request.getRequestId());
         }
 
-        kafkaTemplate.send("auth.login.response", response);
+        kafkaTemplate.send(authLoginResponseTopic, response);
     }
 
-    @KafkaListener(topics = "auth.validate", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.auth_validate}", groupId = "authorization-group")
     public void consumeTokenValidationRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -82,7 +106,6 @@ public class UserKafkaCommandListener {
         try {
             validateTokenAndCheckPermissions(request.getJwtToken(), Role.ROLE_ADMIN);
 
-            final ObjectMapper objectMapper = new ObjectMapper();
             final String jwtTokenToValidate = objectMapper.convertValue(request.getPayload(), String.class);
 
             if (!jwtTokenUtil.validateToken(jwtTokenToValidate)) {
@@ -103,10 +126,10 @@ public class UserKafkaCommandListener {
             response.setMessage("Error validating token: " + e.getMessage());
         }
 
-        kafkaTemplate.send("auth.validate.response", response);
+        kafkaTemplate.send(authValidateResponseTopic, response);
     }
 
-    @KafkaListener(topics = "user.create", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.user_create}", groupId = "authorization-group")
     public void consumeCreateUserRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -114,7 +137,6 @@ public class UserKafkaCommandListener {
         try {
             validateTokenAndCheckPermissions(request.getJwtToken(), Role.ROLE_ADMIN);
 
-            final ObjectMapper objectMapper = new ObjectMapper();
             final UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
 
             final UserDto createdUser = userService.save(userDto);
@@ -132,10 +154,10 @@ public class UserKafkaCommandListener {
             kafkaExceptionHandler.handleException(e, request.getRequestId());
         }
 
-        kafkaTemplate.send("user.create.response", response);
+        kafkaTemplate.send(userCreateResponseTopic, response);
     }
 
-    @KafkaListener(topics = "user.update", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.user_update}", groupId = "authorization-group")
     public void consumeUpdateUserRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -143,7 +165,6 @@ public class UserKafkaCommandListener {
         try {
             validateTokenAndCheckPermissions(request.getJwtToken(), Role.ROLE_ADMIN);
 
-            final ObjectMapper objectMapper = new ObjectMapper();
             final UserDto userDto = objectMapper.convertValue(request.getPayload(), UserDto.class);
 
             final UserDto updatedUser = userService.updateUser(userDto.getId(), userDto);
@@ -159,10 +180,10 @@ public class UserKafkaCommandListener {
             kafkaExceptionHandler.handleException(e, request.getRequestId());
         }
 
-        kafkaTemplate.send("user.update.response", response);
+        kafkaTemplate.send(userUpdateResponseTopic, response);
     }
 
-    @KafkaListener(topics = "user.delete", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.user_delete}", groupId = "authorization-group")
     public void consumeDeleteUserRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -184,10 +205,10 @@ public class UserKafkaCommandListener {
             kafkaExceptionHandler.handleException(e, request.getRequestId());
         }
 
-        kafkaTemplate.send("user.delete.response", response);
+        kafkaTemplate.send(userDeleteResponseTopic, response);
     }
 
-    @KafkaListener(topics = "user.get", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.user_get}", groupId = "authorization-group")
     public void consumeGetUserRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -210,10 +231,10 @@ public class UserKafkaCommandListener {
             kafkaExceptionHandler.handleException(e, request.getRequestId());
         }
 
-        kafkaTemplate.send("user.get.response", response);
+        kafkaTemplate.send(userGetResponseTopic, response);
     }
 
-    @KafkaListener(topics = "user.get.all", groupId = "authorization-group")
+    @KafkaListener(topics = "${topics.user_get_all}", groupId = "authorization-group")
     public void consumeGetAllUsersRequest(KafkaRequest request) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(request.getRequestId());
@@ -233,7 +254,7 @@ public class UserKafkaCommandListener {
             kafkaExceptionHandler.handleException(e, request.getRequestId());
         }
 
-        kafkaTemplate.send("user.get.all.response", response);
+        kafkaTemplate.send(userGetAllResponseTopic, response);
     }
 
     private void validateTokenAndCheckPermissions(String jwtToken, Role requiredRole) {

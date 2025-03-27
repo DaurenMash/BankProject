@@ -1,4 +1,4 @@
-package com.bank.authorization.service;
+package com.bank.authorization.security;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

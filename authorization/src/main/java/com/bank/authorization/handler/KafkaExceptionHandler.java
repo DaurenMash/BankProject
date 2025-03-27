@@ -5,6 +5,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataAccessException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -17,6 +18,9 @@ public class KafkaExceptionHandler {
 
     private final KafkaTemplate<String, KafkaResponse> kafkaTemplate;
 
+    @Value("${topics.error-logging}")
+    private String errorLoggingTopic;
+
     public void handleException(Exception exception, String requestId) {
         final KafkaResponse response = new KafkaResponse();
         response.setRequestId(requestId);
@@ -25,7 +29,7 @@ public class KafkaExceptionHandler {
 
         log.error("Kafka exception caught: {}", exception.getMessage(), exception);
 
-        kafkaTemplate.send("error.logging", response);
+        kafkaTemplate.send(errorLoggingTopic, response);
     }
 
     private String getErrorMessage(Exception exception) {

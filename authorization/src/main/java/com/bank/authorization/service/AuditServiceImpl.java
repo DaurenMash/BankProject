@@ -3,6 +3,8 @@ package com.bank.authorization.service;
 import com.bank.authorization.dto.AuditDto;
 import com.bank.authorization.dto.UserDto;
 import com.bank.authorization.entity.Audit;
+import com.bank.authorization.entity.EntityType;
+import com.bank.authorization.entity.OperationType;
 import com.bank.authorization.entity.User;
 import com.bank.authorization.mapper.AuditMapper;
 import com.bank.authorization.repository.AuditRepository;
@@ -21,8 +23,9 @@ import java.util.List;
 public class AuditServiceImpl implements AuditService {
 
     private static final String SYSTEM_USER = "SYSTEM";
-    private static final String ENTITY_USER = "User";
 
+    private EntityType entityType;
+    private OperationType operationType;
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
 
@@ -30,8 +33,8 @@ public class AuditServiceImpl implements AuditService {
     @Transactional
     public void logUserCreation(UserDto userDto) {
         AuditDto auditDto = new AuditDto();
-        auditDto.setEntityType(ENTITY_USER);
-        auditDto.setOperationType("CREATE");
+        auditDto.setEntityType(entityType.USER.name());
+        auditDto.setOperationType(operationType.CREATE.name());
         auditDto.setCreatedBy(SYSTEM_USER);
         auditDto.setEntityJson(JsonUtils.toJson(userDto));
         auditDto.setCreatedAt(LocalDateTime.now());
@@ -60,7 +63,7 @@ public class AuditServiceImpl implements AuditService {
         }
 
         if (existingAudit != null) {
-            existingAudit.setOperationType("UPDATE");
+            existingAudit.setOperationType(operationType.UPDATE.name());
             existingAudit.setModifiedBy(SYSTEM_USER);
             existingAudit.setModifiedAt(LocalDateTime.now());
             existingAudit.setNewEntityJson(JsonUtils.toJson(userDto));

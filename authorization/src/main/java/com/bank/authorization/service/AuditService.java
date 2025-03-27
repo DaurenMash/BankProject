@@ -7,5 +7,4 @@ public interface AuditService {
     void save(AuditDto auditDto);
     void logUserCreation(UserDto userDto);
     void logUserUpdate(Long userId, UserDto userDto);
-
 }

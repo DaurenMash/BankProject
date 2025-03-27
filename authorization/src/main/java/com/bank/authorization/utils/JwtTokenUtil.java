@@ -1,4 +1,4 @@
-package com.bank.authorization.service;
+package com.bank.authorization.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class JwtTokenProvider {
+public class JwtTokenUtil {
 
     @Value("${app.jwt.secret-key}")
     private String jwtSecret;
