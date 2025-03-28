@@ -34,6 +34,8 @@ spring:
         enabled: true
   kafka:
     bootstrap-servers: localhost:9092
+    partitions: 3
+    replicas: 1
     consumer:
       group-ids:
         account: account-group
@@ -56,4 +58,8 @@ kafka:
     external-account-delete: external.account.delete
     external-account-get: external.account.get
     external-account-get-by-id: external.account.getById
-
+    external-audit-logs: external.audit.logs
+  header: Authorization
+audit:
+  default-user: SYSTEM
+  entity-type: ACCOUNT

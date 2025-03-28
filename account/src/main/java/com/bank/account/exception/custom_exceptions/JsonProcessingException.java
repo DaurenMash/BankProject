@@ -1,6 +1,6 @@
-package com.bank.account.exception;
+package com.bank.account.exception.custom_exceptions;
 
-public class JsonProcessingException extends RuntimeException {
+public class JsonProcessingException extends com.fasterxml.jackson.core.JsonProcessingException {
     public JsonProcessingException(String message) {
         super(message);
     }

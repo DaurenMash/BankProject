@@ -1,112 +1,98 @@
 package com.bank.account.service;
 
+import com.bank.account.ENUM.OperationType;
 import com.bank.account.dto.AccountDto;
 import com.bank.account.dto.AuditDto;
 import com.bank.account.entity.Audit;
-import com.bank.account.exception.DataAccessException;
-import com.bank.account.exception.EntityNotFoundException;
-import com.bank.account.exception.JsonProcessingException;
+import com.bank.account.exception.custom_exceptions.EntityNotFoundException;
+import com.bank.account.exception.custom_exceptions.JsonProcessingException;
 import com.bank.account.mapper.AuditMapper;
 import com.bank.account.repository.AuditRepository;
 import com.bank.account.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuditServiceImpl implements AuditService {
-    private static final String ENTITY_TYPE = "Account";
-    private static final String CURRENT_USER = "SYSTEM";
-    private static final String CREATION_OPERATION = "CREATION";
-    private static final String UPDATING_OPERATION = "UPDATING";
+
+    @Value("${audit.entity-type}")
+    private String entityType;
+
+    @Value("${audit.default-user}")
+    private String currentUser;
 
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
 
     @Override
     @Transactional
-    public AuditDto createAudit(Object result) {
+    public AuditDto createAudit(Object result) throws JsonProcessingException {
         final AccountDto accountDto = (AccountDto) result;
         try {
             final String entityJson = JsonUtils.convertToJson(accountDto);
 
-            final AuditDto auditDto = new AuditDto();
-            auditDto.setEntityType(ENTITY_TYPE);
-            auditDto.setOperationType(CREATION_OPERATION);
-            auditDto.setCreatedBy(CURRENT_USER);
-            auditDto.setModifiedBy("");
-            auditDto.setCreatedAt(new Timestamp(System.currentTimeMillis()));
-            auditDto.setModifiedAt(null);
-            auditDto.setNewEntityJson(null);
-            auditDto.setEntityJson(entityJson);
+            final AuditDto auditDto = AuditDto.builder()
+                    .entityType(entityType)
+                    .operationType(OperationType.CREATE.name())
+                    .createdBy(currentUser)
+                    .modifiedBy(null)
+                    .createdAt(new Timestamp(System.currentTimeMillis()))
+                    .modifiedAt(null)
+                    .newEntityJson(null)
+                    .entityJson(entityJson)
+                    .build();
             final Audit audit = auditRepository.save(auditMapper.toAudit(auditDto));
 
             log.info("Audit log successfully saved: {}", audit);
             return auditDto;
         } catch (JsonProcessingException e) {
-            log.error("JSON conversion error while creating audit DTO: ", e);
-            throw e;
-        } catch (DataAccessException e) {
-            log.error("Database error while creating audit DTO: ", e);
-            throw new DataAccessException("Failed to create audit DTO due to database error: " + e);
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid input data in creating method:", e);
-            throw e;
-        } catch (Exception e) {
-            log.error("Failed to create audit DTO for entity ID: {}", accountDto.getId(), e);
-            throw new RuntimeException("Unexpected error while updating audit DTO:", e);
+            log.error("Failed to convert account to JSON for audit. Account ID: {}",
+                    accountDto.getId(), e);
+            throw new JsonProcessingException(
+                    String.format("Failed to create audit for account %d due to JSON processing error",
+                            accountDto.getId()), e);
         }
     }
 
     @Override
     @Transactional
-    public AuditDto updateAudit(Object result) {
+    public AuditDto updateAudit(Object result) throws JsonProcessingException {
         final AccountDto accountDto = (AccountDto) result;
         try {
             final String newEntityJson = JsonUtils.convertToJson(accountDto);
             final Long accountId = accountDto.getId();
-
-            final String oldEntityJson;
             final AuditDto oldAuditDto = getAuditByEntityId(accountId);
-            if (oldAuditDto.getNewEntityJson() == null) {
-                oldEntityJson = oldAuditDto.getEntityJson();
-            } else {
-                oldEntityJson = oldAuditDto.getNewEntityJson();
-            }
-            final AuditDto auditDto = new AuditDto();
-            auditDto.setEntityType(oldAuditDto.getEntityType());
-            auditDto.setOperationType(UPDATING_OPERATION);
-            auditDto.setCreatedBy(oldAuditDto.getCreatedBy());
-            auditDto.setModifiedBy(CURRENT_USER);
-            auditDto.setCreatedAt(oldAuditDto.getCreatedAt());
-            auditDto.setModifiedAt(new Timestamp(System.currentTimeMillis()));
-            auditDto.setNewEntityJson(newEntityJson);
-            auditDto.setEntityJson(oldEntityJson);
+            final String oldEntityJson = Optional.ofNullable(oldAuditDto.getNewEntityJson())
+                    .orElse(oldAuditDto.getEntityJson());
+            final AuditDto auditDto = AuditDto.builder()
+                    .entityType(oldAuditDto.getEntityType())
+                    .operationType(OperationType.UPDATE.name())
+                    .createdBy(oldAuditDto.getCreatedBy())
+                    .modifiedBy(currentUser)
+                    .createdAt(oldAuditDto.getCreatedAt())
+                    .modifiedAt(new Timestamp(System.currentTimeMillis()))
+                    .newEntityJson(newEntityJson)
+                    .entityJson(oldEntityJson)
+                    .build();
 
             auditRepository.save(auditMapper.toAudit(auditDto));
             log.info("Audit log successfully updated: {}", auditDto);
             return auditDto;
-        } catch (JsonProcessingException e) {
-            log.error("JSON conversion error while parsing updated auditDto: ", e);
-            throw e;
-        } catch (EntityNotFoundException e) {
-            log.error("Audit not found: {}", e.getMessage());
-            throw e;
-        } catch (DataAccessException e) {
-            log.error("Database error while updating audit DTO: {}", e.getMessage());
-            throw new DataAccessException("Failed to update audit DTO due to database error: " + e);
-        } catch (IllegalArgumentException e) {
-            log.error("Invalid input data: ", e);
-            throw e;
-        } catch (Exception e) {
-            log.error("Service. Failed to update audit DTO for entity ID: {}", accountDto.getId(), e);
-            throw new RuntimeException("Unexpected error while updating audit DTO", e);
+        }  catch (JsonProcessingException e) {
+            final String errorMessage = "Failed to convert account to JSON for audit.";
+            log.error(errorMessage + " Account ID: {}", accountDto.getId(), e);
+            throw new JsonProcessingException(errorMessage, e);
         }
     }
 
@@ -114,51 +100,44 @@ public class AuditServiceImpl implements AuditService {
     @Transactional(readOnly = true)
     public AuditDto getAuditByEntityId(Long entityIdFromCurrentAccount) {
         try {
-            final List<AuditDto> auditDtoList = getAllAudits();
-            final AuditDto resultAuditDto = auditDtoList.stream()
-                    .filter(auditDto -> {
-                        try {
-                            final Long entityIdFromJson = JsonUtils.extractEntityIdFromJson(auditDto.getEntityJson());
-                            return entityIdFromJson.equals(entityIdFromCurrentAccount);
-                        } catch (JsonProcessingException e) {
-                            throw new JsonProcessingException("Failed to parse entityJson", e);
-                        }
-                    })
-                    .findFirst()
-                    .orElseThrow(() -> new EntityNotFoundException("Audit not found for entity ID: " +
-                            entityIdFromCurrentAccount));
+            final String searchPattern = "\"id\"\\s*:\\s*" + entityIdFromCurrentAccount + "\\b";
+            final Pattern pattern = Pattern.compile(searchPattern);
+            final List<Audit> auditList = auditRepository.findAll()
+                    .stream()
+                    .filter(audit -> pattern.matcher(audit.getEntityJson()).find())
+                    .toList();
 
-            log.info("Successfully retrieved audit for entity ID: {}", entityIdFromCurrentAccount);
-            return resultAuditDto;
-        } catch (JsonProcessingException e) {
-            log.error("JSON conversion error while parsing auditDto: {}", e.getMessage());
-            throw e;
-        } catch (EntityNotFoundException e) {
-            log.error("Audit not found for entity ID: {}", entityIdFromCurrentAccount, e);
-            throw e;
+            if (auditList.isEmpty()) {
+                throw new EntityNotFoundException("Audit not found for entity ID: " +
+                        entityIdFromCurrentAccount);
+            }
+
+            if (auditList.size() == 1) {
+                return auditMapper.toAuditDto(auditList.get(0));
+            }
+
+            return auditList.stream()
+                    .filter(audit -> audit.getModifiedAt() != null)
+                    .max(Comparator.comparing(Audit::getModifiedAt))
+                    .map(auditMapper::toAuditDto)
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "No modified audit records found for entity ID: " + entityIdFromCurrentAccount
+                    ));
         } catch (Exception e) {
-            log.error("Failed to retrieve audit for entity ID: {}", entityIdFromCurrentAccount);
-            throw new RuntimeException("Unexpected error while retrieving audit", e);
+            log.error("Failed to retrieve audit for entity ID: {}", entityIdFromCurrentAccount, e);
+            throw e;
         }
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<AuditDto> getAllAudits() {
-        try {
-            final List<AuditDto> resultAuditDtoList = auditRepository.findAll()
-                    .stream()
-                    .map(auditMapper::toAuditDto)
-                    .toList();
+        final List<AuditDto> resultAuditDtoList = auditRepository.findAll()
+                .stream()
+                .map(auditMapper::toAuditDto)
+                .toList();
 
-            log.info("Successfully retrieved all audits");
-            return resultAuditDtoList;
-        } catch (DataAccessException e) {
-            log.error("Database error while retrieving audits: {}", e.getMessage());
-            throw new DataAccessException("Failed to retrieve audits due to database error: " + e);
-        } catch (Exception e) {
-            log.error("Unexpected error while retrieving audits: {}", e.getMessage());
-            throw new RuntimeException("Unexpected error while retrieving audits", e);
-        }
+        log.info("Successfully retrieved all audits");
+        return resultAuditDtoList;
     }
 }

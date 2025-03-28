@@ -20,4 +20,5 @@ public class KafkaTopicsConfig {
     private String externalAccountDelete;
     private String externalAccountGet;
     private String externalAccountGetById;
+    private String externalAuditLogs;
 }

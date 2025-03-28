@@ -1,11 +1,14 @@
 package com.bank.account.utils;
 
-import com.bank.account.exception.JsonProcessingException;
+import com.bank.account.exception.custom_exceptions.JsonProcessingException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.Header;
 
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
@@ -16,7 +19,7 @@ public class JsonUtils {
             .setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"))
             .setTimeZone(TimeZone.getTimeZone("UTC"));
 
-    public static String convertToJson(Object obj) {
+    public static String convertToJson(Object obj) throws JsonProcessingException {
         try {
             return MAPPER.writeValueAsString(obj);
         } catch (JsonProcessingException e) {
@@ -26,14 +29,9 @@ public class JsonUtils {
         }
     }
 
-    public static Long extractEntityIdFromJson(String json) {
-        try {
-            return MAPPER.readTree(json).get("id").asLong();
-        } catch (JsonProcessingException e) {
-            throw new JsonProcessingException("Failed to extract entity id from JSON: " + e.getMessage(), e);
-        } catch (Exception e) {
-            throw new RuntimeException("Unexpected error while extracting entity id from JSON", e);
-        }
+    public static String extractHeader(ConsumerRecord<?, ?> record, String headerKey) {
+        final Header header = record.headers().lastHeader(headerKey);
+        return header != null ? new String(header.value(), StandardCharsets.UTF_8) : null;
     }
 }
 

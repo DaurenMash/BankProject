@@ -2,6 +2,7 @@ package com.bank.account.config;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
@@ -16,8 +17,12 @@ import java.util.stream.Stream;
 @Configuration
 @RequiredArgsConstructor
 public class KafkaTopic {
-    private static final int DEFAULT_PARTITIONS = 3;
-    private static final short DEFAULT_REPLICAS = 1;
+
+    @Value("${spring.kafka.partitions}")
+    private int partitions;
+
+    @Value("${spring.kafka.replicas}")
+    private short replicas;
 
     private final KafkaTopicsConfig kafkaTopicsConfig;
 
@@ -32,7 +37,9 @@ public class KafkaTopic {
      * 'external.account.update' - Топик для отправки результатов изменения данных аккаунта другому сервису;
      * 'external.account.delete' - Топик для получения результата выполнения удаления аккаунта другим сервисом;
      * 'external.account.get' - Топик для получения результата запроса на выдачу списка всех аккаунтов другому сервису;
-     * 'external.account.getById' - Топик для получения результата выполнения запроса на выдачу конкретного аккаунта по id другому сервису;
+     * 'external.account.getById' - Топик для получения результата выполнения запроса на выдачу конкретного аккаунта
+     *  по id другому сервису;
+     *
      * 'error.logs' - Топик для получения записей ошибок;
      * 'external.audit.logs' - Топик для получения результатов записи логов;
      * 
@@ -50,7 +57,8 @@ public class KafkaTopic {
                 kafkaTopicsConfig.getExternalAccountGet(),
                 kafkaTopicsConfig.getExternalAccountGetById(),
                 kafkaTopicsConfig.getAuditLogs(),
-                kafkaTopicsConfig.getErrorLogs()
+                kafkaTopicsConfig.getErrorLogs(),
+                kafkaTopicsConfig.getExternalAuditLogs()
                 )
                 .map(this::createTopic)
                 .collect(Collectors.toList());
@@ -58,8 +66,8 @@ public class KafkaTopic {
 
     private NewTopic createTopic(String name) {
         return TopicBuilder.name(name)
-                .partitions(DEFAULT_PARTITIONS)
-                .replicas(DEFAULT_REPLICAS)
+                .partitions(partitions)
+                .replicas(replicas)
                 .build();
     }
 }

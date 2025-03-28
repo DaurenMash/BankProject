@@ -1,13 +1,13 @@
 package com.bank.account.aspects;
 
 import com.bank.account.ENUM.OperationType;
+import com.bank.account.dto.AccountDto;
 import com.bank.account.producers.AuditProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.stereotype.Component;
-
 
 /**
  * Аспект для аудита операций с банковскими счетами.
@@ -30,7 +30,8 @@ public class AuditAspect {
             returning = "result")
     public void logCreateAccount(Object result) {
         try {
-            auditProducer.sendAuditLogRequest(result, OperationType.CREATE);
+            final AccountDto accountDto = (AccountDto) result;
+            auditProducer.sendAuditLogRequest(accountDto, OperationType.CREATE);
 
             log.info("Aspect 'create' completed successfully");
         } catch (Exception e) {
@@ -51,7 +52,8 @@ public class AuditAspect {
             returning = "result")
     public void logUpdateCurrentAccount(Object result) {
         try {
-            auditProducer.sendAuditLogRequest(result, OperationType.UPDATE);
+            final AccountDto account = (AccountDto) result;
+            auditProducer.sendAuditLogRequest(account, OperationType.UPDATE);
 
             log.info("Aspect 'update' completed successfully");
         } catch (Exception e) {
