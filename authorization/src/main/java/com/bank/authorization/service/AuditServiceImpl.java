@@ -24,8 +24,6 @@ public class AuditServiceImpl implements AuditService {
 
     private static final String SYSTEM_USER = "SYSTEM";
 
-    private EntityType entityType;
-    private OperationType operationType;
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
 
@@ -33,8 +31,8 @@ public class AuditServiceImpl implements AuditService {
     @Transactional
     public void logUserCreation(UserDto userDto) {
         AuditDto auditDto = new AuditDto();
-        auditDto.setEntityType(entityType.USER.name());
-        auditDto.setOperationType(operationType.CREATE.name());
+        auditDto.setEntityType(EntityType.USER.name());
+        auditDto.setOperationType(OperationType.CREATE.name());
         auditDto.setCreatedBy(SYSTEM_USER);
         auditDto.setEntityJson(JsonUtils.toJson(userDto));
         auditDto.setCreatedAt(LocalDateTime.now());
@@ -63,7 +61,7 @@ public class AuditServiceImpl implements AuditService {
         }
 
         if (existingAudit != null) {
-            existingAudit.setOperationType(operationType.UPDATE.name());
+            existingAudit.setOperationType(OperationType.UPDATE.name());
             existingAudit.setModifiedBy(SYSTEM_USER);
             existingAudit.setModifiedAt(LocalDateTime.now());
             existingAudit.setNewEntityJson(JsonUtils.toJson(userDto));
