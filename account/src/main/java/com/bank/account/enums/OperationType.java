@@ -1,4 +1,4 @@
-package com.bank.account.ENUM;
+package com.bank.account.enums;
 
 public enum OperationType {
     CREATE,

@@ -1,6 +1,6 @@
 package com.bank.account.aspects;
 
-import com.bank.account.ENUM.OperationType;
+import com.bank.account.enums.OperationType;
 import com.bank.account.dto.AccountDto;
 import com.bank.account.producers.AuditProducer;
 import lombok.RequiredArgsConstructor;
