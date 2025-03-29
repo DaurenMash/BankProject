@@ -21,4 +21,6 @@ public class KafkaTopicsConfig {
     private String externalAccountGet;
     private String externalAccountGetById;
     private String externalAuditLogs;
+    private String authValidate;
+    private String authValidateResponse;
 }

@@ -4,6 +4,7 @@ import com.bank.account.config.KafkaTopicsConfig;
 import com.bank.account.dto.AccountDto;
 import com.bank.account.exception.KafkaErrorSender;
 import com.bank.account.producers.AccountProducer;
+import com.bank.account.security.TokenValidationService;
 import com.bank.account.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,11 +31,12 @@ public class AccountQueryConsumer {
     private final AccountProducer accountProducer;
     private final KafkaErrorSender kafkaErrorSender;
     private final KafkaTopicsConfig kafkaTopicsConfig;
+    private final TokenValidationService tokenValidationService;
 
     @KafkaListener(topics = "${kafka.topics.account-get}", groupId = "@accountQueryConsumer.accountGroup")
     public void handleGetAccounts(@Header("Authorization") String jwtToken) {
         try {
-            validateJwtOrThrow(jwtToken);
+            tokenValidationService.validateJwtOrThrow(jwtToken);
 
             final List<AccountDto> accountsDto = accountService.getAllAccounts();
             accountProducer.sendAccountList(kafkaTopicsConfig.getExternalAccountGet(), accountsDto);
@@ -50,7 +52,7 @@ public class AccountQueryConsumer {
             containerFactory = "longKafkaListenerContainerFactory")
     public void handleGetByIdAccount(@Payload Long accountId, @Header("Authorization") String jwtToken) {
         try {
-            validateJwtOrThrow(jwtToken);
+            tokenValidationService.validateJwtOrThrow(jwtToken);
 
             final AccountDto resultAccount = accountService.getAccountById(accountId);
 
@@ -60,16 +62,6 @@ public class AccountQueryConsumer {
         } catch (Exception e) {
             log.error("Method 'handleGetByIdAccount' failed: ", e);
             kafkaErrorSender.sendError(e, topicError);
-        }
-    }
-
-    private boolean validateToken(String jwtToken) {
-        return true;
-    }
-
-    private void validateJwtOrThrow(String jwtToken) {
-        if (!validateToken(jwtToken)) {
-            throw new SecurityException("Invalid JWT");
         }
     }
 }

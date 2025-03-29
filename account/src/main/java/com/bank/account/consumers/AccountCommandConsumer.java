@@ -4,6 +4,7 @@ import com.bank.account.config.KafkaTopicsConfig;
 import com.bank.account.dto.AccountDto;
 import com.bank.account.exception.KafkaErrorSender;
 import com.bank.account.producers.AccountProducer;
+import com.bank.account.security.TokenValidationService;
 import com.bank.account.service.AccountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -12,7 +13,6 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
-
 
 @Slf4j
 @Service
@@ -29,12 +29,13 @@ public class AccountCommandConsumer {
     private final AccountProducer accountProducer;
     private final KafkaErrorSender kafkaErrorSender;
     private final KafkaTopicsConfig kafkaTopicsConfig;
+    private final TokenValidationService tokenValidationService;
 
     @KafkaListener (topics = "${kafka.topics.account-create}", groupId = "@accountCommandConsumer.accountGroup",
             containerFactory = "accountKafkaListenerContainerFactory")
     public void handleCreateAccount(@Payload AccountDto accountDto, @Header("Authorization") String jwtToken) {
         try {
-            validateJwtOrThrow(jwtToken);
+            tokenValidationService.validateJwtOrThrow(jwtToken);
 
             final AccountDto responseAccount = accountService.createNewAccount(accountDto);
 
@@ -51,7 +52,7 @@ public class AccountCommandConsumer {
             containerFactory = "accountKafkaListenerContainerFactory")
     public void handleUpdateAccount(@Payload AccountDto accountDto, @Header("Authorization") String jwtToken) {
         try {
-            validateJwtOrThrow(jwtToken);
+            tokenValidationService.validateJwtOrThrow(jwtToken);
 
             final AccountDto responseAccount = accountService.updateCurrentAccount(accountDto.getId(), accountDto);
 
@@ -68,7 +69,7 @@ public class AccountCommandConsumer {
             containerFactory = "longKafkaListenerContainerFactory")
     public void handleDeleteAccount(@Payload Long accountId, @Header("Authorization") String jwtToken) {
         try {
-            validateJwtOrThrow(jwtToken);
+            tokenValidationService.validateJwtOrThrow(jwtToken);
 
             accountService.deleteAccount(accountId);
             accountProducer.sendTextMessage(kafkaTopicsConfig.getExternalAccountDelete(),
@@ -78,16 +79,6 @@ public class AccountCommandConsumer {
         } catch (Exception e) {
             log.error("Method 'handleDeleteAccount' failed: ", e);
             kafkaErrorSender.sendError(e, topicError);
-        }
-    }
-
-    private boolean validateToken(String jwtToken) {
-        return true;
-    }
-
-    private void validateJwtOrThrow(String jwtToken) {
-        if (!validateToken(jwtToken)) {
-            throw new SecurityException("Invalid JWT");
         }
     }
 }

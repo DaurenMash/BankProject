@@ -59,7 +59,10 @@ kafka:
     external-account-get: external.account.get
     external-account-get-by-id: external.account.getById
     external-audit-logs: external.audit.logs
+    auth-validate: auth.validate
+    auth-validate-response: auth.validate.response
   header: Authorization
 audit:
   default-user: SYSTEM
   entity-type: ACCOUNT
+

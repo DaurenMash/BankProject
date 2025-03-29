@@ -58,7 +58,9 @@ public class KafkaTopic {
                 kafkaTopicsConfig.getExternalAccountGetById(),
                 kafkaTopicsConfig.getAuditLogs(),
                 kafkaTopicsConfig.getErrorLogs(),
-                kafkaTopicsConfig.getExternalAuditLogs()
+                kafkaTopicsConfig.getExternalAuditLogs(),
+                kafkaTopicsConfig.getAuthValidate(),
+                kafkaTopicsConfig.getAuthValidateResponse()
                 )
                 .map(this::createTopic)
                 .collect(Collectors.toList());
