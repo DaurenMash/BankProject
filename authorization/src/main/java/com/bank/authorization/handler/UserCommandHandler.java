@@ -7,6 +7,7 @@ import com.bank.authorization.service.UserService;
 import com.bank.authorization.utils.JwtValidator;
 import com.bank.authorization.utils.ResponseFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import org.springframework.beans.factory.annotation.Value;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +18,22 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class UserCommandHandler {
+
+    @Value("${topics.user_create_response}")
+    private String userCreateResponseTopic;
+
+    @Value("${topics.user_update_response}")
+    private String userUpdateResponseTopic;
+
+    @Value("${topics.user_delete_response}")
+    private String userDeleteResponseTopic;
+
+    @Value("${topics.user_get_response}")
+    private String userGetResponseTopic;
+
+    @Value("${topics.user_get_all_response}")
+    private String userGetAllResponseTopic;
+
 
     private final ObjectMapper objectMapper;
     private final UserService userService;
@@ -38,7 +55,7 @@ public class UserCommandHandler {
             log.error("Error creating user: {}", e.getMessage());
             response = responseFactory.createErrorResponse(request.getRequestId(), "Error creating user: " + e.getMessage());
         }
-        kafkaTemplate.send("user_create_response", response);
+        kafkaTemplate.send(userCreateResponseTopic, response);
     }
 
     public void handleUpdateUser(KafkaRequest request) {
@@ -55,7 +72,7 @@ public class UserCommandHandler {
             log.error("Error updating user: {}", e.getMessage());
             response = responseFactory.createErrorResponse(request.getRequestId(), "Error updating user: " + e.getMessage());
         }
-        kafkaTemplate.send("user_update_response", response);
+        kafkaTemplate.send(userUpdateResponseTopic, response);
     }
 
     public void handleDeleteUser(KafkaRequest request) {
@@ -69,7 +86,7 @@ public class UserCommandHandler {
             log.error("Error deleting user: {}", e.getMessage());
             response = responseFactory.createErrorResponse(request.getRequestId(), "Error deleting user: " + e.getMessage());
         }
-        kafkaTemplate.send("user_delete_response", response);
+        kafkaTemplate.send(userDeleteResponseTopic, response);
     }
 
     public void handleGetUser(KafkaRequest request) {
@@ -83,7 +100,7 @@ public class UserCommandHandler {
             log.error("Error retrieving user: {}", e.getMessage());
             response = responseFactory.createErrorResponse(request.getRequestId(), "Error retrieving user: " + e.getMessage());
         }
-        kafkaTemplate.send("user_get_response", response);
+        kafkaTemplate.send(userGetResponseTopic, response);
     }
 
     public void handleGetAllUsers(KafkaRequest request) {
@@ -95,6 +112,6 @@ public class UserCommandHandler {
             log.error("Error retrieving all users: {}", e.getMessage());
             response = responseFactory.createErrorResponse(request.getRequestId(), "Error retrieving all users: " + e.getMessage());
         }
-        kafkaTemplate.send("user_get_all_response", response);
+        kafkaTemplate.send(userGetAllResponseTopic, response);
     }
 }

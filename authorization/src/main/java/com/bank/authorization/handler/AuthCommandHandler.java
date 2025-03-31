@@ -6,6 +6,7 @@ import com.bank.authorization.dto.KafkaRequest;
 import com.bank.authorization.dto.KafkaResponse;
 import com.bank.authorization.utils.JwtTokenUtil;
 import com.bank.authorization.utils.ResponseFactory;
+import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -15,10 +16,18 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthCommandHandler {
+
+    @Value("${topics.auth_login_response}")
+    private String authLoginResponseTopic;
+
+    @Value("${topics.auth_validate_response}")
+    private String authValidateResponseTopic;
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenUtil jwtTokenUtil;
@@ -49,19 +58,36 @@ public class AuthCommandHandler {
             response = responseFactory.createErrorResponse(request.getRequestId(), "Invalid username or password");
         }
 
-        kafkaTemplate.send("auth_login_response", response);
+        kafkaTemplate.send(authLoginResponseTopic, response);
     }
 
     public void handleTokenValidation(KafkaRequest request) {
         KafkaResponse response;
         try {
             boolean isValid = jwtTokenUtil.validateToken(request.getJwtToken());
-            response = responseFactory.createSuccessResponse(request.getRequestId(), "Token validation completed", isValid);
+
+            if (isValid) {
+                List<String> authorities = jwtTokenUtil.getAuthoritiesFromToken(request.getJwtToken());
+                response = responseFactory.createSuccessResponse(
+                        request.getRequestId(),
+                        "Token validation completed",
+                        authorities
+                );
+            } else {
+                response = responseFactory.createErrorResponse(
+                        request.getRequestId(),
+                        "Invalid JWT token"
+                );
+            }
         } catch (Exception e) {
             log.error("Token validation failed: {}", e.getMessage());
-            response = responseFactory.createErrorResponse(request.getRequestId(), "Error validating token");
+            response = responseFactory.createErrorResponse(
+                    request.getRequestId(),
+                    "Error validating token"
+            );
         }
 
-        kafkaTemplate.send("auth_validate_response", response);
+        kafkaTemplate.send(authValidateResponseTopic, response);
     }
+
 }
