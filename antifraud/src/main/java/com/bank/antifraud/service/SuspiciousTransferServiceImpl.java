@@ -45,7 +45,7 @@ public class SuspiciousTransferServiceImpl implements SuspiciousTransferService 
             cardTransferDto.setCardTransferId(transfer_id);
             cardTransferDto.setBlockedReason("Norm");
         }
-        cardTransferRepository.save(mapper.toEntity(cardTransferDto));
+        cardTransferRepository.save(mapper.toCardEntity(cardTransferDto));
         return cardTransferDto;
     }
 
@@ -56,17 +56,17 @@ public class SuspiciousTransferServiceImpl implements SuspiciousTransferService 
         if(amount.compareTo(SUSPICIOUS_AMOUNT_THRESHOLD) > 0){
             phoneTransferDto.setSuspicious(true);
             phoneTransferDto.setBlocked(true);
-            phoneTransferDto.setSuspicious_reason("Very big amount");
-            phoneTransferDto.setPhone_transfer_id(transfer_id);
-            phoneTransferDto.setBlocked_reason("Very big amount");
+            phoneTransferDto.setSuspiciousReason("Very big amount");
+            phoneTransferDto.setPhoneTransferId(transfer_id);
+            phoneTransferDto.setBlockedReason("Very big amount");
         } else {
             phoneTransferDto.setSuspicious(false);
             phoneTransferDto.setBlocked(false);
-            phoneTransferDto.setSuspicious_reason("norm");
-            phoneTransferDto.setPhone_transfer_id(transfer_id);
-            phoneTransferDto.setBlocked_reason("norm");
+            phoneTransferDto.setSuspiciousReason("norm");
+            phoneTransferDto.setPhoneTransferId(transfer_id);
+            phoneTransferDto.setBlockedReason("norm");
         }
-        phoneTransferRepository.save(mapper.toEntity(phoneTransferDto));
+        phoneTransferRepository.save(mapper.toPhoneEntity(phoneTransferDto));
         return phoneTransferDto;
     }
 
@@ -77,38 +77,38 @@ public class SuspiciousTransferServiceImpl implements SuspiciousTransferService 
         if(amount.compareTo(SUSPICIOUS_AMOUNT_THRESHOLD) > 0){
             accountTransferDto.setSuspicious(true);
             accountTransferDto.setBlocked(true);
-            accountTransferDto.setSuspicious_reason("Very big amount");
-            accountTransferDto.setAccount_transfer_id(transfer_id);
-            accountTransferDto.setBlocked_reason("Very big amount");
+            accountTransferDto.setSuspiciousReason("Very big amount");
+            accountTransferDto.setAccountTransferId(transfer_id);
+            accountTransferDto.setBlockedReason("Very big amount");
         } else {
             accountTransferDto.setSuspicious(false);
             accountTransferDto.setBlocked(false);
-            accountTransferDto.setSuspicious_reason("norm");
-            accountTransferDto.setAccount_transfer_id(transfer_id);
-            accountTransferDto.setBlocked_reason("norm");
+            accountTransferDto.setSuspiciousReason("norm");
+            accountTransferDto.setAccountTransferId(transfer_id);
+            accountTransferDto.setBlockedReason("norm");
         }
-        accountTransferRepository.save(mapper.toEntity(accountTransferDto));
+        accountTransferRepository.save(mapper.toAccountEntity(accountTransferDto));
         return accountTransferDto;
     }
 
     @Override
     @Transactional
     public SuspiciousPhoneTransferDto getPhoneTransfer(Integer id) {
-        return mapper.toDTO(phoneTransferRepository.findById(id).orElseThrow(() ->
+        return mapper.toPhoneDTO(phoneTransferRepository.findById(id).orElseThrow(() ->
                 new RuntimeException("Phone transfer not found")));
     }
 
     @Override
     @Transactional
     public SuspiciousCardTransferDto getCardTransfer(Integer id) {
-        return mapper.toDTO(cardTransferRepository.findById(id).orElseThrow(() ->
+        return mapper.toCardDTO(cardTransferRepository.findById(id).orElseThrow(() ->
                 new RuntimeException("Card transfer not found")));
     }
 
     @Override
     @Transactional
     public SuspiciousAccountTransferDto getAccountTransfer(Integer id) {
-        return mapper.toDTO(accountTransferRepository.findById(id).orElseThrow(() ->
+        return mapper.toAccountDTO(accountTransferRepository.findById(id).orElseThrow(() ->
                 new RuntimeException("Account transfer not found")));
     }
 

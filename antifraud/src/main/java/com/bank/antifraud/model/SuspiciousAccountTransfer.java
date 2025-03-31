@@ -1,8 +1,17 @@
 package com.bank.antifraud.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 
 @Table(name = "suspicious_account_transfers")
@@ -16,9 +25,10 @@ import lombok.*;
 public class SuspiciousAccountTransfer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
+    long id;
+
     @Column(name = "account_transfer_id")
-    int accountTransferId;
+    long accountTransferId;
 
     @Column(name = "is_blocked")
     boolean blocked;

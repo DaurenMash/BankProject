@@ -13,7 +13,7 @@ public class SuspiciousTransferProducer {
         this.kafkaTemplate = kafkaTemplate;
     }
 
-    public void creatEvent(Map<String, Object> transferData) {
+    public void createEvent(Map<String, Object> transferData) {
         kafkaTemplate.send("suspicious-transfers.create", transferData);
     }
 
@@ -29,7 +29,7 @@ public class SuspiciousTransferProducer {
         kafkaTemplate.send("suspicious-transfers.get", transferData);
     }
 
-    public void EventResponse(Map<String, Object> transferData) {
+    public void eventResponse(Map<String, Object> transferData) {
         kafkaTemplate.send("suspicious-transfers.Response", transferData);
     }
 }

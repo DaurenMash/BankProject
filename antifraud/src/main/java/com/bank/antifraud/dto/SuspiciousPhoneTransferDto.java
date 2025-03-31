@@ -1,7 +1,13 @@
 package com.bank.antifraud.dto;
 
 import jakarta.persistence.Column;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -10,16 +16,16 @@ import lombok.*;
 @Setter
 @ToString
 public class SuspiciousPhoneTransferDto {
-    int id;
+    long id;
 
-    int phone_transfer_id;
+    long phoneTransferId;
 
     boolean blocked;
 
     boolean suspicious;
 
     @Column(nullable = false)
-    String blocked_reason;
+    String blockedReason;
 
-    String suspicious_reason;
+    String suspiciousReason;
 }

@@ -100,9 +100,8 @@ public class GlobalExceptionHandler {
         return ResponseEntity.internalServerError().body(response);
     }
 
-    // DTO для ошибок
-    public record ErrorResponse(
-            LocalDateTime timestamp,
+    private record ErrorResponse(
+            LocalDateTime localDateTime,
             int status,
             String message,
             Map<String, String> errors

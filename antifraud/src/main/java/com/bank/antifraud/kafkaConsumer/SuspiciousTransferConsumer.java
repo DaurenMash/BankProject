@@ -12,7 +12,6 @@ import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.kafka.annotation.KafkaListener;
 
 import java.math.BigDecimal;
@@ -63,7 +62,7 @@ public class SuspiciousTransferConsumer {
                 response.put("isSuspicious", account.isSuspicious());
                 response.put("transfer_id", id);
             }
-            kafkaProducer.EventResponse(response);
+            kafkaProducer.eventResponse(response);
         } catch (Exception e) {
             log.error("Error processing transfer:", e);
         }

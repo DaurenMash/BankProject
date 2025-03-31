@@ -1,8 +1,13 @@
 package com.bank.antifraud.dto;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+
 
 import java.time.LocalDateTime;
 
@@ -13,21 +18,25 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 public class AuditDto {
-    int id;
-    @NotNull
-    String entity_type;
-    @NotNull
-    String operation_type;
-    @NotNull
-    String created_by;
+    long id;
 
-    String modified_by;
     @NotNull
-    LocalDateTime created_at;
+    String entityType;
 
-    LocalDateTime modified_at;
-
-    String new_entity_json;
     @NotNull
-    String entity_json;
+    String operationType;
+
+    @NotNull
+    String createdBy;
+
+    String modifiedBy;
+
+    @NotNull
+    LocalDateTime createdAt;
+
+    LocalDateTime modifiedAt;
+
+    String newEntityJson;
+    @NotNull
+    String entityJson;
 }

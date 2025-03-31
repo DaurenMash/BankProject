@@ -2,7 +2,6 @@ package com.bank.antifraud.service;
 
 import com.bank.antifraud.dto.AuditDto;
 import com.bank.antifraud.globalException.DataAccessException;
-import com.bank.antifraud.globalException.JsonProcessingException;
 import com.bank.antifraud.mappers.AuditMapper;
 import com.bank.antifraud.model.Audit;
 import com.bank.antifraud.repository.AuditRepository;
@@ -34,20 +33,20 @@ public class AuditServiceImpl implements AuditService {
                                 Object oldEntity) {
         try {
             Audit audit = Audit.builder()
-                    .entity_type(entityType)
-                    .operation_type(operationType)
-                    .created_by(createdBy)
-                    .modified_by(null)
-                    .created_at(LocalDateTime.now())
-                    .modified_at(null)
-                    .new_entity_json(objectMapper.writeValueAsString(newEntity))
-                    .entity_json(oldEntity != null ?
+                    .entityType(entityType)
+                    .operationType(operationType)
+                    .createdBy(createdBy)
+                    .modifiedBy(null)
+                    .createdAt(LocalDateTime.now())
+                    .modifiedAt(null)
+                    .newEntityJson(objectMapper.writeValueAsString(newEntity))
+                    .entityJson(oldEntity != null ?
                             objectMapper.writeValueAsString(oldEntity) :
                             "{}")
                     .build();
 
             Audit savedAudit = auditRepository.save(audit);
-            return auditMapper.toDTO(savedAudit);
+            return auditMapper.toAuditDTO(savedAudit);
         } catch (Exception e) {
             log.error("Failed to create audit record: {}", e.getMessage(), e);
             throw new RuntimeException("Audit creation failed", e);
@@ -59,21 +58,21 @@ public class AuditServiceImpl implements AuditService {
     public AuditDto updateAudit(int id, AuditDto auditDto) {
         Audit audit = auditRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Audit not found with ID: " + id));
-        audit.setEntity_type(auditDto.getEntity_type());
-        audit.setOperation_type(auditDto.getOperation_type());
-        audit.setModified_by(auditDto.getModified_by());
-        audit.setModified_at(LocalDateTime.now());
-        audit.setNew_entity_json(auditDto.getNew_entity_json());
-        audit.setEntity_json(auditDto.getEntity_json());
+        audit.setEntityType(auditDto.getEntityType());
+        audit.setOperationType(auditDto.getOperationType());
+        audit.setModifiedBy(auditDto.getModifiedBy());
+        audit.setModifiedAt(LocalDateTime.now());
+        audit.setNewEntityJson(auditDto.getNewEntityJson());
+        audit.setEntityJson(auditDto.getEntityJson());
         auditRepository.save(audit);
-        return auditMapper.toDTO(audit);
+        return auditMapper.toAuditDTO(audit);
     }
 
     @Override
     @Transactional(readOnly = true)
     public AuditDto getAuditById(Integer id) {
         return auditRepository.findById(id)
-                .map(auditMapper::toDTO)
+                .map(auditMapper::toAuditDTO)
                 .orElseThrow(() -> new RuntimeException("Audit not found with ID: " + id));
     }
 
@@ -81,16 +80,11 @@ public class AuditServiceImpl implements AuditService {
     @Transactional(readOnly = true)
     public List<AuditDto> getAllAudits() {
         try {
-            // Получаем все записи аудита из базы данных
             List<Audit> audits = auditRepository.findAll();
 
-            // Преобразуем список сущностей в список DTO
-            List<AuditDto> auditDto = audits.stream()
-                    .map(auditMapper::toDTO)
+            return audits.stream()
+                    .map(auditMapper::toAuditDTO)
                     .collect(Collectors.toList());
-
-            log.info("Retrieved {} audit logs", auditDto.size());
-            return auditDto;
         } catch (DataAccessException e) {
             log.error("Database error while retrieving all audit DTOs:", e);
             throw new DataAccessException("Failed to retrieve all audit DTOs due to database error: " + e);

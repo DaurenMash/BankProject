@@ -1,8 +1,18 @@
 package com.bank.antifraud.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotNull;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
@@ -18,21 +28,34 @@ import java.time.LocalDateTime;
 public class Audit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
-    @NotNull
-    String entity_type;
-    @NotNull
-    String operation_type;
-    @NotNull
-    String created_by;
+    long id;
 
-    String modified_by;
     @NotNull
-    LocalDateTime created_at;
+    @Column(name = "entity_type")
+    String entityType;
 
-    LocalDateTime modified_at;
-
-    String new_entity_json;
     @NotNull
-    String entity_json;
+    @Column(name = "operation_type")
+    String operationType;
+
+    @NotNull
+    @Column(name = "created_by")
+    String createdBy;
+
+    @Column(name = "modified_by")
+    String modifiedBy;
+
+    @NotNull
+    @Column(name = "created_at")
+    LocalDateTime createdAt;
+
+    @Column(name = "modified_at")
+    LocalDateTime modifiedAt;
+
+    @Column(name = "new_entity_json")
+    String newEntityJson;
+
+    @NotNull
+    @Column(name = "entity_json")
+    String entityJson;
 }

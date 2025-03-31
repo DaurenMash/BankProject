@@ -10,33 +10,33 @@ import org.springframework.kafka.config.TopicBuilder;
 public class KafkaTopic {
 
     @Bean
-    public NewTopic CreateTopic() {
-        return TopicBuilder.name("suspicious-transfers.create").build();
+    public NewTopic createTopic() {
+        return TopicBuilder.name("suspicious-transfers.create").partitions(3).replicas(1).build();
     }
 
     @Bean
-    public NewTopic UpdateTopic() {
-        return TopicBuilder.name("suspicious-transfers.update").build();
+    public NewTopic updateTopic() {
+        return TopicBuilder.name("suspicious-transfers.update").partitions(3).replicas(1).build();
     }
 
     @Bean
-    public NewTopic DeleteTopic() {
-        return TopicBuilder.name("suspicious-transfers.delete").build();
+    public NewTopic deleteTopic() {
+        return TopicBuilder.name("suspicious-transfers.delete").partitions(3).replicas(1).build();
     }
 
     @Bean
-    public NewTopic GetTopic() {
-        return TopicBuilder.name("suspicious-transfers.get").build();
+    public NewTopic getTopic() {
+        return TopicBuilder.name("suspicious-transfers.get").partitions(3).replicas(1).build();
     }
 
     @Bean
-    public NewTopic ResponseTopic() {
-        return TopicBuilder.name("suspicious-transfers.Response").build();
+    public NewTopic responseTopic() {
+        return TopicBuilder.name("suspicious-transfers.Response").partitions(3).replicas(1).build();
     }
 
     @Bean
-    public NewTopic LogsTopic() {
-        return TopicBuilder.name("audit.logs").build();
+    public NewTopic logsTopic() {
+        return TopicBuilder.name("audit.logs").partitions(3).replicas(1).build();
     }
 
 }

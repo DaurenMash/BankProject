@@ -8,17 +8,15 @@ import com.bank.antifraud.model.SuspiciousCardTransfer;
 import com.bank.antifraud.model.SuspiciousPhoneTransfer;
 
 import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.springframework.stereotype.Component;
 
-@Component
+
 @Mapper(componentModel = "spring")
 public interface SuspiciousTransferMapper {
-    SuspiciousAccountTransferDto toDTO(SuspiciousAccountTransfer accountTransfer);
-    SuspiciousPhoneTransferDto toDTO(SuspiciousPhoneTransfer accountTransfer);
-    SuspiciousCardTransferDto toDTO(SuspiciousCardTransfer cardTransfer);
+    SuspiciousAccountTransferDto toAccountDTO(SuspiciousAccountTransfer accountTransfer);
+    SuspiciousPhoneTransferDto toPhoneDTO(SuspiciousPhoneTransfer accountTransfer);
+    SuspiciousCardTransferDto toCardDTO(SuspiciousCardTransfer cardTransfer);
 
-    SuspiciousCardTransfer toEntity(SuspiciousCardTransferDto cardTransferDto);
-    SuspiciousPhoneTransfer toEntity(SuspiciousPhoneTransferDto phoneTransferDto);
-    SuspiciousAccountTransfer toEntity(SuspiciousAccountTransferDto accountTransferDto);
+    SuspiciousCardTransfer toCardEntity(SuspiciousCardTransferDto cardTransferDto);
+    SuspiciousPhoneTransfer toPhoneEntity(SuspiciousPhoneTransferDto phoneTransferDto);
+    SuspiciousAccountTransfer toAccountEntity(SuspiciousAccountTransferDto accountTransferDto);
 }
