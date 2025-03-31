@@ -6,5 +6,5 @@ import lombok.Data;
 public class KafkaRequest {
     private String requestId;
     private String jwtToken;
-    private Object payload;
+    private String payload;
 }

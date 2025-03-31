@@ -1,7 +1,7 @@
 package com.bank.authorization.security;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import com.bank.authorization.entity.User;
 import com.bank.authorization.repository.UserRepository;
 import org.springframework.security.core.GrantedAuthority;
@@ -14,23 +14,20 @@ import org.springframework.stereotype.Service;
 import java.util.Collections;
 import java.util.List;
 
+@Slf4j
+@RequiredArgsConstructor
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CustomUserDetailsService.class);
     private final UserRepository userRepository;
-
-    public CustomUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
 
     @Override
     public UserDetails loadUserByUsername(String profileId) throws UsernameNotFoundException {
-        LOGGER.debug("Loading user by profileId: " + profileId);
+        log.debug("Loading user by profileId: {}", profileId);
 
         final Long profileIdLong = Long.parseLong(profileId);
 
-        final User user = (User) userRepository.findByProfileId(profileIdLong)
+        final User user = userRepository.findByProfileId(profileIdLong)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with profileId: " + profileId));
 
         final List<GrantedAuthority> authorities = Collections

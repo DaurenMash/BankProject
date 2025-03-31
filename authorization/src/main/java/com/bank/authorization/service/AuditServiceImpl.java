@@ -50,7 +50,7 @@ public class AuditServiceImpl implements AuditService {
         for (Audit audit : audits) {
             try {
                 final User user = JsonUtils.fromJson(audit.getEntityJson(), User.class);
-                if (user != null && user.getId().equals(userId)) {
+                if (user != null && user.getId() != null && user.getId().equals(userId)) {
                     existingAudit = audit;
                     break;
                 }
