@@ -32,3 +32,37 @@ spring:
         enabled: true
       reload:
         enabled: true
+  kafka:
+    bootstrap-servers: localhost:9092
+    partitions: 3
+    replicas: 1
+    consumer:
+      group-ids:
+        account: account-group
+        audit: audit-group
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+kafka:
+  topics:
+    account-create: account.create
+    account-update: account.update
+    account-delete: account.delete
+    account-get: account.get
+    account-get-by-id: account.getById
+    error-logs: error.logs
+    audit-logs: audit.logs
+    external-account-create: external.account.create
+    external-account-update: external.account.update
+    external-account-delete: external.account.delete
+    external-account-get: external.account.get
+    external-account-get-by-id: external.account.getById
+    external-audit-logs: external.audit.logs
+    auth-validate: auth.validate
+    auth-validate-response: auth.validate.response
+  header: Authorization
+audit:
+  default-user: SYSTEM
+  entity-type: ACCOUNT
+
