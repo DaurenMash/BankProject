@@ -3,9 +3,9 @@ package com.bank.account.service;
 import com.bank.account.dto.AccountDto;
 import com.bank.account.entity.Account;
 import com.bank.account.exception.custom_exceptions.EntityNotFoundException;
-import com.bank.account.exception.custom_exceptions.IllegalArgumentException;
 import com.bank.account.mapper.AccountMapper;
 import com.bank.account.repository.AccountRepository;
+import com.bank.account.validator.AccountValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +27,7 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final AccountMapper accountMapper;
+    private final AccountValidator accountValidator;
 
     /**
      * Создает новый банковский счет на основе переданных данных
@@ -37,14 +38,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public AccountDto createNewAccount(AccountDto accountDto) {
-        if (accountRepository.existsAccountByAccountNumber(accountDto.getAccountNumber())) {
-            log.error("Account number already exists: {}", accountDto.getAccountNumber());
-            throw new IllegalArgumentException("Account number already exists");
-        }
-        if (accountRepository.existsAccountByBankDetailsId(accountDto.getBankDetailsId())) {
-            log.error("Bank details id already exists: {}", accountDto.getBankDetailsId());
-            throw new IllegalArgumentException("Bank details id already exists");
-        }
+        accountValidator.validate(accountDto);
 
         accountDto.setNegativeBalance(isNegativeBalance(accountDto));
         final Account accountExternal = accountRepository.save(accountMapper.toAccount(accountDto));
@@ -63,31 +57,9 @@ public class AccountServiceImpl implements AccountService {
     @Override
     @Transactional
     public AccountDto updateCurrentAccount(Long id, AccountDto accountDtoUpdated) {
+        accountValidator.validateForUpdate(id, accountDtoUpdated);
+
         final Account account = accountRepository.findAccountById(id);
-        if (account == null) {
-            log.error("Account not found: {}", id);
-            throw new EntityNotFoundException(ACCOUNT_NOT_FOUND_MESSAGE + id);
-        }
-        if (accountRepository.existsAccountByAccountNumber(accountDtoUpdated.getAccountNumber()) ||
-                accountRepository.existsAccountByBankDetailsId(accountDtoUpdated.getBankDetailsId())) {
-            final Account existingAccByAccountNumber = accountRepository
-                    .findAccountByAccountNumber(accountDtoUpdated.getAccountNumber());
-            final Account existingAccByBankDetailsId = accountRepository
-                    .findAccountByBankDetailsId(accountDtoUpdated.getBankDetailsId());
-
-            final Long existingAccByAccountNumberId = existingAccByAccountNumber.getId();
-            final Long existingAccByBankDetailsIdId = existingAccByBankDetailsId.getId();
-
-            if (!existingAccByAccountNumberId.equals(id) || !existingAccByBankDetailsIdId.equals(id)) {
-                log.error("Account with same AccountNumber or BankDetailsId already exists. AccountNumber: {}, " +
-                                "BankDetailsId: {}", accountDtoUpdated.getAccountNumber(),
-                        accountDtoUpdated.getBankDetailsId());
-                throw new IllegalArgumentException("Account with same AccountNumber or " +
-                        "BankDetailsId already exists. " + "AccountNumber is " +
-                        accountDtoUpdated.getAccountNumber() + ", BankDetailsId is " +
-                        accountDtoUpdated.getBankDetailsId());
-            }
-        }
         account.setAccountNumber(accountDtoUpdated.getAccountNumber());
         account.setMoney(accountDtoUpdated.getMoney());
         account.setNegativeBalance(isNegativeBalance(accountDtoUpdated));
