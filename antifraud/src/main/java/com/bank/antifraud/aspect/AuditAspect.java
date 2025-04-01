@@ -28,6 +28,10 @@ public class AuditAspect {
     public void logAuditAnalyzeResult(JoinPoint joinPoint, Object result) {
         try {
             String methodName = joinPoint.getSignature().getName();
+            if (result == null) {
+                log.warn("Audit skipped: result is null for method {}", methodName);
+                return;
+            }
             AuditDto auditDto =auditService.createAudit(
                     OPERATION,
                     result.getClass().getSimpleName(),
@@ -36,8 +40,6 @@ public class AuditAspect {
                     result
             );
             auditProducer.sendAuditLog(auditDto);
-
-            log.info("Audit logged for operation: {}",  methodName);
         } catch (Exception e) {
             log.error("Failed to audit operation: ", e);
         }
