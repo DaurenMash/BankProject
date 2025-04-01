@@ -33,6 +33,12 @@ public class HistoryKafkaListener {
     @KafkaListener(topics = "audit.history", groupId = "history-group")
     public void listenAuditHistory(@Header(value = KafkaHeaders.KEY, required = false) String key,
                                    @Payload HistoryDto historyDto) {
+
+        if (historyDto == null) {
+            log.warn("Received null HistoryDto [key: {}]", key);
+            return;
+        }
+
         try {
             final History history = historyMapper.toEntity(historyDto);
             historyService.saveHistory(history);
