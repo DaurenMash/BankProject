@@ -3,3 +3,18 @@ spring:
     name: history-app
   profiles:
     active: local
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: history-group
+    properties:
+      security:
+        protocol: PLAINTEXT
+      sasl:
+        enable: false
+      ssl:
+        enable: false
+      retries:
+        max: 3
+      acks:
+        all: true
