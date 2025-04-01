@@ -29,3 +29,50 @@ spring:
     drop-first: false
   application:
     name: authorization-app
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      group-id: authorization-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      trusted-packages: com.bank.authorization.dto
+app:
+  jwt:
+    secret-key: nawEFeYYKPTxjDZOF+eoepmPza+CLhJd+g9m3GHcvro=
+    expiration: 36000000
+logging:
+  level:
+    com.bank.authorization: DEBUG
+    root: INFO
+  #    org.springdoc: DEBUG
+  #    org.springframework.security: DEBUG
+  #    org.springframework.web: DEBUG
+  file:
+    name: authorization.log
+    path: logs
+  pattern:
+    file: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
+    console: '%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n'
+topics:
+  error-logging: error.logging
+  auth_login: auth.login
+  auth_login_response: auth.login.response
+  auth_validate: auth.validate
+  auth_validate_response: auth.validate.response
+  user_create: user.create
+  user_create_response: user.create.response
+  user_update: user.update
+  user_update_response: user.update.response
+  user_delete: user.delete
+  user_delete_response: user.delete.response
+  user_get: user.get
+  user_get_response: user.get.response
+  user_get_all: user.get.all
+  user_get_all_response: user.get.all.response
