@@ -24,3 +24,50 @@ spring:
     drop-first: false
   application:
     name: profile-app
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      delivery:
+        timeout:
+          ms: 30000
+      retry:
+        backoff:
+          ms: 1000
+    consumer:
+      group-id: 'profile'
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring:
+          deserializer:
+            value:
+              delegate:
+                class: org.springframework.kafka.support.serializer.JsonDeserializer
+          json:
+            trusted:
+              packages: '*'
+
+app:
+  kafka:
+    topic:
+      profile:
+        create: "profile.create"
+        update: "profile.update"
+        delete: "profile.delete"
+        get: "profile.get"
+        get-response: "profile.get-response"
+      account:
+        create: "profile.account.create"
+        update: "profile.account.update"
+        delete: "profile.account.delete"
+        get: "profile.account.get"
+        get-response: "profile.account.get-response"
+      audit: "profile.audit"
+      error: "profile.error"
+
