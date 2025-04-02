@@ -15,7 +15,8 @@ management:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/postgres?currentSchema=public_info
+#    url: jdbc:postgresql://localhost:5433/postgres?currentSchema=public_info
+    url: jdbc:postgresql://host.docker.internal:5433/postgres
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver
@@ -36,7 +37,8 @@ spring:
     name: public-info-app
   kafka:
     trusted-packages: com.bank.public-info.dto
-    bootstrap-servers: localhost:9092
+#    bootstrap-servers: localhost:9092
+    bootstrap-servers: 192.168.31.54:9092 # IPv4-адрес: 192.168.31.54 (локальная машина)
     topics:
       error-log:
         name: public-info.error-logs
@@ -130,12 +132,18 @@ spring:
 
 
     consumer:
-      group-id: public-info-group
-      auto-offset-reset: earliest
-      enable-auto-commit: false
+      group-id: history-group
       properties:
-        key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-        value.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+        security:
+          protocol: PLAINTEXT
+        sasl:
+          enable: false
+        ssl:
+          enable: false
+        retries:
+          max: 3
+        acks:
+          all: true
 
 
 logging:

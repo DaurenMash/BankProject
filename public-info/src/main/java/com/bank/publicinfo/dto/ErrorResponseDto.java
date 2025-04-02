@@ -2,11 +2,13 @@ package com.bank.publicinfo.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.sql.Timestamp;
 
 
 @Data
+@NoArgsConstructor
 public class ErrorResponseDto {
 
     private String errorCode;
