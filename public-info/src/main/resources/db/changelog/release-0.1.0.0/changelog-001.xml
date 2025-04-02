@@ -60,7 +60,7 @@
             <column name="kpp" remarks="КПП" type="BIGINT">
                 <constraints nullable="false"/>
             </column>
-            <column name="cor_account" remarks="корреспондентский счет" type="INTEGER">
+            <column name="cor_account" remarks="корреспондентский счет" type="bigint">
                 <constraints nullable="false"/>
             </column>
             <column name="city" remarks="город, котором зарегистрирован юр. адрес банка" type="VARCHAR(180)">

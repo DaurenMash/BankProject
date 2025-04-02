@@ -3,6 +3,7 @@ package com.bank.publicinfo.config;
 import com.bank.publicinfo.dto.CertificateDto;
 import java.util.Map;
 import lombok.Generated;
+import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
@@ -21,6 +22,7 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 @Configuration
 @EnableKafka
+@RequiredArgsConstructor
 public class CertificateKafkaConfig {
     private final Map<String, Object> producerConfigs;
 
@@ -28,12 +30,6 @@ public class CertificateKafkaConfig {
 
     @Value("${spring.kafka.trusted-packages}")
     private String trustedPackage;
-
-    @Generated
-    public CertificateKafkaConfig(Map<String, Object> producerConfigs, Map<String, Object> consumerConfigs) {
-        this.producerConfigs = producerConfigs;
-        this.consumerConfigs = consumerConfigs;
-    }
 
     @Bean
     public ConsumerFactory<String, CertificateDto> certificateConsumerFactory() {

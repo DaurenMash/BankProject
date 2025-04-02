@@ -1,7 +1,7 @@
 server:
   port: 8091
   servlet:
-    context-path: /
+    context-path: /api/public
 management:
   server:
     port: 8190
@@ -15,19 +15,27 @@ management:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5433/postgres?currentSchema=public_info
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver
+  sql:
+    init:
+      mode: always
+
   liquibase:
-    default-schema: public_info
     change-log: classpath:/db/changelog/db.changelog-master.yaml
     enabled: true
+    default-schema: public_info
+    liquibase-schema: public_info
+    user: postgres
+    password: password
     drop-first: false
+    contexts: init
   application:
     name: public-info-app
   kafka:
-    trusted-packages: com.bank.publicinfo.dto
+    trusted-packages: com.bank.public-info.dto
     bootstrap-servers: localhost:9092
     topics:
       error-log:
@@ -128,6 +136,7 @@ spring:
       properties:
         key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
         value.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
 
 logging:
   level:

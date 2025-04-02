@@ -12,6 +12,7 @@ import com.bank.publicinfo.repository.BankDetailsRepository;
 import com.bank.publicinfo.repository.LicenseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +29,8 @@ public class LicenseServiceImpl implements LicenseService {
     private final BankDetailsRepository bankDetailsRepository;
     private final GlobalExceptionHandler globalExceptionHandler;
 
-    String errorTopic = "public-info.error.logs";
+    @Value("${spring.kafka.topics.error-log.name}")
+    private String errorTopic;
 
     private BankDetails findBankById(Long id) {
         return bankDetailsRepository.findById(id)

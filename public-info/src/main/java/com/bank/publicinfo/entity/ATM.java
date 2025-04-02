@@ -14,7 +14,7 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "atm", schema = "public_bank_information")
+@Table(name = "atm", schema = "public_info")
 public class ATM {
 
     @Id

@@ -13,6 +13,7 @@ import com.bank.publicinfo.repository.CertificateRepository;
 import com.bank.publicinfo.repository.LicenseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,8 @@ public class BankDetailsServiceImpl implements BankDetailsService {
     private final LicenseRepository licenseRepository;
     private final CertificateRepository certificateRepository;
 
-    String errorTopic = "public-info.error.logs";
+    @Value("${spring.kafka.topics.error-log.name}")
+    private String errorTopic;
 
     @Override
     @Transactional
@@ -86,13 +88,13 @@ public class BankDetailsServiceImpl implements BankDetailsService {
             log.info("Successfully updated bank details for bank ID: {}", bankId);
             return savedBankDetailsDto;
         } catch (DataAccessException e) {
-            globalExceptionHandler.handleException(e, "public-info.error.logs");
+            globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         } catch (IllegalArgumentException e) {
-            globalExceptionHandler.handleException(e, "public-info.error.logs");
+            globalExceptionHandler.handleException(e, errorTopic);
             throw new IllegalArgumentException("Illegal argument: " + e.getMessage());
         } catch (Exception e) {
-            globalExceptionHandler.handleException(e, "public-info.error.logs");
+            globalExceptionHandler.handleException(e, errorTopic);
             throw new RuntimeException("An unexpected error occurred while updating bank details.");
         }
     }

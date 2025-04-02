@@ -22,7 +22,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "bank_details", schema = "public_bank_information", uniqueConstraints = {
+@Table(name = "bank_details", schema = "public_info", uniqueConstraints = {
         @UniqueConstraint(name = "bank_details_pk_2", columnNames = {"bik"}),
         @UniqueConstraint(name = "bank_details_pk_3", columnNames = {"inn"}),
         @UniqueConstraint(name = "bank_details_pk_4", columnNames = {"kpp"}),

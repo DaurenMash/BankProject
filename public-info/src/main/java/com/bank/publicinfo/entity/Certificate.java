@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "certificate", schema = "public_bank_information")
+@Table(name = "certificate", schema = "public_info")
 public class Certificate {
 
     @Id

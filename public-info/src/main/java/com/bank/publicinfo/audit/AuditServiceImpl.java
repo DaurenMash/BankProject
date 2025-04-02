@@ -38,7 +38,7 @@ public class AuditServiceImpl implements AuditService {
     private final ObjectMapper mapper;
     private final GlobalExceptionHandler globalExceptionHandler;
 
-    String errorTopic = "public-info.error.logs";
+    String errorTopic = "${spring.kafka.topics.error-log.name}";
 
     @Override
     @Transactional
@@ -70,7 +70,7 @@ public class AuditServiceImpl implements AuditService {
 
             log.info("Updating success audit Log: {} - {}", entityType, newAuditDto);
         } catch (JsonProcessingException e) {
-            globalExceptionHandler.handleException(e, "public-info.error.logs");
+            globalExceptionHandler.handleException(e, errorTopic);
             throw new CustomJsonProcessingException("Error processing JSON: " + e.getMessage());
         }
     }
