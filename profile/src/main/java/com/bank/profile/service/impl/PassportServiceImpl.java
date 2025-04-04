@@ -8,9 +8,9 @@ import com.bank.profile.repository.PassportRepository;
 import com.bank.profile.repository.RegistrationRepository;
 import com.bank.profile.service.PassportService;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -22,11 +22,13 @@ public class PassportServiceImpl implements PassportService {
     private final RegistrationRepository registrationRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<PassportDto> getAll() {
         return passportRepository.findAll().stream().map(passportMapper::toDto).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PassportDto get(Long id) {
         return passportMapper.toDto(passportRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(Passport.class.getSimpleName())));
@@ -67,6 +69,7 @@ public class PassportServiceImpl implements PassportService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         passportRepository.findById(id).ifPresent(passportRepository::delete);
     }

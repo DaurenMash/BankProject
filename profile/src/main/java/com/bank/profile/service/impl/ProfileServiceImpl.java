@@ -12,10 +12,10 @@ import com.bank.profile.service.PassportService;
 import com.bank.profile.service.ProfileService;
 import com.bank.profile.service.RegistrationService;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -29,11 +29,13 @@ public class ProfileServiceImpl implements ProfileService {
     private final ProfileMapper profileMapper;
 
     @Override
+    @Transactional(readOnly = true)
     public List<ProfileDto> getAll() {
         return profileRepository.findAll().stream().map(profileMapper::toDto).toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProfileDto get(Long id) {
         return profileMapper.toDto(profileRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(Profile.class.getSimpleName())));
@@ -116,6 +118,7 @@ public class ProfileServiceImpl implements ProfileService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         profileRepository.findById(id).ifPresent(profileRepository::delete);
     }

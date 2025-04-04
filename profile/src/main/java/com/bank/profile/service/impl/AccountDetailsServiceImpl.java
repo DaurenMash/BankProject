@@ -9,9 +9,9 @@ import com.bank.profile.service.AccountDetailsService;
 import com.bank.profile.service.ProfileService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,6 +24,7 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
     private final ProfileService profileService;
 
     @Override
+    @Transactional(readOnly = true)
     public List<AccountDetailsDto> getAll() {
         return accountDetailsRepository.findAll()
                 .stream().map(accountDetailsMapper::toDto)
@@ -31,6 +32,7 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public AccountDetailsDto get(Long id) {
         return accountDetailsMapper.toDto(
                 accountDetailsRepository.findById(id)
@@ -65,6 +67,7 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
     }
 
     @Override
+    @Transactional
     public void delete(Long id) {
         accountDetailsRepository.findById(id)
                 .ifPresent(accountDetailsRepository::delete);
