@@ -3,19 +3,15 @@ package com.bank.profile.kafka.consumer;
 import com.bank.profile.dto.AccountDetailsDto;
 import com.bank.profile.kafka.producer.AccountDetailsProducer;
 import com.bank.profile.service.AccountDetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class AccountDetailsConsumer {
     private final AccountDetailsService accountDetailsService;
     private final AccountDetailsProducer accountDetailsProducer;
-
-
-    public AccountDetailsConsumer(AccountDetailsService accountDetailsService, AccountDetailsProducer accountDetailsProducer) {
-        this.accountDetailsService = accountDetailsService;
-        this.accountDetailsProducer = accountDetailsProducer;
-    }
 
     @KafkaListener(topics = "#{kafkaTopicsConfig.topicAccountDetailsCreate}", groupId = "#{kafkaTopicsConfig.groupId}")
     public void create(AccountDetailsDto dto) {

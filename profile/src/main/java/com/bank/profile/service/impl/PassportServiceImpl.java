@@ -9,21 +9,17 @@ import com.bank.profile.repository.RegistrationRepository;
 import com.bank.profile.service.PassportService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class PassportServiceImpl implements PassportService {
     private final PassportRepository passportRepository;
     private final PassportMapper passportMapper;
     private final RegistrationRepository registrationRepository;
-
-    public PassportServiceImpl(PassportRepository passportRepository, PassportMapper passportMapper, RegistrationRepository registrationRepository) {
-        this.passportRepository = passportRepository;
-        this.passportMapper = passportMapper;
-        this.registrationRepository = registrationRepository;
-    }
 
     @Override
     public List<PassportDto> getAll() {

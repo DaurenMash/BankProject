@@ -1,6 +1,7 @@
 package com.bank.profile.audit;
 
 import com.bank.profile.service.AuditService;
+import lombok.RequiredArgsConstructor;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
@@ -8,12 +9,9 @@ import org.springframework.stereotype.Component;
 
 @Aspect
 @Component
+@RequiredArgsConstructor
 public class AuditAspect {
     private final AuditService auditService;
-
-    public AuditAspect(AuditService auditService) {
-        this.auditService = auditService;
-    }
 
     @Pointcut("execution(* com.bank.profile.service.*.create(..)) && !target(com.bank.profile.service.AuditService)")
     public void serviceCreate() {}

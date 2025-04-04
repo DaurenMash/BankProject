@@ -10,22 +10,18 @@ import com.bank.profile.service.ProfileService;
 import jakarta.persistence.EntityExistsException;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class AccountDetailsServiceImpl implements AccountDetailsService {
 
     private final AccountDetailsRepository accountDetailsRepository;
     private final AccountDetailsMapper accountDetailsMapper;
     private final ProfileService profileService;
-
-    public AccountDetailsServiceImpl(AccountDetailsRepository accountDetailsRepository, ProfileService profileService, AccountDetailsMapper accountDetailsMapper) {
-        this.accountDetailsRepository = accountDetailsRepository;
-        this.accountDetailsMapper = accountDetailsMapper;
-        this.profileService = profileService;
-    }
 
     @Override
     public List<AccountDetailsDto> getAll() {

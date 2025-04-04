@@ -3,18 +3,15 @@ package com.bank.profile.kafka.consumer;
 import com.bank.profile.dto.ProfileDto;
 import com.bank.profile.kafka.producer.ProfileProducer;
 import com.bank.profile.service.ProfileService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 @Component
+@RequiredArgsConstructor
 public class ProfileConsumer {
     private final ProfileService profileService;
     private final ProfileProducer profileProducer;
-
-    public ProfileConsumer(ProfileService profileService, ProfileProducer profileProducer) {
-        this.profileService = profileService;
-        this.profileProducer = profileProducer;
-    }
 
     @KafkaListener(topics = "#{kafkaTopicsConfig.topicProfileCreate}", groupId = "#{kafkaTopicsConfig.groupId}")
     public void create(ProfileDto dto) {

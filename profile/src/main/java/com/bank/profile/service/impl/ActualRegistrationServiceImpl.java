@@ -6,19 +6,16 @@ import com.bank.profile.mapper.RegistrationMapper;
 import com.bank.profile.repository.ActualRegistrationRepository;
 import com.bank.profile.service.ActualRegistrationService;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ActualRegistrationServiceImpl implements ActualRegistrationService {
     private final ActualRegistrationRepository actualRegistrationRepository;
     private final RegistrationMapper registrationMapper;
-
-    public ActualRegistrationServiceImpl(ActualRegistrationRepository actualRegistrationRepository, RegistrationMapper registrationMapper) {
-        this.actualRegistrationRepository = actualRegistrationRepository;
-        this.registrationMapper = registrationMapper;
-    }
 
     @Override
     public List<RegistrationDto> getAll() {

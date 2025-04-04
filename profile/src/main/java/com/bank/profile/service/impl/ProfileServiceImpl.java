@@ -14,26 +14,19 @@ import com.bank.profile.service.RegistrationService;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class ProfileServiceImpl implements ProfileService {
     private final ProfileRepository profileRepository;
     private final ActualRegistrationService actualRegistrationService;
     private final PassportService passportService;
     private final RegistrationService registrationService;
-
     private final ProfileMapper profileMapper;
-
-    public ProfileServiceImpl(ProfileRepository profileRepository, ActualRegistrationService actualRegistrationService, PassportService passportService, RegistrationService registrationService, ProfileMapper profileMapper) {
-        this.profileRepository = profileRepository;
-        this.actualRegistrationService = actualRegistrationService;
-        this.passportService = passportService;
-        this.registrationService = registrationService;
-        this.profileMapper = profileMapper;
-    }
 
     @Override
     public List<ProfileDto> getAll() {

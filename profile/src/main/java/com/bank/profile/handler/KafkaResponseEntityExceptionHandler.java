@@ -4,6 +4,7 @@ import com.bank.profile.dto.ErrorDto;
 import com.bank.profile.exception.EntityNotUniqueException;
 import com.bank.profile.kafka.producer.ErrorProducer;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.listener.ListenerExecutionFailedException;
@@ -14,12 +15,10 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 @Slf4j
 @ControllerAdvice
+@RequiredArgsConstructor
 public class KafkaResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
-    private final ErrorProducer errorProducer;
 
-    public KafkaResponseEntityExceptionHandler(ErrorProducer errorProducer) {
-        this.errorProducer = errorProducer;
-    }
+    private final ErrorProducer errorProducer;
 
     @ExceptionHandler(value = { EntityNotFoundException.class, })
     protected void handleNotFound(RuntimeException ex) {
