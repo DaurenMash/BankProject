@@ -13,6 +13,7 @@ import com.bank.publicinfo.repository.CertificateRepository;
 import com.bank.publicinfo.repository.LicenseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -27,27 +28,28 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BankDetailsServiceImpl implements BankDetailsService {
 
+    @Value("${spring.kafka.topics.error-log.name}")
+    String errorTopic;
     private final BankDetailsRepository bankDetailsRepository;
     private final BankDetailsMapper bankDetailsMapper;
     private final GlobalExceptionHandler globalExceptionHandler;
     private final LicenseRepository licenseRepository;
     private final CertificateRepository certificateRepository;
 
-    String errorTopic = "public-info.error.logs";
 
     @Override
     @Transactional
     public BankDetailsDto createNewBankDetails(BankDetailsDto bankDetailsDto) {
         if (bankDetailsDto == null) {
             log.error("Attempt to create null bank details");
-            IllegalArgumentException e = new IllegalArgumentException("Invalid bank details");
+            final IllegalArgumentException e = new IllegalArgumentException("Invalid bank details");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            BankDetails bankDetails = bankDetailsMapper.toEntity(bankDetailsDto);
-            BankDetails savedBankDetails = bankDetailsRepository.save(bankDetails);
-            BankDetailsDto savedBankDetailsDto = bankDetailsMapper.toDto(savedBankDetails);
+            final BankDetails bankDetails = bankDetailsMapper.toEntity(bankDetailsDto);
+            final BankDetails savedBankDetails = bankDetailsRepository.save(bankDetails);
+            final BankDetailsDto savedBankDetailsDto = bankDetailsMapper.toDto(savedBankDetails);
             log.info("Bank details created successfully for bank details: {}", savedBankDetailsDto);
             return savedBankDetailsDto;
         } catch (DataAccessException e) {
@@ -62,38 +64,38 @@ public class BankDetailsServiceImpl implements BankDetailsService {
     @Override
     @Transactional
     public BankDetailsDto updateBankDetails(BankDetailsDto bankDetailsDto) {
-        Long bankId = bankDetailsDto.getId();
+        final Long bankId = bankDetailsDto.getId();
         if (bankId == null) {
-            log.error("Attempt to update bank details with null ID");
-            globalExceptionHandler.handleException(new ValidationException("Attempt to update bank details with null ID"),
-                    errorTopic);
+            log.error("Attempt to update bank details with null id");
+            globalExceptionHandler.handleException(
+                    new ValidationException("Attempt to update bank details with null ID"), errorTopic);
         }
         try {
             assert bankId != null;
-            BankDetails existingBankDetails = bankDetailsRepository.findById(bankId)
+            final BankDetails existingBankDetails = bankDetailsRepository.findById(bankId)
                     .orElseThrow(() -> {
                         log.error("No bank found with id {}", bankId);
-                        globalExceptionHandler.handleException(new EntityNotFoundException("No bank found with id: " + bankId),
-                                errorTopic);
+                        globalExceptionHandler.handleException(
+                                new EntityNotFoundException("No bank found with id: " + bankId), errorTopic);
                         return new EntityNotFoundException("No bank found with id " + bankId);
                     });
             bankDetailsMapper.updateFromDto(bankDetailsDto, existingBankDetails);
             log.info("Updating bank details for bank ID: {}", bankId);
 
-            BankDetails updatedBankDetails = bankDetailsRepository.save(existingBankDetails);
-            BankDetailsDto savedBankDetailsDto = bankDetailsMapper.toDto(updatedBankDetails);
+            final BankDetails updatedBankDetails = bankDetailsRepository.save(existingBankDetails);
+            final BankDetailsDto savedBankDetailsDto = bankDetailsMapper.toDto(updatedBankDetails);
 
             log.info("Successfully updated bank details for bank ID: {}", bankId);
             return savedBankDetailsDto;
         } catch (DataAccessException e) {
-            globalExceptionHandler.handleException(e, "public-info.error.logs");
+            globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         } catch (IllegalArgumentException e) {
-            globalExceptionHandler.handleException(e, "public-info.error.logs");
+            globalExceptionHandler.handleException(e, errorTopic);
             throw new IllegalArgumentException("Illegal argument: " + e.getMessage());
         } catch (Exception e) {
-            globalExceptionHandler.handleException(e, "public-info.error.logs");
-            throw new RuntimeException("An unexpected error occurred while updating bank details.");
+            globalExceptionHandler.handleException(e, errorTopic);
+            throw new RuntimeException("An unexpected error occurred during updating bank details.");
         }
     }
 
@@ -103,15 +105,15 @@ public class BankDetailsServiceImpl implements BankDetailsService {
     public void deleteBankDetailsById(Long bankId) {
         if (bankId == null) {
             log.error("Attempt to delete bank details with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("Bank ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Bank ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            BankDetails existingBankDetails = bankDetailsRepository.findById(bankId)
+            final BankDetails existingBankDetails = bankDetailsRepository.findById(bankId)
                     .orElseThrow(() -> new EntityNotFoundException("There is no bank with id " + bankId));
-            licenseRepository.deleteLicensesByBankDetails_Id(bankId);
-            certificateRepository.deleteCertificateByBankDetails_Id(bankId);
+            licenseRepository.deleteLicensesByBankDetailsId(bankId);
+            certificateRepository.deleteCertificateByBankDetailsId(bankId);
             bankDetailsRepository.delete(existingBankDetails);
 
             log.info("Successfully deleted bank details with ID: {}", bankId);
@@ -129,12 +131,12 @@ public class BankDetailsServiceImpl implements BankDetailsService {
     public List<BankDetailsDto> getAllBanksDetails(Pageable pageable) {
         if (pageable == null) {
             log.error("Attempt to get all bank details with null Pageable");
-            IllegalArgumentException e = new IllegalArgumentException("Pageable must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Pageable must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            Page<BankDetails> bankDetailsPage = bankDetailsRepository.findAll(pageable);
+            final Page<BankDetails> bankDetailsPage = bankDetailsRepository.findAll(pageable);
             return bankDetailsPage.stream()
                     .map(bankDetailsMapper::toDto)
                     .collect(Collectors.toList());
@@ -152,15 +154,15 @@ public class BankDetailsServiceImpl implements BankDetailsService {
     public BankDetailsDto getBankDetailsById(Long bankId) {
         if (bankId == null) {
             log.error("Attempt to get bank details with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("Bank ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Bank ID can't be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            BankDetailsDto bankDetailsDto = bankDetailsRepository.findById(bankId)
+            final BankDetailsDto bankDetailsDto = bankDetailsRepository.findById(bankId)
                     .map(bankDetailsMapper::toDto)
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("There is no bank with id " + bankId);
+                        final EntityNotFoundException e = new EntityNotFoundException("No bank with id " + bankId);
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
@@ -174,6 +176,5 @@ public class BankDetailsServiceImpl implements BankDetailsService {
             throw new RuntimeException("An unexpected error occurred while retrieving bank details.");
         }
     }
-
 
 }

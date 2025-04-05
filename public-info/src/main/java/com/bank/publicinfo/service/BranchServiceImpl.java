@@ -12,6 +12,7 @@ import com.bank.publicinfo.repository.AtmRepository;
 import com.bank.publicinfo.repository.BranchRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -26,25 +27,26 @@ import java.util.stream.Collectors;
 @Slf4j
 public class BranchServiceImpl implements BranchService {
 
+    @Value("${spring.kafka.topics.error-log.name}")
+    String errorTopic;
     private final BranchRepository branchRepository;
     private final BranchMapper branchMapper;
     private final AtmRepository atmRepository;
     private final GlobalExceptionHandler globalExceptionHandler;
 
-    String errorTopic = "public-info.error.logs";
 
     @Override
     @Transactional
     public BranchDto createNewBranch(BranchDto branchDto) {
         if (branchDto == null) {
             log.error("Attempt to create null branch");
-            IllegalArgumentException e = new IllegalArgumentException("Branch must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Branch must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            Branch branch = branchMapper.toEntity(branchDto);
-            Branch savedBranch = branchRepository.save(branch);
+            final Branch branch = branchMapper.toEntity(branchDto);
+            final Branch savedBranch = branchRepository.save(branch);
             log.info("Successfully created new branch with ID: {}", savedBranch.getId());
             return branchMapper.toDto(savedBranch);
         } catch (Exception e) {
@@ -59,26 +61,27 @@ public class BranchServiceImpl implements BranchService {
     public BranchDto updateBranch(Long branchId, BranchDto branchDto) {
         if (branchId == null) {
             log.error("Attempt to update branch with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("Branch ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Branch ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         if (branchDto == null) {
             log.error("Attempt to update branch with null DTO");
-            IllegalArgumentException e = new IllegalArgumentException("Branch DTO must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Branch DTO must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            Branch existingBranch = branchRepository.findById(branchId)
+            final Branch existingBranch = branchRepository.findById(branchId)
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("There is no branch with id " + branchId);
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException("There is no branch with id " + branchId);
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
             branchMapper.updateFromDto(branchDto, existingBranch);
             log.info("Updating branch for ID: {}", branchId);
-            Branch updatedBranch = branchRepository.save(existingBranch);
+            final Branch updatedBranch = branchRepository.save(existingBranch);
             log.info("Successfully updated branch for ID: {}", branchId);
             return branchMapper.toDto(updatedBranch);
         } catch (Exception e) {
@@ -93,19 +96,20 @@ public class BranchServiceImpl implements BranchService {
     public void deleteBranchById(Long branchId) {
         if (branchId == null) {
             log.error("Attempt to delete branch with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("Branch ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Branch ID can't be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            Branch branch = branchRepository.findById(branchId)
+            final Branch branch = branchRepository.findById(branchId)
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("There is no branch with id " + branchId);
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException("No branch with id " + branchId);
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
 
-            Set<ATM> atms = branch.getAtms();
+            final Set<ATM> atms = branch.getAtms();
             atmRepository.deleteAll(atms);
             branchRepository.delete(branch);
             log.info("Successfully deleted branch with ID: {}", branchId);
@@ -120,13 +124,13 @@ public class BranchServiceImpl implements BranchService {
     public List<BranchDto> getAllBranches(Pageable pageable) {
         if (pageable == null) {
             log.error("Attempt to get all branches with null Pageable");
-            IllegalArgumentException e = new IllegalArgumentException("Pageable must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Pageable must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            Page<Branch> branchPage = branchRepository.findAll(pageable);
-            List<BranchDto> branches = branchPage.stream()
+            final Page<Branch> branchPage = branchRepository.findAll(pageable);
+            final List<BranchDto> branches = branchPage.stream()
                     .map(branchMapper::toDto)
                     .collect(Collectors.toList());
             log.info("Successfully retrieved {} branches", branches.size());
@@ -147,15 +151,16 @@ public class BranchServiceImpl implements BranchService {
     public BranchDto getBranchById(Long branchId) {
         if (branchId == null) {
             log.error("Attempt to get branch details with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("Branch ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Branch id must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            BranchDto branchDto = branchRepository.findById(branchId)
+            final BranchDto branchDto = branchRepository.findById(branchId)
                     .map(branchMapper::toDto)
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("There is no branch with id " + branchId);
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException("No any branch with id " + branchId);
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });

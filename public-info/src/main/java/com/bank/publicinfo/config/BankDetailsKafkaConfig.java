@@ -2,10 +2,11 @@ package com.bank.publicinfo.config;
 
 
 import com.bank.publicinfo.dto.BankDetailsDto;
+
 import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -34,48 +35,63 @@ public class BankDetailsKafkaConfig {
 
     @Bean
     public ConsumerFactory<String, BankDetailsDto> consumerFactory() {
-        JsonDeserializer<BankDetailsDto> valueDeserializer = new JsonDeserializer(BankDetailsDto.class);
+        final JsonDeserializer<BankDetailsDto> valueDeserializer = new JsonDeserializer<>(BankDetailsDto.class);
         valueDeserializer.setRemoveTypeHeaders(false);
-        valueDeserializer.addTrustedPackages(new String[] { this.trustedPackage });
-        ErrorHandlingDeserializer<BankDetailsDto> errorHandlingDeserializer = new ErrorHandlingDeserializer((Deserializer)valueDeserializer);
-        return (ConsumerFactory<String, BankDetailsDto>)new DefaultKafkaConsumerFactory(this.consumerConfigs, (Deserializer)new StringDeserializer(), (Deserializer)errorHandlingDeserializer);
+        valueDeserializer.addTrustedPackages(this.trustedPackage);
+        final ErrorHandlingDeserializer<BankDetailsDto> errorHandlingDeserializer =
+                new ErrorHandlingDeserializer<>(valueDeserializer);
+        return new DefaultKafkaConsumerFactory<>(
+                this.consumerConfigs,
+                new StringDeserializer(),
+                errorHandlingDeserializer
+        );
     }
+
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, BankDetailsDto> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, BankDetailsDto> factory = new ConcurrentKafkaListenerContainerFactory();
+        final ConcurrentKafkaListenerContainerFactory<String, BankDetailsDto> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }
 
     @Bean
     public ProducerFactory<String, BankDetailsDto> bankDetailsDtoProducerFactory() {
-        return (ProducerFactory<String, BankDetailsDto>)new DefaultKafkaProducerFactory(this.producerConfigs);
+        return new DefaultKafkaProducerFactory<>(this.producerConfigs);
     }
+
 
     @Bean
     public KafkaTemplate<String, BankDetailsDto> bankDetailsDtoKafkaTemplate() {
-        return new KafkaTemplate(bankDetailsDtoProducerFactory());
+        return new KafkaTemplate<>(bankDetailsDtoProducerFactory());
     }
 
     @Bean
-    public NewTopic bankCreateTopic(@Value("${spring.kafka.topics.bank.create.name}") String topicName, @Value("${spring.kafka.topics.bank.create.partitions}") int partitions, @Value("${spring.kafka.topics.bank.create.replication-factor}") short replicationFactor) {
-        return new NewTopic(topicName, partitions, replicationFactor);
+    public NewTopic bankCreateTopic(@Value("${spring.kafka.topics.bank.create.name}") String topicName,
+                                    @Value("${spring.kafka.topics.bank.create.partitions}") int partitions,
+                                    @Value("${spring.kafka.topics.bank.create.replication-factor}") short factor) {
+        return new NewTopic(topicName, partitions, factor);
     }
 
     @Bean
-    public NewTopic bankUpdateTopic(@Value("${spring.kafka.topics.bank.update.name}") String topicName, @Value("${spring.kafka.topics.bank.update.partitions}") int partitions, @Value("${spring.kafka.topics.bank.update.replication-factor}") short replicationFactor) {
-        return new NewTopic(topicName, partitions, replicationFactor);
+    public NewTopic bankUpdateTopic(@Value("${spring.kafka.topics.bank.update.name}") String topicName,
+                                    @Value("${spring.kafka.topics.bank.update.partitions}") int partitions,
+                                    @Value("${spring.kafka.topics.bank.update.replication-factor}") short factor) {
+        return new NewTopic(topicName, partitions, factor);
     }
 
     @Bean
-    public NewTopic bankDeleteTopic(@Value("${spring.kafka.topics.bank.delete.name}") String topicName, @Value("${spring.kafka.topics.bank.delete.partitions}") int partitions, @Value("${spring.kafka.topics.bank.delete.replication-factor}") short replicationFactor) {
-        return new NewTopic(topicName, partitions, replicationFactor);
+    public NewTopic bankDeleteTopic(@Value("${spring.kafka.topics.bank.delete.name}") String topicName,
+                                    @Value("${spring.kafka.topics.bank.delete.partitions}") int partitions,
+                                    @Value("${spring.kafka.topics.bank.delete.replication-factor}") short factor) {
+        return new NewTopic(topicName, partitions, factor);
     }
 
     @Bean
-    public NewTopic bankGetTopic(@Value("${spring.kafka.topics.bank.get.name}") String topicName, @Value("${spring.kafka.topics.bank.get.partitions}") int partitions, @Value("${spring.kafka.topics.bank.get.replication-factor}") short replicationFactor) {
-        return new NewTopic(topicName, partitions, replicationFactor);
+    public NewTopic bankGetTopic(@Value("${spring.kafka.topics.bank.get.name}") String topicName,
+                                 @Value("${spring.kafka.topics.bank.get.partitions}") int partitions,
+                                 @Value("${spring.kafka.topics.bank.get.replication-factor}") short factor) {
+        return new NewTopic(topicName, partitions, factor);
     }
 }
-

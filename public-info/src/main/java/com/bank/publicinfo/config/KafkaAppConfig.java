@@ -1,6 +1,5 @@
 package com.bank.publicinfo.config;
 
-import com.fasterxml.jackson.databind.Module;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -19,6 +18,8 @@ import org.springframework.kafka.support.serializer.JsonSerializer;
 @EnableKafka
 @Configuration
 public class KafkaAppConfig {
+
+    private static final String BOOTSTRAP_SERVERS = "bootstrap.servers";
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
@@ -27,8 +28,8 @@ public class KafkaAppConfig {
 
     @Bean
     public Map<String, Object> producerConfigs() {
-        Map<String, Object> props = new HashMap<>();
-        props.put("bootstrap.servers", this.bootstrapServers);
+        final Map<String, Object> props = new HashMap<>();
+        props.put(BOOTSTRAP_SERVERS, this.bootstrapServers);
         props.put("key.serializer", StringSerializer.class);
         props.put("value.serializer", JsonSerializer.class);
         return props;
@@ -36,8 +37,8 @@ public class KafkaAppConfig {
 
     @Bean
     public Map<String, Object> consumerConfigs() {
-        Map<String, Object> props = new HashMap<>();
-        props.put("bootstrap.servers", this.bootstrapServers);
+        final Map<String, Object> props = new HashMap<>();
+        props.put(BOOTSTRAP_SERVERS, this.bootstrapServers);
         props.put("group.id", this.groupId);
         props.put("key.deserializer", StringDeserializer.class);
         props.put("value.deserializer", ErrorHandlingDeserializer.class);
@@ -47,8 +48,8 @@ public class KafkaAppConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule((Module)new JavaTimeModule());
+        final ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
         mapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         return mapper;
     }

@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "certificate", schema = "public_bank_information")
+@Table(name = "certificate", schema = "public_info")
 public class Certificate {
 
     @Id
@@ -34,6 +34,5 @@ public class Certificate {
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
     @JoinColumn(name = "bank_details_id", nullable = false)
     private BankDetails bankDetails;
-
 
 }

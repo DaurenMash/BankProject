@@ -9,12 +9,13 @@ import org.springframework.kafka.annotation.KafkaListener;
 @Slf4j
 public class ErrorLogsConsumer {
 
-    @KafkaListener(topics = {"${spring.kafka.topics.error-log.name}"}, groupId = "${spring.kafka.consumer.group-id}", containerFactory = "errorLogsKafkaListenerContainerFactory")
+    @KafkaListener(topics = {"${spring.kafka.topics.error-log.name}"},
+            groupId = "${spring.kafka.consumer.group-id}",
+            containerFactory = "errorLogsKafkaListenerContainerFactory")
     public void listen(ErrorResponseDto errorResponse) {
-        log.info("Received error log: Code: {}, Message: {}, Timing: {}", new Object[] { errorResponse
+        log.info("Received error log: Code: {}, Message: {}, Timing: {}", errorResponse
                 .getErrorCode(), errorResponse
                 .getMessage(), errorResponse
-                .getTimestamp() });
+                .getTimestamp());
     }
 }
-

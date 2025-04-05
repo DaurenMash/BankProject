@@ -18,29 +18,35 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "audit", schema = "public_bank_information")
+@Table(name = "audit", schema = "public_info")
 public class Audit {
+
+    private static final int ENTITY_TYPE_MAX_LENGTH = 40;
+    private static final int OPERATION_TYPE_MAX_LENGTH = 255;
+    private static final int CREATED_BY_MAX_LENGTH = 255;
+    private static final int MODIFIED_BY_MAX_LENGTH = 255;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Size(max = 40)
+    @Size(max = ENTITY_TYPE_MAX_LENGTH)
     @NotNull
-    @Column(name = "entity_type", nullable = false, length = 40)
+    @Column(name = "entity_type", nullable = false, length = ENTITY_TYPE_MAX_LENGTH)
     private String entityType;
 
-    @Size(max = 255)
+    @Size(max = OPERATION_TYPE_MAX_LENGTH)
     @NotNull
     @Column(name = "operation_type", nullable = false)
     private String operationType;
 
-    @Size(max = 255)
+    @Size(max = CREATED_BY_MAX_LENGTH)
     @NotNull
     @Column(name = "created_by", nullable = false)
     private String createdBy;
 
-    @Size(max = 255)
+    @Size(max = MODIFIED_BY_MAX_LENGTH)
     @Column(name = "modified_by")
     private String modifiedBy;
 
@@ -56,6 +62,5 @@ public class Audit {
     @NotNull
     @Column(name = "entity_json", nullable = false, columnDefinition = "jsonb")
     private String entityJson;
-
 
 }

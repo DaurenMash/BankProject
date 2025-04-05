@@ -23,7 +23,7 @@ public class BranchConsumer {
     public BranchDto creatingBranchListening(BranchDto branchDto) throws javax.xml.bind.ValidationException {
         log.info("Received branch to create: {}", branchDto.toString());
         try {
-            BranchDto savedBranch = this.service.createNewBranch(branchDto);
+            final BranchDto savedBranch = this.service.createNewBranch(branchDto);
             log.info("New branch saved successfully with ID: {}", savedBranch.getId());
             return savedBranch;
         } catch (Exception e) {
@@ -37,13 +37,13 @@ public class BranchConsumer {
             containerFactory = "branchKafkaListenerContainerFactory")
     public BranchDto updatingBranchListening(BranchDto branchDto) {
         log.info("Received branch to update: {}", branchDto.toString());
-        Long branchId = branchDto.getId();
+        final Long branchId = branchDto.getId();
         if (branchId == null) {
-            log.warn("Branch is null, cannot update bank details.");
-            throw new IllegalArgumentException("Branch ID is null, cannot update Branch.");
+            log.warn("Branch is null, cannot update Branch.");
+            throw new IllegalArgumentException("Branch ID is null");
         }
         try {
-            BranchDto updatedBankDetails = this.service.updateBranch(branchId, branchDto);
+            final BranchDto updatedBankDetails = this.service.updateBranch(branchId, branchDto);
             log.info("Branch updated successfully with ID: {}", branchId);
             return updatedBankDetails;
         } catch (Exception e) {
@@ -57,7 +57,7 @@ public class BranchConsumer {
             containerFactory = "branchKafkaListenerContainerFactory")
     public void deletingBranchListening(BranchDto branchDto) {
         log.info("Received Branch to delete: {}", branchDto.toString());
-        Long branchId = branchDto.getId();
+        final Long branchId = branchDto.getId();
         if (branchId == null) {
             log.warn("Branch ID is null, cannot delete bank details.");
             return;
@@ -72,13 +72,13 @@ public class BranchConsumer {
     public void gettingBranchListening(BranchDto branchDto) throws ValidationException {
         log.info("Received bankDetailsDto to get: {}", branchDto);
         if (branchDto != null) {
-            Long branchId = branchDto.getId();
+            final Long branchId = branchDto.getId();
             if (branchId == null) {
                 log.warn("Bank ID is null, cannot get branch.");
                 return;
             }
             try {
-                BranchDto branchDtoToGet = this.service.getBranchById(branchId);
+                final BranchDto branchDtoToGet = this.service.getBranchById(branchId);
                 log.info("Branch retrieved successfully: {}", branchDtoToGet.toString());
             } catch (Exception e) {
                 log.error("Error retrieving branch for ID {}: {}", branchId, e.getMessage());

@@ -23,7 +23,7 @@ public class BankDetailsConsumer {
     public BankDetailsDto creatingBankListening(BankDetailsDto bankDetailsDto) throws ValidationException {
         log.info("Received bankDetailsDto to create: {}", bankDetailsDto.toString());
         try {
-            BankDetailsDto savedBankDetails = this.service.createNewBankDetails(bankDetailsDto);
+            final BankDetailsDto savedBankDetails = this.service.createNewBankDetails(bankDetailsDto);
             log.info("New bank details saved successfully with ID: {}", savedBankDetails.getId());
             return savedBankDetails;
         } catch (Exception e) {
@@ -37,13 +37,13 @@ public class BankDetailsConsumer {
             containerFactory = "kafkaListenerContainerFactory")
     public BankDetailsDto updatingBankListening(BankDetailsDto bankDetailsDto) throws ValidationException {
         log.info("Received bankDetailsDto to update: {}", bankDetailsDto.toString());
-        Long bankId = bankDetailsDto.getId();
+        final Long bankId = bankDetailsDto.getId();
         if (bankId == null) {
             log.warn("Bank ID is null, cannot update bank details.");
-            throw new IllegalArgumentException("Bank ID is null, cannot update bank details.");
+            throw new IllegalArgumentException("Bank ID is null");
         }
         try {
-            BankDetailsDto updatedBankDetails = this.service.updateBankDetails(bankDetailsDto);
+            final BankDetailsDto updatedBankDetails = this.service.updateBankDetails(bankDetailsDto);
             log.info("Bank details updated successfully with ID: {}", bankId);
             return updatedBankDetails;
         } catch (Exception e) {
@@ -57,7 +57,7 @@ public class BankDetailsConsumer {
             containerFactory = "kafkaListenerContainerFactory")
     public void deletingBankListening(BankDetailsDto bankDetailsDto) throws ValidationException {
         log.info("Received bankDetailsDto to delete: {}", bankDetailsDto.toString());
-        Long bankId = bankDetailsDto.getId();
+        final Long bankId = bankDetailsDto.getId();
         if (bankId == null) {
             log.warn("Bank ID is null, cannot delete bank details.");
             return;
@@ -72,13 +72,13 @@ public class BankDetailsConsumer {
     public void gettingBankListening(BankDetailsDto bankDetailsDto) throws ValidationException {
         log.info("Received bankDetailsDto to get: {}", bankDetailsDto);
         if (bankDetailsDto != null) {
-            Long bankId = bankDetailsDto.getId();
+            final Long bankId = bankDetailsDto.getId();
             if (bankId == null) {
                 log.warn("Bank ID is null, cannot get bank details.");
                 return;
             }
             try {
-                BankDetailsDto bankDetailsDtoToGet = this.service.getBankDetailsById(bankId);
+                final BankDetailsDto bankDetailsDtoToGet = this.service.getBankDetailsById(bankId);
                 log.info("Bank details retrieved successfully: {}", bankDetailsDtoToGet);
             } catch (Exception e) {
                 log.error("Error retrieving bank details for ID {}: {}", bankId, e.getMessage());

@@ -13,6 +13,6 @@ public interface CertificateRepository extends JpaRepository<Certificate, Long> 
 
     List<Certificate> findCertificatesByBankDetails(@NotNull BankDetails bankDetails);
 
-    void deleteCertificateByBankDetails_Id(@NotNull Long bankDetailsId);
+    void deleteCertificateByBankDetailsId(@NotNull Long bankDetailsId);
 
 }

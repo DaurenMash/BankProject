@@ -1,6 +1,14 @@
 package com.bank.publicinfo.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -14,17 +22,18 @@ import java.time.LocalTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "atm", schema = "public_bank_information")
+@Table(name = "atm", schema = "public_info")
 public class ATM {
+    private static final int MAX_ADDRESS_LENGTH = 370;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Size(max = 370)
+    @Size(max = MAX_ADDRESS_LENGTH)
     @NotNull
-    @Column(name = "address", nullable = false, length = 370)
+    @Column(name = "address", nullable = false, length = MAX_ADDRESS_LENGTH)
     private String address;
 
     @Column(name = "start_of_work")
@@ -43,6 +52,5 @@ public class ATM {
     @NotNull
     @JoinColumn(name = "branch_id", nullable = false)
     private Branch branch;
-
 
 }

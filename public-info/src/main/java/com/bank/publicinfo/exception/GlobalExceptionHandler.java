@@ -43,5 +43,4 @@ public class GlobalExceptionHandler {
         kafkaTemplate.send(topic, errorResponse);
     }
 
-
 }

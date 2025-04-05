@@ -12,16 +12,16 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class CertificateConsumer {
 
-
     private final CertificateService service;
 
-    @KafkaListener(topics = {"${spring.kafka.topics.certificate.create.name}"},
+    @KafkaListener(
+            topics = {"${spring.kafka.topics.certificate.create.name}"},
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public CertificateDto creatingCertificateListening(CertificateDto certificateDto) {
         log.info("Received certificateDto to create: {}", certificateDto);
         try {
-            CertificateDto savedCertificate = this.service.createNewCertificate(certificateDto);
+            final CertificateDto savedCertificate = this.service.createNewCertificate(certificateDto);
             log.info("New certificate saved successfully with ID: {}", savedCertificate.getId());
             return savedCertificate;
         } catch (Exception e) {
@@ -35,13 +35,13 @@ public class CertificateConsumer {
             containerFactory = "certificateKafkaListenerContainerFactory")
     public CertificateDto updatingCertificateListening(CertificateDto certificateDto) {
         log.info("Received certificateDto to update: {}", certificateDto);
-        Long certificateId = certificateDto.getId();
+        final Long certificateId = certificateDto.getId();
         if (certificateId == null) {
             log.warn("Certificate ID is null, cannot update certificate.");
-            throw new IllegalArgumentException("Certificate ID is null, cannot update certificate.");
+            throw new IllegalArgumentException("Certificate ID is null");
         }
         try {
-            CertificateDto updatedCertificate = this.service.updateCertificate(certificateDto);
+            final CertificateDto updatedCertificate = this.service.updateCertificate(certificateDto);
             log.info("Certificate updated successfully with ID: {}", certificateId);
             return updatedCertificate;
         } catch (Exception e) {
@@ -50,10 +50,13 @@ public class CertificateConsumer {
         }
     }
 
-    @KafkaListener(topics = {"${spring.kafka.topics.certificate.delete.name}"}, groupId = "${spring.kafka.consumer.group-id}", containerFactory = "certificateKafkaListenerContainerFactory")
+    @KafkaListener(
+            topics = {"${spring.kafka.topics.certificate.delete.name}"},
+            groupId = "${spring.kafka.consumer.group-id}",
+            containerFactory = "certificateKafkaListenerContainerFactory")
     public void deletingCertificateListening(CertificateDto certificateDto) {
         log.info("Received certificateDto to delete: {}", certificateDto);
-        Long certificateId = certificateDto.getId();
+        final Long certificateId = certificateDto.getId();
         if (certificateId == null) {
             log.warn("Certificate ID is null, cannot delete certificate.");
             return;
@@ -62,17 +65,20 @@ public class CertificateConsumer {
         log.info("Certificate deleted successfully with ID: {}", certificateId);
     }
 
-    @KafkaListener(topics = {"${spring.kafka.topics.certificate.get.name}"}, groupId = "${spring.kafka.consumer.group-id}", containerFactory = "certificateKafkaListenerContainerFactory")
+    @KafkaListener(
+            topics = {"${spring.kafka.topics.certificate.get.name}"},
+            groupId = "${spring.kafka.consumer.group-id}",
+            containerFactory = "certificateKafkaListenerContainerFactory")
     public void gettingCertificateListening(CertificateDto certificateDto) {
         log.info("Received certificateDto to get: {}", certificateDto);
         if (certificateDto != null) {
-            Long certificateId = certificateDto.getId();
+            final Long certificateId = certificateDto.getId();
             if (certificateId == null) {
                 log.warn("Certificate ID is null, cannot get certificate.");
                 return;
             }
             try {
-                CertificateDto certificateToGet = this.service.getCertificateById(certificateId);
+                final CertificateDto certificateToGet = this.service.getCertificateById(certificateId);
                 log.info("Certificate retrieved successfully: {}", certificateToGet);
             } catch (Exception e) {
                 log.error("Error retrieving certificate for ID {}: {}", certificateId, e.getMessage());

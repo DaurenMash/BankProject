@@ -12,6 +12,7 @@ import com.bank.publicinfo.repository.BankDetailsRepository;
 import com.bank.publicinfo.repository.CertificateRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,12 +24,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CertificateServiceImpl implements CertificateService {
 
+    @Value("${spring.kafka.topics.error-log.name}")
+    String errorTopic;
     private final CertificateRepository certificateRepository;
     private final CertificateMapper certificateMapper;
     private final BankDetailsRepository bankDetailsRepository;
     private final GlobalExceptionHandler globalExceptionHandler;
 
-    String errorTopic = "public-info.error.logs";
 
     private BankDetails findBankById(Long id) {
         return bankDetailsRepository.findById(id)
@@ -40,18 +42,18 @@ public class CertificateServiceImpl implements CertificateService {
     @Transactional
     public CertificateDto createNewCertificate(CertificateDto CertificateDto) {
         if (CertificateDto == null) {
-            log.error("Attempt to create null Certificate");
-            IllegalArgumentException e = new IllegalArgumentException("Attempt to create null Certificate");
+            log.error("Attempt to create null certificate");
+            final IllegalArgumentException e = new IllegalArgumentException("Attempt to create null Certificate");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            BankDetails bankDetails = findBankById(CertificateDto.getBankDetailsId());
-            Certificate Certificate = certificateMapper.toEntity(CertificateDto);
-            Certificate.setBankDetails(bankDetails);
-            Certificate savedCertificate = certificateRepository.save(Certificate);
-            log.info("Successfully created new Certificate with ID: {}", savedCertificate.getId());
+            final BankDetails bankDetails = findBankById(CertificateDto.getBankDetailsId());
+            final Certificate certificate = certificateMapper.toEntity(CertificateDto);
+            certificate.setBankDetails(bankDetails);
+            final Certificate savedCertificate = certificateRepository.save(certificate);
+            log.info("Successfully created new certificate with ID: {}", savedCertificate.getId());
             return certificateMapper.toDto(savedCertificate);
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
@@ -65,22 +67,23 @@ public class CertificateServiceImpl implements CertificateService {
     public CertificateDto updateCertificate(CertificateDto newCertificateDto) {
         if (newCertificateDto == null) {
             log.error("Attempt to update Certificate with null DTO");
-            IllegalArgumentException e = new IllegalArgumentException("Certificate DTO must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Certificate DTO must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            Certificate existingCertificate = certificateRepository.findById(newCertificateDto.getId())
+            final Certificate existingCertificate = certificateRepository.findById(newCertificateDto.getId())
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("Certificate with ID " + newCertificateDto.getId() + " not found");
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException("No certificate with ID: " + newCertificateDto.getId());
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
 
-            BankDetails bankDetails = findBankById(newCertificateDto.getBankDetailsId());
+            final BankDetails bankDetails = findBankById(newCertificateDto.getBankDetailsId());
             certificateMapper.updateFromDto(newCertificateDto, existingCertificate);
             existingCertificate.setBankDetails(bankDetails);
-            Certificate savedCertificate = certificateRepository.save(existingCertificate);
+            final Certificate savedCertificate = certificateRepository.save(existingCertificate);
             log.info("Successfully updated Certificate with ID: {}", savedCertificate.getId());
             return certificateMapper.toDto(savedCertificate);
         } catch (Exception e) {
@@ -95,15 +98,16 @@ public class CertificateServiceImpl implements CertificateService {
     public void deleteCertificate(Long CertificateId) {
         if (CertificateId == null) {
             log.error("Attempt to delete Certificate with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("Certificate ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Certificate id must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            Certificate existingCertificate = certificateRepository.findById(CertificateId)
+            final Certificate existingCertificate = certificateRepository.findById(CertificateId)
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("Certificate with ID " + CertificateId + " not found");
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException("Certificate with ID not found " + CertificateId);
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
@@ -120,27 +124,30 @@ public class CertificateServiceImpl implements CertificateService {
     public List<CertificateDto> getCertificatesByBankDetails(Long bankDetailsId) {
         if (bankDetailsId == null) {
             log.error("Attempt to get Certificates with null bankDetails ID");
-            IllegalArgumentException e = new IllegalArgumentException("BankDetails ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("BankDetails ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            BankDetails bankDetails = findBankById(bankDetailsId);
-            List<CertificateDto> Certificates = certificateRepository
+            final BankDetails bankDetails = findBankById(bankDetailsId);
+            final List<CertificateDto> certificates = certificateRepository
                     .findCertificatesByBankDetails(bankDetails)
                     .stream()
                     .map(certificateMapper::toDto)
                     .collect(Collectors.toList());
 
-            log.info("Successfully retrieved {} Certificates for BankDetails ID: {}", Certificates.size(), bankDetailsId);
-            return Certificates;
+            log.info("Successfully retrieved {} Certificates for BankDetails ID: {}",
+                    certificates.size(), bankDetailsId);
+            return certificates;
         } catch (DataAccessException e) {
-            log.error("Data access error occurred while retrieving Certificates for BankDetails ID: {}", bankDetailsId, e);
+            log.error("Data access error occurred while retrieving Certificates for BankDetails ID: {}",
+                    bankDetailsId, e);
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         } catch (Exception e) {
-            log.error("An unexpected error occurred while retrieving Certificates for BankDetails ID: {}", bankDetailsId, e);
+            log.error("An unexpected error occurred while retrieving Certificates for BankDetails ID: {}",
+                    bankDetailsId, e);
             globalExceptionHandler.handleException(e, errorTopic);
             throw new RuntimeException("An unexpected error occurred while retrieving Certificates.");
         }
@@ -151,22 +158,23 @@ public class CertificateServiceImpl implements CertificateService {
     public CertificateDto getCertificateById(Long certificateId) {
         if (certificateId == null) {
             log.error("Attempt to get Certificate details with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("Certificate ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Certificate ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            CertificateDto CertificateDto = certificateRepository.findById(certificateId)
+            final CertificateDto certificateDto = certificateRepository.findById(certificateId)
                     .map(certificateMapper::toDto)
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("Certificate with ID " + certificateId + " not found");
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException("No certificate with ID " + certificateId);
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
 
             log.info("Successfully retrieved Certificate with ID: {}", certificateId);
-            return CertificateDto;
+            return certificateDto;
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
             throw new RuntimeException("An unexpected error occurred while retrieving Certificate details.");

@@ -12,6 +12,7 @@ import com.bank.publicinfo.repository.BankDetailsRepository;
 import com.bank.publicinfo.repository.LicenseRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,16 +24,20 @@ import java.util.stream.Collectors;
 @Slf4j
 public class LicenseServiceImpl implements LicenseService {
 
+    private static final String NOT_FOUND = " not found";
+    private static final String NULL_LICENSE_MESSAGE = "Attempt to create null License";
+    private static final String NULL_LICENSE_ID_MESSAGE = "License ID must not be null";
+    @Value("${spring.kafka.topics.error-log.name}")
+    String errorTopic;
     private final LicenseRepository licenseRepository;
     private final LicenseMapper licenseMapper;
     private final BankDetailsRepository bankDetailsRepository;
     private final GlobalExceptionHandler globalExceptionHandler;
 
-    String errorTopic = "public-info.error.logs";
 
     private BankDetails findBankById(Long id) {
         return bankDetailsRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Bank with ID " + id + " not found"));
+                .orElseThrow(() -> new EntityNotFoundException("Bank with ID " + id + NOT_FOUND));
     }
 
 
@@ -40,17 +45,17 @@ public class LicenseServiceImpl implements LicenseService {
     @Transactional
     public LicenseDto createNewLicense(LicenseDto licenseDto) {
         if (licenseDto == null) {
-            log.error("Attempt to create null License");
-            IllegalArgumentException e = new IllegalArgumentException("Attempt to create null License");
+            log.error(NULL_LICENSE_MESSAGE);
+            final IllegalArgumentException e = new IllegalArgumentException(NULL_LICENSE_MESSAGE);
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            BankDetails bankDetails = findBankById(licenseDto.getBankDetailsId());
-            License license = licenseMapper.toEntity(licenseDto);
+            final BankDetails bankDetails = findBankById(licenseDto.getBankDetailsId());
+            final License license = licenseMapper.toEntity(licenseDto);
             license.setBankDetails(bankDetails);
-            License savedLicense = licenseRepository.save(license);
+            final License savedLicense = licenseRepository.save(license);
             log.info("Successfully created new License with ID: {}", savedLicense.getId());
             return licenseMapper.toDto(savedLicense);
         } catch (Exception e) {
@@ -65,22 +70,23 @@ public class LicenseServiceImpl implements LicenseService {
     public LicenseDto updateLicense(LicenseDto newLicenseDto) {
         if (newLicenseDto == null) {
             log.error("Attempt to update License with null DTO");
-            IllegalArgumentException e = new IllegalArgumentException("License DTO must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("License DTO must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            License existingLicense = licenseRepository.findById(newLicenseDto.getId())
+            final License existingLicense = licenseRepository.findById(newLicenseDto.getId())
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("License with ID " + newLicenseDto.getId() + " not found");
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException("License with ID " + newLicenseDto.getId() + NOT_FOUND);
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
 
-            BankDetails bankDetails = findBankById(newLicenseDto.getBankDetailsId());
+            final BankDetails bankDetails = findBankById(newLicenseDto.getBankDetailsId());
             licenseMapper.updateFromDto(newLicenseDto, existingLicense);
             existingLicense.setBankDetails(bankDetails);
-            License savedLicense = licenseRepository.save(existingLicense);
+            final License savedLicense = licenseRepository.save(existingLicense);
             log.info("Successfully updated License with ID: {}", savedLicense.getId());
             return licenseMapper.toDto(savedLicense);
         } catch (Exception e) {
@@ -95,15 +101,16 @@ public class LicenseServiceImpl implements LicenseService {
     public void deleteLicense(Long licenseId) {
         if (licenseId == null) {
             log.error("Attempt to delete License with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("License ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException(NULL_LICENSE_ID_MESSAGE);
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            License existingLicense = licenseRepository.findById(licenseId)
+            final License existingLicense = licenseRepository.findById(licenseId)
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("License with ID " + licenseId + " not found");
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException("No license with ID " + licenseId);
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
@@ -120,14 +127,14 @@ public class LicenseServiceImpl implements LicenseService {
     public List<LicenseDto> getLicensesByBankDetails(Long bankDetailsId) {
         if (bankDetailsId == null) {
             log.error("Attempt to get Licenses with null bankDetails ID");
-            IllegalArgumentException e = new IllegalArgumentException("BankDetails ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("BankDetails ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            BankDetails bankDetails = findBankById(bankDetailsId);
-            List<LicenseDto> licenses = licenseRepository
+            final BankDetails bankDetails = findBankById(bankDetailsId);
+            final List<LicenseDto> licenses = licenseRepository
                     .findLicensesByBankDetails(bankDetails)
                     .stream()
                     .map(licenseMapper::toDto)
@@ -140,7 +147,7 @@ public class LicenseServiceImpl implements LicenseService {
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         } catch (Exception e) {
-            log.error("An unexpected error occurred while retrieving Licenses for BankDetails ID: {}", bankDetailsId, e);
+            log.error("An unexpected error while retrieving Licenses for BankDetails ID: {}", bankDetailsId, e);
             globalExceptionHandler.handleException(e, errorTopic);
             throw new RuntimeException("An unexpected error occurred while retrieving Licenses.");
         }
@@ -151,16 +158,17 @@ public class LicenseServiceImpl implements LicenseService {
     public LicenseDto getLicenseById(Long licenseId) {
         if (licenseId == null) {
             log.error("Attempt to get License details with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("License ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException(NULL_LICENSE_ID_MESSAGE);
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            LicenseDto licenseDto = licenseRepository.findById(licenseId)
+            final LicenseDto licenseDto = licenseRepository.findById(licenseId)
                     .map(licenseMapper::toDto)
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("License with ID " + licenseId + " not found");
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException("License with id " + licenseId + NOT_FOUND);
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });

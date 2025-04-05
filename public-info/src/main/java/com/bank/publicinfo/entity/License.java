@@ -18,7 +18,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "license", schema = "public_bank_information")
+@Table(name = "license", schema = "public_info")
 public class License {
 
     @Id

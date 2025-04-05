@@ -7,11 +7,11 @@ import com.bank.publicinfo.enumtype.OperationType;
 import com.bank.publicinfo.exception.GlobalExceptionHandler;
 import com.bank.publicinfo.mapper.AuditMapper;
 import com.bank.publicinfo.exception.EntityNotFoundException;
-import com.bank.publicinfo.exception.*;
 import com.bank.publicinfo.repository.AuditRepository;
 import com.bank.publicinfo.repository.BankDetailsRepository;
 import com.bank.publicinfo.exception.CustomJsonProcessingException;
 import com.bank.publicinfo.exception.IllegalArgumentException;
+import com.bank.publicinfo.exception.DataAccessException;
 import com.bank.publicinfo.exception.ValidationException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,6 +19,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,31 +33,36 @@ import java.time.LocalDateTime;
 @Slf4j
 public class AuditServiceImpl implements AuditService {
 
+    private static final String ID_FIELD = "id";
+    private static final String ERROR_PROCESSING_JSON = "Error processing JSON: ";
+    private static final String AUDIT_ID_NULL_MESSAGE = "Audit ID must not be null";
+    private static final String AUDIT_NOT_FOUND_MESSAGE = "Audit not found with ID: ";
+    @Value("${spring.kafka.topics.error-log.name}")
+    String errorTopic;
     private final AuditRepository auditRepository;
     private final AuditMapper auditMapper;
     private final BankDetailsRepository bankDetailsRepository;
     private final ObjectMapper mapper;
     private final GlobalExceptionHandler globalExceptionHandler;
 
-    String errorTopic = "public-info.error.logs";
 
     @Override
     @Transactional
     public <T> void updateAudit(T dto) throws CustomJsonProcessingException, ValidationException {
         try {
-            String newEntityJson = mapper.writeValueAsString(dto);
-            JsonNode newEJson = mapper.readTree(newEntityJson);
-            Long newId = newEJson.get("id").asLong();
-            AuditDto oldAuditDto = findAuditByEntityJsonId(newId);
+            final String newEntityJson = mapper.writeValueAsString(dto);
+            final JsonNode newEJson = mapper.readTree(newEntityJson);
+            final Long newId = newEJson.get(ID_FIELD).asLong();
+            final AuditDto oldAuditDto = findAuditByEntityJsonId(newId);
 
             if (oldAuditDto == null) {
                 throw new ValidationException("Audit with entity JSON " + newEntityJson + " not found");
             }
 
-            OperationType operationType = OperationType.UPDATE;
-            String entityType = String.valueOf(EntityType.entityTypeFromString(dto.getClass().getName()));
+            final OperationType operationType = OperationType.UPDATE;
+            final String entityType = String.valueOf(EntityType.entityTypeFromString(dto.getClass().getName()));
 
-            AuditDto newAuditDto = new AuditDto();
+            final AuditDto newAuditDto = new AuditDto();
             newAuditDto.setEntityType(entityType);
             newAuditDto.setOperationType(String.valueOf(operationType));
             newAuditDto.setCreatedAt(oldAuditDto.getCreatedAt());
@@ -70,8 +76,8 @@ public class AuditServiceImpl implements AuditService {
 
             log.info("Updating success audit Log: {} - {}", entityType, newAuditDto);
         } catch (JsonProcessingException e) {
-            globalExceptionHandler.handleException(e, "public-info.error.logs");
-            throw new CustomJsonProcessingException("Error processing JSON: " + e.getMessage());
+            globalExceptionHandler.handleException(e, errorTopic);
+            throw new CustomJsonProcessingException(ERROR_PROCESSING_JSON + e.getMessage());
         }
     }
 
@@ -80,11 +86,10 @@ public class AuditServiceImpl implements AuditService {
     @Transactional
     public <T> void createAudit(T dto) throws CustomJsonProcessingException {
         try {
-            String entityType = String.valueOf(EntityType.entityTypeFromString(dto.getClass().getName()));
-            OperationType operationType = OperationType.CREATE;
-            String entityJson = mapper.writeValueAsString(dto);
-
-            AuditDto auditDto = new AuditDto();
+            final String entityType = String.valueOf(EntityType.entityTypeFromString(dto.getClass().getName()));
+            final OperationType operationType = OperationType.CREATE;
+            final String entityJson = mapper.writeValueAsString(dto);
+            final AuditDto auditDto = new AuditDto();
             auditDto.setEntityType(entityType);
             auditDto.setOperationType(String.valueOf(operationType));
             auditDto.setCreatedBy("SYSTEM"); // TODO заменить на реального пользователя
@@ -96,9 +101,9 @@ public class AuditServiceImpl implements AuditService {
             auditRepository.save(auditMapper.toEntity(auditDto));
 
             log.info("Creation success audit Log: {} - {}", entityType, auditDto);
-        } catch (JsonProcessingException e) {
+        } catch (final JsonProcessingException e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new CustomJsonProcessingException("Error processing JSON: " + e.getMessage());
+            throw new CustomJsonProcessingException(ERROR_PROCESSING_JSON + e.getMessage());
         }
     }
 
@@ -108,7 +113,7 @@ public class AuditServiceImpl implements AuditService {
     public Page<AuditDto> getAllAudits(Pageable pageable) {
         if (pageable == null) {
             log.error("Attempt to get all audits with null Pageable");
-            IllegalArgumentException e =
+            final IllegalArgumentException e =
                     new IllegalArgumentException("Page parameters cannot be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -122,16 +127,17 @@ public class AuditServiceImpl implements AuditService {
     public AuditDto getAuditById(Long auditId) {
         if (auditId == null) {
             log.error("Attempt to get audit details with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("Audit ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException(AUDIT_ID_NULL_MESSAGE);
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            AuditDto auditDto = auditRepository.findById(auditId)
+            final AuditDto auditDto = auditRepository.findById(auditId)
                     .map(auditMapper::toDto)
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("Audit not found with ID: " + auditId);
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException(AUDIT_NOT_FOUND_MESSAGE + auditId);
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
@@ -152,14 +158,14 @@ public class AuditServiceImpl implements AuditService {
     public void deleteAuditById(Long auditId) {
         if (auditId == null) {
             log.error("Attempt to delete audit with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("Audit ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException(AUDIT_ID_NULL_MESSAGE);
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
             if (!auditRepository.existsById(auditId)) {
-                EntityNotFoundException e = new EntityNotFoundException("Audit not found with ID: " + auditId);
+                final EntityNotFoundException e = new EntityNotFoundException(AUDIT_NOT_FOUND_MESSAGE + auditId);
                 globalExceptionHandler.handleException(e, errorTopic);
                 throw e;
             }
@@ -182,16 +188,16 @@ public class AuditServiceImpl implements AuditService {
     public BankDetails findBankDetailsByBik(Long bik) {
         if (bik == null) {
             log.error("Attempt to find bank details with null BIK");
-            IllegalArgumentException e = new IllegalArgumentException("BIK must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("BIK must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            BankDetails bankDetails = bankDetailsRepository.findByBik(bik);
+            final BankDetails bankDetails = bankDetailsRepository.findByBik(bik);
 
             if (bankDetails == null) {
-                EntityNotFoundException e = new EntityNotFoundException("Bank details not found for BIK: " + bik);
+                final EntityNotFoundException e = new EntityNotFoundException("Bank details not found for BIK: " + bik);
                 globalExceptionHandler.handleException(e, errorTopic);
                 throw e;
             }
@@ -214,21 +220,21 @@ public class AuditServiceImpl implements AuditService {
     @Override
     public AuditDto findAuditByEntityJsonId(Long entityId) throws CustomJsonProcessingException {
         int page = 0;
-        int size = 10;
+        final int size = 10;
         boolean found = false;
         AuditDto resultAuditDto = null;
 
         while (!found) {
-            Pageable pageable = PageRequest.of(page, size);
-            Page<AuditDto> auditPage = getAllAudits(pageable);
+            final Pageable pageable = PageRequest.of(page, size);
+            final Page<AuditDto> auditPage = getAllAudits(pageable);
             if (auditPage.isEmpty()) {
                 break;
             }
             for (AuditDto auditDto : auditPage.getContent()) {
                 try {
-                    JsonNode jsonNode = mapper.readTree(auditDto.getEntityJson());
-                    if (jsonNode.has("id")) {
-                        Long id = jsonNode.get("id").asLong();
+                    final JsonNode jsonNode = mapper.readTree(auditDto.getEntityJson());
+                    if (jsonNode.has(ID_FIELD)) {
+                        final Long id = jsonNode.get(ID_FIELD).asLong();
                         if (id.equals(entityId)) {
                             resultAuditDto = auditDto;
                             found = true;
@@ -237,7 +243,7 @@ public class AuditServiceImpl implements AuditService {
                     }
                 } catch (JsonProcessingException e) {
                     globalExceptionHandler.handleException(e, errorTopic);
-                    throw new CustomJsonProcessingException("Error processing JSON: " + e.getMessage());
+                    throw new CustomJsonProcessingException(ERROR_PROCESSING_JSON + e.getMessage());
                 }
             }
             page++;

@@ -22,13 +22,18 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "bank_details", schema = "public_bank_information", uniqueConstraints = {
+@Table(name = "bank_details", schema = "public_info", uniqueConstraints = {
         @UniqueConstraint(name = "bank_details_pk_2", columnNames = {"bik"}),
         @UniqueConstraint(name = "bank_details_pk_3", columnNames = {"inn"}),
         @UniqueConstraint(name = "bank_details_pk_4", columnNames = {"kpp"}),
         @UniqueConstraint(name = "bank_details_pk_5", columnNames = {"cor_account"})
 })
 public class BankDetails {
+
+    private static final int CITY_MAX_LENGTH = 180;
+    private static final int JOINT_STOCK_COMPANY_MAX_LENGTH = 155;
+    private static final int NAME_MAX_LENGTH = 80;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
@@ -48,21 +53,21 @@ public class BankDetails {
 
     @NotNull
     @Column(name = "cor_account", nullable = false)
-    private Long cor_account;
+    private Long corAccount;
 
-    @Size(max = 180)
+    @Size(max = CITY_MAX_LENGTH)
     @NotNull
-    @Column(name = "city", nullable = false, length = 180)
+    @Column(name = "city", nullable = false, length = CITY_MAX_LENGTH)
     private String city;
 
-    @Size(max = 155)
+    @Size(max = JOINT_STOCK_COMPANY_MAX_LENGTH)
     @NotNull
-    @Column(name = "joint_stock_company", nullable = false, length = 155)
-    private String joint_stock_company;
+    @Column(name = "joint_stock_company", nullable = false, length = JOINT_STOCK_COMPANY_MAX_LENGTH)
+    private String jointStockCompany;
 
-    @Size(max = 80)
+    @Size(max = NAME_MAX_LENGTH)
     @NotNull
-    @Column(name = "name", nullable = false, length = 80)
+    @Column(name = "name", nullable = false, length = NAME_MAX_LENGTH)
     private String name;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "bankDetails",
@@ -72,6 +77,5 @@ public class BankDetails {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "bankDetails",
             cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Certificate> certificates;
-
 
 }

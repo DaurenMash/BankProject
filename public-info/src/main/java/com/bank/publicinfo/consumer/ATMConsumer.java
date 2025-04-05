@@ -20,7 +20,7 @@ public class ATMConsumer {
     public ATMDto creatingATMListening(ATMDto atmDto) {
         log.info("Received ATM to create: {}", atmDto.toString());
         try {
-            ATMDto savedATM = this.service.createNewATM(atmDto);
+            final ATMDto savedATM = this.service.createNewATM(atmDto);
             log.info("New ATM saved successfully with ID: {}", savedATM.getId());
             return savedATM;
         } catch (Exception e) {
@@ -34,13 +34,13 @@ public class ATMConsumer {
             containerFactory = "atmKafkaListenerContainerFactory")
     public ATMDto updatingATMListening(ATMDto atmDto) {
         log.info("Received ATM to update: {}", atmDto);
-        Long atmId = atmDto.getId();
+        final Long atmId = atmDto.getId();
         if (atmId == null) {
             log.warn("ATM ID is null, cannot update ATM.");
-            throw new IllegalArgumentException("ATM ID is null, cannot update ATM.");
+            throw new IllegalArgumentException("ATM id is null, cannot update ATM.");
         }
         try {
-            ATMDto updatedATM = this.service.updateATM(atmDto);
+            final ATMDto updatedATM = this.service.updateATM(atmDto);
             log.info("ATM updated successfully with ID: {}", atmId);
             return updatedATM;
         } catch (Exception e) {
@@ -54,7 +54,7 @@ public class ATMConsumer {
             containerFactory = "atmKafkaListenerContainerFactory")
     public void deletingATMListening(ATMDto atmDto) {
         log.info("Received ATM to delete: {}", atmDto);
-        Long atmId = atmDto.getId();
+        final Long atmId = atmDto.getId();
         if (atmId == null) {
             log.warn("ATM ID is null, cannot delete ATM.");
             return;
@@ -69,13 +69,13 @@ public class ATMConsumer {
     public void gettingATMListening(ATMDto atmDto) {
         log.info("Received ATM request to get: {}", atmDto);
         if (atmDto != null) {
-            Long atmId = atmDto.getId();
+            final Long atmId = atmDto.getId();
             if (atmId == null) {
                 log.warn("ATM ID is null, cannot get ATM.");
                 return;
             }
             try {
-                ATMDto retrievedATM = this.service.getATMById(atmId);
+                final ATMDto retrievedATM = this.service.getATMById(atmId);
                 log.info("ATM retrieved successfully: {}", retrievedATM);
             } catch (Exception e) {
                 log.error("Error retrieving ATM for ID {}: {}", atmId, e.getMessage());

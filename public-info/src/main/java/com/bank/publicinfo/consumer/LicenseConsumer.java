@@ -14,11 +14,13 @@ public class LicenseConsumer {
 
     private final LicenseService service;
 
-    @KafkaListener(topics = {"${spring.kafka.topics.license.create.name}"}, groupId = "${spring.kafka.consumer.group-id}", containerFactory = "certificateKafkaListenerContainerFactory")
+    @KafkaListener(topics = {"${spring.kafka.topics.license.create.name}"},
+            groupId = "${spring.kafka.consumer.group-id}",
+            containerFactory = "certificateKafkaListenerContainerFactory")
     public LicenseDto creatingLicenseListening(LicenseDto licenseDto) {
         log.info("Received licenseDto to create: {}", licenseDto);
         try {
-            LicenseDto savedLicense = this.service.createNewLicense(licenseDto);
+            final LicenseDto savedLicense = this.service.createNewLicense(licenseDto);
             log.info("New license saved successfully with ID: {}", savedLicense.getId());
             return savedLicense;
         } catch (Exception e) {
@@ -27,16 +29,18 @@ public class LicenseConsumer {
         }
     }
 
-    @KafkaListener(topics = {"${spring.kafka.topics.license.update.name}"}, groupId = "${spring.kafka.consumer.group-id}", containerFactory = "certificateKafkaListenerContainerFactory")
+    @KafkaListener(topics = {"${spring.kafka.topics.license.update.name}"},
+            groupId = "${spring.kafka.consumer.group-id}",
+            containerFactory = "certificateKafkaListenerContainerFactory")
     public LicenseDto updatingLicenseListening(LicenseDto licenseDto) {
         log.info("Received licenseDto to update: {}", licenseDto);
-        Long licenseId = licenseDto.getId();
+        final Long licenseId = licenseDto.getId();
         if (licenseId == null) {
             log.warn("License ID is null, cannot update license.");
-            throw new IllegalArgumentException("License ID is null, cannot update license.");
+            throw new IllegalArgumentException("License ID is null");
         }
         try {
-            LicenseDto updatedLicense = this.service.updateLicense(licenseDto);
+            final LicenseDto updatedLicense = this.service.updateLicense(licenseDto);
             log.info("License updated successfully with ID: {}", licenseId);
             return updatedLicense;
         } catch (Exception e) {
@@ -45,10 +49,12 @@ public class LicenseConsumer {
         }
     }
 
-    @KafkaListener(topics = {"${spring.kafka.topics.license.delete.name}"}, groupId = "${spring.kafka.consumer.group-id}", containerFactory = "certificateKafkaListenerContainerFactory")
+    @KafkaListener(topics = {"${spring.kafka.topics.license.delete.name}"},
+            groupId = "${spring.kafka.consumer.group-id}",
+            containerFactory = "certificateKafkaListenerContainerFactory")
     public void deletingLicenseListening(LicenseDto licenseDto) {
         log.info("Received licenseDto to delete: {}", licenseDto);
-        Long licenseId = licenseDto.getId();
+        final Long licenseId = licenseDto.getId();
         if (licenseId == null) {
             log.warn("License ID is null, cannot delete license.");
             return;
@@ -57,17 +63,19 @@ public class LicenseConsumer {
         log.info("License deleted successfully with ID: {}", licenseId);
     }
 
-    @KafkaListener(topics = {"${spring.kafka.topics.license.get.name}"}, groupId = "${spring.kafka.consumer.group-id}", containerFactory = "certificateKafkaListenerContainerFactory")
+    @KafkaListener(topics = {"${spring.kafka.topics.license.get.name}"},
+            groupId = "${spring.kafka.consumer.group-id}",
+            containerFactory = "certificateKafkaListenerContainerFactory")
     public void gettingLicenseListening(LicenseDto licenseDto) {
         log.info("Received licenseDto to get: {}", licenseDto);
         if (licenseDto != null) {
-            Long licenseId = licenseDto.getId();
+            final Long licenseId = licenseDto.getId();
             if (licenseId == null) {
                 log.warn("License ID is null, cannot get license.");
                 return;
             }
             try {
-                LicenseDto licenseToGet = this.service.getLicenseById(licenseId);
+                final LicenseDto licenseToGet = this.service.getLicenseById(licenseId);
                 log.info("License retrieved successfully: {}", licenseToGet);
             } catch (Exception e) {
                 log.error("Error retrieving license for ID {}: {}", licenseId, e.getMessage());
@@ -78,5 +86,3 @@ public class LicenseConsumer {
         }
     }
 }
-
-

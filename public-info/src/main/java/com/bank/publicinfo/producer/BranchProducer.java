@@ -18,5 +18,4 @@ public class BranchProducer {
         log.info("Branch sent to topic {}", topic);
     }
 
-
 }

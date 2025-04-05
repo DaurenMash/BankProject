@@ -21,6 +21,7 @@ public class AuditAspect {
 
     /**
      * Логирует операции создания банка, отделения, лицензии, сертификата
+     *
      * @param result результат выполнения Target метода создания сущности в БД
      */
 
@@ -31,8 +32,7 @@ public class AuditAspect {
         try {
             auditService.createAudit(result);
             log.info("Audit created Successfully: {}", result);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("AfterCreateAdvice failed: {}", e.getMessage());
         }
     }
@@ -40,6 +40,7 @@ public class AuditAspect {
 
     /**
      * Логирует операции обновления банка, отделения, лицензии, сертификата
+     *
      * @param result результат выполнения Target метода обновления сущности в БД
      */
     @AfterReturning(pointcut = "execution(* com.bank.publicinfo.service.*Impl.update*(..))",

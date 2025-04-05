@@ -2,10 +2,11 @@ package com.bank.publicinfo.config;
 
 
 import com.bank.publicinfo.dto.ErrorResponseDto;
+
 import java.util.Map;
+
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.common.serialization.Deserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -32,35 +33,44 @@ public class ErrorLogKafkaConfig {
     private String trustedPackage;
 
 
-
     @Bean
     public ConsumerFactory<String, ErrorResponseDto> errorLogsConsumerFactory() {
-        JsonDeserializer<ErrorResponseDto> valueDeserializer = new JsonDeserializer(ErrorResponseDto.class);
+        final JsonDeserializer<ErrorResponseDto> valueDeserializer = new JsonDeserializer<>(ErrorResponseDto.class);
         valueDeserializer.setRemoveTypeHeaders(false);
-        valueDeserializer.addTrustedPackages(new String[] { this.trustedPackage });
-        ErrorHandlingDeserializer<ErrorResponseDto> errorHandlingDeserializer = new ErrorHandlingDeserializer((Deserializer)valueDeserializer);
-        return (ConsumerFactory<String, ErrorResponseDto>)new DefaultKafkaConsumerFactory(this.consumerConfigs, (Deserializer)new StringDeserializer(), (Deserializer)errorHandlingDeserializer);
+        valueDeserializer.addTrustedPackages(this.trustedPackage);
+
+        final ErrorHandlingDeserializer<ErrorResponseDto> errorHandlingDeserializer =
+                new ErrorHandlingDeserializer<>(valueDeserializer);
+
+        return new DefaultKafkaConsumerFactory<>(
+                this.consumerConfigs,
+                new StringDeserializer(),
+                errorHandlingDeserializer);
     }
 
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, ErrorResponseDto> errorLogsKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, ErrorResponseDto> factory = new ConcurrentKafkaListenerContainerFactory();
+        final ConcurrentKafkaListenerContainerFactory<String, ErrorResponseDto> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(errorLogsConsumerFactory());
         return factory;
     }
 
     @Bean
     public ProducerFactory<String, ErrorResponseDto> errorLogsProducerFactory() {
-        return (ProducerFactory<String, ErrorResponseDto>)new DefaultKafkaProducerFactory(this.producerConfigs);
+        return new DefaultKafkaProducerFactory<>(this.producerConfigs);
     }
+
 
     @Bean
     public KafkaTemplate<String, ErrorResponseDto> errorLogsKafkaTemplate() {
-        return new KafkaTemplate(errorLogsProducerFactory());
+        return new KafkaTemplate<>(errorLogsProducerFactory());
     }
 
     @Bean
-    public NewTopic errorLogsTopic(@Value("${spring.kafka.topics.error-log.name}") String topicName, @Value("${spring.kafka.topics.error-log.partitions}") int partitions, @Value("${spring.kafka.topics.error-log.replication-factor}") short replicationFactor) {
-        return new NewTopic(topicName, partitions, replicationFactor);
+    public NewTopic errorLogsTopic(@Value("${spring.kafka.topics.error-log.name}") String topicName,
+                                   @Value("${spring.kafka.topics.error-log.partitions}") int partitions,
+                                   @Value("${spring.kafka.topics.error-log.replication-factor}") short factor) {
+        return new NewTopic(topicName, partitions, factor);
     }
 }

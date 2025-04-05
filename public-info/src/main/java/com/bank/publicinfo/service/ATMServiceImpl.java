@@ -13,6 +13,7 @@ import com.bank.publicinfo.repository.BranchRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,12 +25,13 @@ import java.util.stream.Collectors;
 @Slf4j
 public class ATMServiceImpl implements ATMService {
 
+    @Value("${spring.kafka.topics.error-log.name}")
+    String errorTopic;
     private final AtmRepository atmRepository;
     private final ATMMapper atmMapper;
     private final BranchRepository branchRepository;
     private final GlobalExceptionHandler globalExceptionHandler;
 
-    String errorTopic = "public-info.error.logs";
 
 
     @Override
@@ -37,17 +39,18 @@ public class ATMServiceImpl implements ATMService {
     public ATMDto createNewATM(ATMDto atmDto) {
         if (atmDto == null) {
             log.error("Attempt to create null ATM");
-            IllegalArgumentException e = new IllegalArgumentException("Attempt to create null ATM");
+            final IllegalArgumentException e = new IllegalArgumentException("It is impossible to create null ATM");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            Branch branch = branchRepository.findById(atmDto.getBranchId())
-                    .orElseThrow(() -> new EntityNotFoundException("Branch not found for id: " + atmDto.getBranchId()));
-            ATM atm = atmMapper.toEntity(atmDto);
+            final Branch branch = branchRepository.findById(atmDto.getBranchId())
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "No any branch for ATM id: " + atmDto.getBranchId()));
+            final ATM atm = atmMapper.toEntity(atmDto);
             atm.setBranch(branch);
-            ATM savedAtm = atmRepository.save(atm);
-            ATMDto savedAtmDto = atmMapper.toDto(savedAtm);
+            final ATM savedAtm = atmRepository.save(atm);
+            final ATMDto savedAtmDto = atmMapper.toDto(savedAtm);
             log.info("Successfully created new ATM with ID: {}", savedAtm.getId());
 
             return savedAtmDto;
@@ -63,29 +66,31 @@ public class ATMServiceImpl implements ATMService {
     public ATMDto updateATM(ATMDto atmDto) {
         if (atmDto == null) {
             log.error("Attempt to update ATM with null DTO");
-            IllegalArgumentException e = new IllegalArgumentException("ATM DTO must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("ATM DTO must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         try {
-            ATM existingAtm = atmRepository.findById(atmDto.getId())
+            final ATM existingAtm = atmRepository.findById(atmDto.getId())
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("ATM not found with ID: " + atmDto.getId());
+                        final EntityNotFoundException e = new EntityNotFoundException(
+                                "ATM not found with ID: " + atmDto.getId());
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
 
-            Branch branch = branchRepository.findById(atmDto.getBranchId())
+            final Branch branch = branchRepository.findById(atmDto.getBranchId())
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("Branch not found for id: " + atmDto.getBranchId());
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException("Branch not found for id: " + atmDto.getBranchId());
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
 
             atmMapper.updateFromDto(atmDto, existingAtm);
             existingAtm.setBranch(branch);
-            ATM savedAtm = atmRepository.save(existingAtm);
-            ATMDto savedAtmDto = atmMapper.toDto(savedAtm);
+            final ATM savedAtm = atmRepository.save(existingAtm);
+            final ATMDto savedAtmDto = atmMapper.toDto(savedAtm);
             log.info("Successfully updated ATM with ID: {}", savedAtm.getId());
             return savedAtmDto;
 
@@ -101,15 +106,16 @@ public class ATMServiceImpl implements ATMService {
     public void deleteATMById(Long atmId) {
         if (atmId == null) {
             log.error("Attempt to delete ATM with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("ATM ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("ATM ID can't be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            ATM existingATM = atmRepository.findById(atmId)
+            final ATM existingATM = atmRepository.findById(atmId)
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("There is no ATM with id " + atmId);
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException("No ATM with id " + atmId);
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
@@ -126,14 +132,14 @@ public class ATMServiceImpl implements ATMService {
     public List<ATMDto> getATMs(Long branchId) {
         if (branchId == null) {
             log.error("Attempt to get ATMs with null branch ID");
-            IllegalArgumentException e = new IllegalArgumentException("Branch ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("Branch ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            List<ATM> atms = atmRepository.findByBranchId(branchId);
-            List<ATMDto> atmDtos = atms.stream()
+            final List<ATM> atms = atmRepository.findByBranchId(branchId);
+            final List<ATMDto> atmDtos = atms.stream()
                     .map(atmMapper::toDto)
                     .collect(Collectors.toList());
 
@@ -155,16 +161,17 @@ public class ATMServiceImpl implements ATMService {
     public ATMDto getATMById(Long atmId) {
         if (atmId == null) {
             log.error("Attempt to get ATM details with null ID");
-            IllegalArgumentException e = new IllegalArgumentException("ATM ID must not be null");
+            final IllegalArgumentException e = new IllegalArgumentException("ATM ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
 
         try {
-            ATMDto atmDto = atmRepository.findById(atmId)
+            final ATMDto atmDto = atmRepository.findById(atmId)
                     .map(atmMapper::toDto)
                     .orElseThrow(() -> {
-                        EntityNotFoundException e = new EntityNotFoundException("There is no ATM with id " + atmId);
+                        final EntityNotFoundException e =
+                                new EntityNotFoundException("There is no ATM with id " + atmId);
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
@@ -178,7 +185,3 @@ public class ATMServiceImpl implements ATMService {
 
 
 }
-
-
-
-

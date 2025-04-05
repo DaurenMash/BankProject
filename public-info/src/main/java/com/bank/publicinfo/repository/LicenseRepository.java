@@ -13,6 +13,6 @@ public interface LicenseRepository extends JpaRepository<License, Long> {
 
     List<License> findLicensesByBankDetails(@NotNull BankDetails bankDetails);
 
-    void deleteLicensesByBankDetails_Id(@NotNull Long id);
+    void deleteLicensesByBankDetailsId(@NotNull Long id);
 
 }

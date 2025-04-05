@@ -23,27 +23,31 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "branch", schema = "public_bank_information", uniqueConstraints = {
+@Table(name = "branch", schema = "public_info", uniqueConstraints = {
         @UniqueConstraint(name = "branch_pk_2", columnNames = {"phone_number"})
 })
 public class Branch {
+
+    private static final int ADDRESS_MAX_LENGTH = 370;
+    private static final int CITY_MAX_LENGTH = 250;
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Size(max = 370)
+    @Size(max = ADDRESS_MAX_LENGTH)
     @NotNull
-    @Column(name = "address", nullable = false, length = 370)
+    @Column(name = "address", nullable = false, length = ADDRESS_MAX_LENGTH)
     private String address;
 
     @NotNull
     @Column(name = "phone_number", nullable = false)
     private Long phoneNumber;
 
-    @Size(max = 250)
+    @Size(max = CITY_MAX_LENGTH)
     @NotNull
-    @Column(name = "city", nullable = false, length = 250)
+    @Column(name = "city", nullable = false, length = CITY_MAX_LENGTH)
     private String city;
 
     @NotNull

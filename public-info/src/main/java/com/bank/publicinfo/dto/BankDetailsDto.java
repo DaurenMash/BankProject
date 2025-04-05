@@ -15,9 +15,9 @@ public class BankDetailsDto implements Serializable {
     private Long bik;
     private Long inn;
     private Long kpp;
-    private Long cor_account;
+    private Long corAccount;
     private String city;
-    private String joint_stock_company;
+    private String jointStockCompany;
     private String name;
 
 }
