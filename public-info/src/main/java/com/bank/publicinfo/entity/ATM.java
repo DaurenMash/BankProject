@@ -25,6 +25,7 @@ import java.time.LocalTime;
 @Entity
 @Table(name = "atm", schema = "public_info")
 public class ATM {
+    private static final int MAX_ADDRESS_LENGTH = 370;
 
     public static final int MAX_ADDRESS_LENGTH = 370;
 
