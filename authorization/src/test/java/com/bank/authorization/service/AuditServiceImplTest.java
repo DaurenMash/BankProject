@@ -19,17 +19,20 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuditServiceImplTest {
-
     @Mock
     private AuditRepository auditRepository;
-
     @Mock
     private AuditMapper auditMapper;
-
     @InjectMocks
     private AuditServiceImpl auditService;
 
@@ -63,76 +66,58 @@ class AuditServiceImplTest {
     @Test
     void logUserCreation_ShouldSaveAuditRecord() {
         when(auditMapper.toEntity(any(AuditDto.class))).thenReturn(audit);
-
         auditService.logUserCreation(userDto);
-
         verify(auditRepository, times(1)).save(any(Audit.class));
     }
 
     @Test
     void logUserUpdate_ShouldNotUpdateIfAuditRecordNotFound() {
         when(auditRepository.findAll()).thenReturn(Collections.emptyList());
-
         auditService.logUserUpdate(1L, userDto);
-
         verify(auditRepository, never()).save(any(Audit.class));
     }
 
     @Test
     void logUserUpdate_ShouldLogErrorWhenJsonParsingFails() {
         when(auditRepository.findAll()).thenReturn(List.of(auditWithInvalidJson));
-
         auditService.logUserUpdate(1L, userDto);
-
         verify(auditRepository, never()).save(any(Audit.class));
-
     }
 
     @Test
     void logUserUpdate_ShouldHandleMultipleAuditsWithSomeInvalidJson() {
         when(auditRepository.findAll()).thenReturn(List.of(auditWithInvalidJson, audit));
         when(auditRepository.save(any(Audit.class))).thenReturn(audit);
-
         auditService.logUserUpdate(1L, userDto);
-
         verify(auditRepository, times(1)).save(any(Audit.class));
     }
 
     @Test
     void save_ShouldCallRepositorySave() {
         when(auditMapper.toEntity(any(AuditDto.class))).thenReturn(audit);
-
         AuditDto auditDto = new AuditDto();
         auditDto.setEntityType("User");
         auditDto.setOperationType("CREATE");
         auditDto.setCreatedBy("SYSTEM");
         auditDto.setEntityJson(JsonUtils.toJson(userDto));
         auditDto.setCreatedAt(LocalDateTime.now());
-
         auditService.save(auditDto);
-
         verify(auditRepository, times(1)).save(any(Audit.class));
     }
 
     @Test
     void logUserUpdate_ShouldNotUpdateIfNoMatchingAuditFound() {
         when(auditRepository.findAll()).thenReturn(List.of(audit));
-
         auditService.logUserUpdate(999L, userDto);
-
         verify(auditRepository, never()).save(any(Audit.class));
     }
-
 
     @Test
     void logUserUpdate_ShouldLogErrorWhenJsonParsingThrowsException() {
         when(auditRepository.findAll()).thenReturn(List.of(audit));
-
         mockStatic(JsonUtils.class);
         when(JsonUtils.fromJson(anyString(), eq(User.class))).thenThrow(new RuntimeException("Ошибка парсинга JSON"));
-
         auditService.logUserUpdate(1L, userDto);
-
         verify(auditRepository, never()).save(any(Audit.class));
     }
 }
