@@ -40,9 +40,12 @@ public class HistoryKafkaListenerTest {
 
     private HistoryDto historyDto;
     private History history;
+    private Pageable defaultPageable;
 
     @BeforeEach
     void setUp() {
+        defaultPageable = PageRequest.of(0, 100);
+
         historyDto = HistoryDto.builder()
                 .id(1L)
                 .transferAuditId(2L)
@@ -102,18 +105,18 @@ public class HistoryKafkaListenerTest {
 
     @Test
     void testListenHistoryRequest_Success() {
-        Pageable pageable = PageRequest.of(0, 100);
         List<History> historyList = List.of(history);
         Page<History> historyPage = mock(Page.class);
 
-        when(historyService.getAuditHistoryByTransferId(2L, pageable)).thenReturn(historyPage);
+        when(historyService.getAuditHistoryByTransferId(2L, defaultPageable)).thenReturn(historyPage);
         when(historyPage.hasNext()).thenReturn(false);
         when(historyPage.getContent()).thenReturn(historyList);
         when(historyMapper.toDto(history)).thenReturn(historyDto);
 
         kafkaListener.listenHistoryRequest("key", historyDto);
 
-        verify(kafkaTemplate, times(1)).send("audit.history.response", "2", historyDto);
+        verify(kafkaTemplate, times(1))
+                .send("audit.history.response", String.valueOf(historyDto.getTransferAuditId()), historyDto);
     }
 
     @Test
@@ -136,10 +139,9 @@ public class HistoryKafkaListenerTest {
 
     @Test
     void testListenHistoryRequest_EmptyHistoryPage() {
-        Pageable pageable = PageRequest.of(0, 100);
         Page<History> emptyPage = mock(Page.class);
 
-        when(historyService.getAuditHistoryByTransferId(2L, pageable)).thenReturn(emptyPage);
+        when(historyService.getAuditHistoryByTransferId(2L, defaultPageable)).thenReturn(emptyPage);
         when(emptyPage.hasNext()).thenReturn(false);
         when(emptyPage.getContent()).thenReturn(Collections.emptyList());
 
@@ -150,30 +152,29 @@ public class HistoryKafkaListenerTest {
 
     @Test
     void testListenHistoryRequest_MultiPage_Success() {
-        Pageable pageable1 = PageRequest.of(0, 100);
-        Pageable pageable2 = PageRequest.of(1, 100);
+        Pageable nextPageable = PageRequest.of(1, 100); // Вторая страница
         List<History> historyList1 = List.of(history);
         List<History> historyList2 = List.of(history);
         Page<History> historyPage1 = mock(Page.class);
         Page<History> historyPage2 = mock(Page.class);
 
-        when(historyService.getAuditHistoryByTransferId(2L, pageable1)).thenReturn(historyPage1);
+        when(historyService.getAuditHistoryByTransferId(2L, defaultPageable)).thenReturn(historyPage1);
         when(historyPage1.hasNext()).thenReturn(true);
         when(historyPage1.getContent()).thenReturn(historyList1);
-        when(historyService.getAuditHistoryByTransferId(2L, pageable2)).thenReturn(historyPage2);
+        when(historyService.getAuditHistoryByTransferId(2L, nextPageable)).thenReturn(historyPage2);
         when(historyPage2.hasNext()).thenReturn(false);
         when(historyPage2.getContent()).thenReturn(historyList2);
         when(historyMapper.toDto(history)).thenReturn(historyDto);
 
         kafkaListener.listenHistoryRequest("key", historyDto);
 
-        verify(kafkaTemplate, times(2)).send("audit.history.response", "2", historyDto);
+        verify(kafkaTemplate, times(2))
+                .send("audit.history.response", String.valueOf(historyDto.getTransferAuditId()), historyDto);
     }
 
     @Test
     void testListenHistoryRequest_ServiceThrowsException() {
-        Pageable pageable = PageRequest.of(0, 100);
-        when(historyService.getAuditHistoryByTransferId(2L, pageable)).thenThrow(new RuntimeException("Service error"));
+        when(historyService.getAuditHistoryByTransferId(2L, defaultPageable)).thenThrow(new RuntimeException("Service error"));
 
         kafkaListener.listenHistoryRequest("key", historyDto);
 
@@ -182,11 +183,10 @@ public class HistoryKafkaListenerTest {
 
     @Test
     void testListenHistoryRequest_MapperThrowsException() {
-        Pageable pageable = PageRequest.of(0, 100);
         List<History> historyList = List.of(history);
         Page<History> historyPage = mock(Page.class);
 
-        when(historyService.getAuditHistoryByTransferId(2L, pageable)).thenReturn(historyPage);
+        when(historyService.getAuditHistoryByTransferId(2L, defaultPageable)).thenReturn(historyPage);
         when(historyPage.hasNext()).thenReturn(false);
         when(historyPage.getContent()).thenReturn(historyList);
         when(historyMapper.toDto(history)).thenThrow(new RuntimeException("Mapper error"));

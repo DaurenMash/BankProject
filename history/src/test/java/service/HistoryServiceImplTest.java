@@ -22,7 +22,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
 @ExtendWith(MockitoExtension.class)
 public class HistoryServiceImplTest {
 
@@ -33,9 +32,12 @@ public class HistoryServiceImplTest {
     private HistoryServiceImpl historyService;
 
     private History history;
+    private Pageable defaultPageable;
 
     @BeforeEach
     void setUp() {
+        defaultPageable = PageRequest.of(0, 10);
+
         history = History.builder()
                 .id(1L)
                 .transferAuditId(2L)
@@ -66,75 +68,74 @@ public class HistoryServiceImplTest {
 
     @Test
     void testGetAuditHistory_Success() {
-        Pageable pageable = PageRequest.of(0, 10);
         List<History> historyList = List.of(history);
-        Page<History> historyPage = new PageImpl<>(historyList, pageable, 1);
-        when(historyRepository.findAll(pageable)).thenReturn(historyPage);
+        Page<History> historyPage = new PageImpl<>(historyList, defaultPageable, 1);
+        when(historyRepository.findAll(defaultPageable)).thenReturn(historyPage);
 
-        Page<History> result = historyService.getAuditHistory(pageable);
+        Page<History> result = historyService.getAuditHistory(defaultPageable);
 
         assertEquals(historyPage, result);
         assertEquals(1, result.getTotalElements());
         assertEquals(historyList, result.getContent());
-        verify(historyRepository, times(1)).findAll(pageable);
+        verify(historyRepository, times(1)).findAll(defaultPageable);
     }
 
     @Test
     void testGetAuditHistory_EmptyPage() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<History> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
-        when(historyRepository.findAll(pageable)).thenReturn(emptyPage);
+        Page<History> emptyPage = new PageImpl<>(Collections.emptyList(), defaultPageable, 0);
+        when(historyRepository.findAll(defaultPageable)).thenReturn(emptyPage);
 
-        Page<History> result = historyService.getAuditHistory(pageable);
+        Page<History> result = historyService.getAuditHistory(defaultPageable);
 
         assertTrue(result.getContent().isEmpty());
         assertEquals(0, result.getTotalElements());
-        verify(historyRepository, times(1)).findAll(pageable);
+        verify(historyRepository, times(1)).findAll(defaultPageable);
     }
 
     @Test
     void testGetAuditHistory_RepositoryThrowsException() {
-        Pageable pageable = PageRequest.of(0, 10);
-        when(historyRepository.findAll(pageable)).thenThrow(new RuntimeException("DB error"));
+        when(historyRepository.findAll(defaultPageable)).thenThrow(new RuntimeException("DB error"));
 
-        assertThrows(RuntimeException.class, () -> historyService.getAuditHistory(pageable));
-        verify(historyRepository, times(1)).findAll(pageable);
+        assertThrows(RuntimeException.class, () -> historyService.getAuditHistory(defaultPageable));
+        verify(historyRepository, times(1)).findAll(defaultPageable);
     }
 
     @Test
     void testGetAuditHistoryByTransferId_Success() {
-        Pageable pageable = PageRequest.of(0, 10);
         List<History> historyList = List.of(history);
-        Page<History> historyPage = new PageImpl<>(historyList, pageable, 1);
-        when(historyRepository.findByTransferAuditId(2L, pageable)).thenReturn(historyPage);
+        Page<History> historyPage = new PageImpl<>(historyList, defaultPageable, 1);
+        when(historyRepository.findByTransferAuditId(2L, defaultPageable)).thenReturn(historyPage);
 
-        Page<History> result = historyService.getAuditHistoryByTransferId(2L, pageable);
+        Page<History> result = historyService.getAuditHistoryByTransferId(2L, defaultPageable);
 
         assertEquals(historyPage, result);
         assertEquals(1, result.getTotalElements());
         assertEquals(historyList, result.getContent());
-        verify(historyRepository, times(1)).findByTransferAuditId(2L, pageable);
+        verify(historyRepository, times(1))
+                .findByTransferAuditId(2L, defaultPageable);
     }
 
     @Test
     void testGetAuditHistoryByTransferId_EmptyPage() {
-        Pageable pageable = PageRequest.of(0, 10);
-        Page<History> emptyPage = new PageImpl<>(Collections.emptyList(), pageable, 0);
-        when(historyRepository.findByTransferAuditId(2L, pageable)).thenReturn(emptyPage);
+        Page<History> emptyPage = new PageImpl<>(Collections.emptyList(), defaultPageable, 0);
+        when(historyRepository.findByTransferAuditId(2L, defaultPageable)).thenReturn(emptyPage);
 
-        Page<History> result = historyService.getAuditHistoryByTransferId(2L, pageable);
+        Page<History> result = historyService.getAuditHistoryByTransferId(2L, defaultPageable);
 
         assertTrue(result.getContent().isEmpty());
         assertEquals(0, result.getTotalElements());
-        verify(historyRepository, times(1)).findByTransferAuditId(2L, pageable);
+        verify(historyRepository, times(1))
+                .findByTransferAuditId(2L, defaultPageable);
     }
 
     @Test
     void testGetAuditHistoryByTransferId_RepositoryThrowsException() {
-        Pageable pageable = PageRequest.of(0, 10);
-        when(historyRepository.findByTransferAuditId(2L, pageable)).thenThrow(new RuntimeException("DB error"));
+        when(historyRepository.findByTransferAuditId(2L,
+                defaultPageable)).thenThrow(new RuntimeException("DB error"));
 
-        assertThrows(RuntimeException.class, () -> historyService.getAuditHistoryByTransferId(2L, pageable));
-        verify(historyRepository, times(1)).findByTransferAuditId(2L, pageable);
+        assertThrows(RuntimeException.class, () -> historyService.getAuditHistoryByTransferId(2L,
+                defaultPageable));
+        verify(historyRepository, times(1)).findByTransferAuditId(2L,
+                defaultPageable);
     }
 }
