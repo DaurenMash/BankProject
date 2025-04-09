@@ -7,11 +7,9 @@ import com.bank.account.exception.KafkaErrorSender;
 import com.bank.account.producers.AuditProducer;
 import com.bank.account.service.AuditService;
 import com.bank.account.utils.JsonUtils;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
@@ -19,16 +17,11 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class AuditConsumer {
-
-    @Value("${spring.kafka.consumer.group-ids.audit}")
-    private String auditGroup;
-
-    private final ObjectMapper objectMapper;
     private final AuditService auditService;
     private final AuditProducer auditProducer;
     private final KafkaErrorSender kafkaErrorSender;
 
-    @KafkaListener(topics = "${kafka.topics.audit-logs}", groupId = "@auditConsumer.auditGroup",
+    @KafkaListener(topics = "${kafka.topics.audit-logs}", groupId = "${kafka.groups.audit}",
             containerFactory = "auditKafkaListenerContainerFactory")
     public void handleAuditLogEvent(ConsumerRecord<String, AccountDto> record) {
         try {
