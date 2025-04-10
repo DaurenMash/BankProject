@@ -10,13 +10,11 @@ import com.bank.publicinfo.exception.DataAccessException;
 import com.bank.publicinfo.mapper.ATMMapper;
 import com.bank.publicinfo.repository.AtmRepository;
 import com.bank.publicinfo.repository.BranchRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,8 +29,6 @@ public class ATMServiceImpl implements ATMService {
     private final ATMMapper atmMapper;
     private final BranchRepository branchRepository;
     private final GlobalExceptionHandler globalExceptionHandler;
-
-
 
     @Override
     @Transactional
@@ -52,14 +48,12 @@ public class ATMServiceImpl implements ATMService {
             final ATM savedAtm = atmRepository.save(atm);
             final ATMDto savedAtmDto = atmMapper.toDto(savedAtm);
             log.info("Successfully created new ATM with ID: {}", savedAtm.getId());
-
             return savedAtmDto;
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
             throw new RuntimeException("An unexpected error occurred while creating a new ATM.");
         }
     }
-
 
     @Override
     @Transactional
@@ -78,7 +72,6 @@ public class ATMServiceImpl implements ATMService {
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
-
             final Branch branch = branchRepository.findById(atmDto.getBranchId())
                     .orElseThrow(() -> {
                         final EntityNotFoundException e =
@@ -86,20 +79,17 @@ public class ATMServiceImpl implements ATMService {
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
-
             atmMapper.updateFromDto(atmDto, existingAtm);
             existingAtm.setBranch(branch);
             final ATM savedAtm = atmRepository.save(existingAtm);
             final ATMDto savedAtmDto = atmMapper.toDto(savedAtm);
             log.info("Successfully updated ATM with ID: {}", savedAtm.getId());
             return savedAtmDto;
-
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
             throw new RuntimeException("An unexpected error occurred while updating branch details.");
         }
     }
-
 
     @Override
     @Transactional
@@ -110,7 +100,6 @@ public class ATMServiceImpl implements ATMService {
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
-
         try {
             final ATM existingATM = atmRepository.findById(atmId)
                     .orElseThrow(() -> {
@@ -127,7 +116,6 @@ public class ATMServiceImpl implements ATMService {
         }
     }
 
-
     @Override
     public List<ATMDto> getATMs(Long branchId) {
         if (branchId == null) {
@@ -136,13 +124,11 @@ public class ATMServiceImpl implements ATMService {
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
-
         try {
             final List<ATM> atms = atmRepository.findByBranchId(branchId);
             final List<ATMDto> atmDtos = atms.stream()
                     .map(atmMapper::toDto)
                     .collect(Collectors.toList());
-
             log.info("Successfully retrieved {} ATMs for branch ID: {}", atmDtos.size(), branchId);
             return atmDtos;
         } catch (DataAccessException e) {
@@ -156,7 +142,6 @@ public class ATMServiceImpl implements ATMService {
         }
     }
 
-
     @Override
     public ATMDto getATMById(Long atmId) {
         if (atmId == null) {
@@ -165,7 +150,6 @@ public class ATMServiceImpl implements ATMService {
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
-
         try {
             final ATMDto atmDto = atmRepository.findById(atmId)
                     .map(atmMapper::toDto)
@@ -182,6 +166,4 @@ public class ATMServiceImpl implements ATMService {
             throw new RuntimeException("An unexpected error occurred while retrieving ATM details.");
         }
     }
-
-
 }

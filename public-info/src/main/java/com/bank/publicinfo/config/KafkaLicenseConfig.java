@@ -3,7 +3,6 @@ package com.bank.publicinfo.config;
 import com.bank.publicinfo.dto.LicenseDto;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +20,7 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 @Configuration
 @EnableKafka
 @RequiredArgsConstructor
-public class LicenseKafkaConfig {
+public class KafkaLicenseConfig {
     private final Map<String, Object> producerConfigs;
 
     private final Map<String, Object> consumerConfigs;
@@ -43,7 +42,6 @@ public class LicenseKafkaConfig {
         );
     }
 
-
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, LicenseDto> licenseKafkaListenerContainerFactory() {
         final ConcurrentKafkaListenerContainerFactory<String, LicenseDto> factory =
@@ -57,42 +55,8 @@ public class LicenseKafkaConfig {
         return new DefaultKafkaProducerFactory<>(this.producerConfigs);
     }
 
-
     @Bean
     public KafkaTemplate<String, LicenseDto> licenseKafkaTemplate() {
         return new KafkaTemplate<>(licenseProducerFactory());
-    }
-
-
-    @Bean
-    public NewTopic licenseDtoCreateTopic(
-            @Value("${spring.kafka.topics.license.create.name}") String topicName,
-            @Value("${spring.kafka.topics.license.create.partitions}") int partitions,
-            @Value("${spring.kafka.topics.license.create.replication-factor}") short factor) {
-        return new NewTopic(topicName, partitions, factor);
-    }
-
-    @Bean
-    public NewTopic licenseDtoUpdateTopic(
-            @Value("${spring.kafka.topics.license.update.name}") String topicName,
-            @Value("${spring.kafka.topics.license.update.partitions}") int partitions,
-            @Value("${spring.kafka.topics.license.update.replication-factor}") short factor) {
-        return new NewTopic(topicName, partitions, factor);
-    }
-
-    @Bean
-    public NewTopic licenseDtoDeleteTopic(
-            @Value("${spring.kafka.topics.license.delete.name}") String topicName,
-            @Value("${spring.kafka.topics.license.delete.partitions}") int partitions,
-            @Value("${spring.kafka.topics.license.delete.replication-factor}") short factor) {
-        return new NewTopic(topicName, partitions, factor);
-    }
-
-    @Bean
-    public NewTopic licenseDtoGetTopic(
-            @Value("${spring.kafka.topics.license.get.name}") String topicName,
-            @Value("${spring.kafka.topics.license.get.partitions}") int partitions,
-            @Value("${spring.kafka.topics.license.get.replication-factor}") short replicationFactor) {
-        return new NewTopic(topicName, partitions, replicationFactor);
     }
 }

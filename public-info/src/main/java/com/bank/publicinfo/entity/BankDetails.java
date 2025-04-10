@@ -13,12 +13,14 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+import lombok.Setter;
+import lombok.ToString;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -30,9 +32,9 @@ import java.util.Set;
 })
 public class BankDetails {
 
-    private static final int CITY_MAX_LENGTH = 180;
-    private static final int JOINT_STOCK_COMPANY_MAX_LENGTH = 155;
-    private static final int NAME_MAX_LENGTH = 80;
+    public static final int CITY_MAX_LENGTH = 180;
+    public static final int JOINT_STOCK_COMPANY_MAX_LENGTH = 155;
+    public static final int NAME_MAX_LENGTH = 80;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -72,10 +74,12 @@ public class BankDetails {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "bankDetails",
             cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private Set<License> licenses;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "bankDetails",
             cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private Set<Certificate> certificates;
 
 }

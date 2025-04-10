@@ -1,6 +1,5 @@
 package com.bank.publicinfo.consumer;
 
-
 import com.bank.publicinfo.dto.BranchDto;
 import com.bank.publicinfo.service.BranchService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,6 @@ import com.bank.publicinfo.exception.ValidationException;
 @Slf4j
 public class BranchConsumer {
 
-
     private final BranchService service;
 
     @KafkaListener(topics = {"${spring.kafka.topics.branch.create.name}"},
@@ -27,7 +25,7 @@ public class BranchConsumer {
             log.info("New branch saved successfully with ID: {}", savedBranch.getId());
             return savedBranch;
         } catch (Exception e) {
-            log.error("Failed to save new Branch: {}", e.getMessage());
+            log.error("Failed to save new Branch: ", e);
             throw e;
         }
     }
@@ -47,7 +45,7 @@ public class BranchConsumer {
             log.info("Branch updated successfully with ID: {}", branchId);
             return updatedBankDetails;
         } catch (Exception e) {
-            log.error("Failed to update branch: {}", e.getMessage());
+            log.error("Failed to update branch: ", e);
             throw e;
         }
     }
@@ -81,7 +79,7 @@ public class BranchConsumer {
                 final BranchDto branchDtoToGet = this.service.getBranchById(branchId);
                 log.info("Branch retrieved successfully: {}", branchDtoToGet.toString());
             } catch (Exception e) {
-                log.error("Error retrieving branch for ID {}: {}", branchId, e.getMessage());
+                log.error("Error retrieving branch for ID {}: ", branchId, e);
             }
         } else {
             log.error("Invalid branch received: null");

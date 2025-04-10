@@ -13,13 +13,15 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+import lombok.Setter;
+import lombok.ToString;
 import java.time.LocalTime;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -28,8 +30,8 @@ import java.util.Set;
 })
 public class Branch {
 
-    private static final int ADDRESS_MAX_LENGTH = 370;
-    private static final int CITY_MAX_LENGTH = 250;
+    public static final int ADDRESS_MAX_LENGTH = 370;
+    public static final int CITY_MAX_LENGTH = 250;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -60,6 +62,7 @@ public class Branch {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "branch",
             cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
     private Set<ATM> atms;
 
 }

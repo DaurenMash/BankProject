@@ -1,4 +1,4 @@
-package com.bank.publicinfo.audit;
+package com.bank.publicinfo.service;
 
 import com.bank.publicinfo.dto.AuditDto;
 import com.bank.publicinfo.entity.BankDetails;

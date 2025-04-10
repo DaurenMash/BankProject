@@ -1,5 +1,6 @@
 package com.bank.publicinfo.audit;
 
+import com.bank.publicinfo.service.AuditService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.AfterReturning;
@@ -24,19 +25,17 @@ public class AuditAspect {
      *
      * @param result результат выполнения Target метода создания сущности в БД
      */
-
     @AfterReturning(pointcut = "execution(* com.bank.publicinfo.service.*Impl.create*(..))",
             returning = "result")
     public void afterCreateAdvice(Object result) {
-        log.info("AfterCreateAdvice triggered with: {}", result.toString());
-        try {
-            auditService.createAudit(result);
-            log.info("Audit created Successfully: {}", result);
-        } catch (Exception e) {
-            log.error("AfterCreateAdvice failed: {}", e.getMessage());
+        if (result != null) {
+            try {
+                auditService.createAudit(result);
+            } catch (Exception e) {
+                log.error("Fail in afterCreateAdvice for: {}. Error: ", result, e);
+            }
         }
     }
-
 
     /**
      * Логирует операции обновления банка, отделения, лицензии, сертификата
@@ -46,14 +45,12 @@ public class AuditAspect {
     @AfterReturning(pointcut = "execution(* com.bank.publicinfo.service.*Impl.update*(..))",
             returning = "result")
     public void afterUpdateAdvice(Object result) {
-        log.info("AfterUpdateAdvice triggered with: {}", result.toString());
-        try {
-            auditService.updateAudit(result);
-            log.info("Audit created successfully: {}", result);
-        } catch (Exception e) {
-            log.error("AfterUpdateAdvice failed: {}", e.getMessage());
+        if (result != null) {
+            try {
+                auditService.updateAudit(result);
+            } catch (Exception e) {
+                log.error("Fail in afterUpdateAdvice for: {}. Error: ", result, e);
+            }
         }
     }
-
-
 }

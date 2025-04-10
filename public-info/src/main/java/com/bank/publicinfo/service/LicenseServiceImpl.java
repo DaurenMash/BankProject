@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,12 +33,10 @@ public class LicenseServiceImpl implements LicenseService {
     private final BankDetailsRepository bankDetailsRepository;
     private final GlobalExceptionHandler globalExceptionHandler;
 
-
     private BankDetails findBankById(Long id) {
         return bankDetailsRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Bank with ID " + id + NOT_FOUND));
     }
-
 
     @Override
     @Transactional
@@ -50,7 +47,6 @@ public class LicenseServiceImpl implements LicenseService {
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
-
         try {
             final BankDetails bankDetails = findBankById(licenseDto.getBankDetailsId());
             final License license = licenseMapper.toEntity(licenseDto);
@@ -63,7 +59,6 @@ public class LicenseServiceImpl implements LicenseService {
             throw new RuntimeException("An unexpected error occurred while creating a new License.");
         }
     }
-
 
     @Override
     @Transactional
@@ -82,7 +77,6 @@ public class LicenseServiceImpl implements LicenseService {
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
-
             final BankDetails bankDetails = findBankById(newLicenseDto.getBankDetailsId());
             licenseMapper.updateFromDto(newLicenseDto, existingLicense);
             existingLicense.setBankDetails(bankDetails);
@@ -95,7 +89,6 @@ public class LicenseServiceImpl implements LicenseService {
         }
     }
 
-
     @Override
     @Transactional
     public void deleteLicense(Long licenseId) {
@@ -105,7 +98,6 @@ public class LicenseServiceImpl implements LicenseService {
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
-
         try {
             final License existingLicense = licenseRepository.findById(licenseId)
                     .orElseThrow(() -> {
@@ -122,7 +114,6 @@ public class LicenseServiceImpl implements LicenseService {
         }
     }
 
-
     @Override
     public List<LicenseDto> getLicensesByBankDetails(Long bankDetailsId) {
         if (bankDetailsId == null) {
@@ -131,7 +122,6 @@ public class LicenseServiceImpl implements LicenseService {
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
-
         try {
             final BankDetails bankDetails = findBankById(bankDetailsId);
             final List<LicenseDto> licenses = licenseRepository
@@ -139,7 +129,6 @@ public class LicenseServiceImpl implements LicenseService {
                     .stream()
                     .map(licenseMapper::toDto)
                     .collect(Collectors.toList());
-
             log.info("Successfully retrieved {} Licenses for BankDetails ID: {}", licenses.size(), bankDetailsId);
             return licenses;
         } catch (DataAccessException e) {
@@ -153,7 +142,6 @@ public class LicenseServiceImpl implements LicenseService {
         }
     }
 
-
     @Override
     public LicenseDto getLicenseById(Long licenseId) {
         if (licenseId == null) {
@@ -162,7 +150,6 @@ public class LicenseServiceImpl implements LicenseService {
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
-
         try {
             final LicenseDto licenseDto = licenseRepository.findById(licenseId)
                     .map(licenseMapper::toDto)
@@ -172,7 +159,6 @@ public class LicenseServiceImpl implements LicenseService {
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
-
             log.info("Successfully retrieved License with ID: {}", licenseId);
             return licenseDto;
         } catch (Exception e) {
@@ -180,6 +166,4 @@ public class LicenseServiceImpl implements LicenseService {
             throw new RuntimeException("An unexpected error occurred while retrieving License details.");
         }
     }
-
-
 }

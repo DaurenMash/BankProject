@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,12 +30,10 @@ public class CertificateServiceImpl implements CertificateService {
     private final BankDetailsRepository bankDetailsRepository;
     private final GlobalExceptionHandler globalExceptionHandler;
 
-
     private BankDetails findBankById(Long id) {
         return bankDetailsRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Bank with ID " + id + " not found"));
     }
-
 
     @Override
     @Transactional
@@ -47,7 +44,6 @@ public class CertificateServiceImpl implements CertificateService {
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
-
         try {
             final BankDetails bankDetails = findBankById(CertificateDto.getBankDetailsId());
             final Certificate certificate = certificateMapper.toEntity(CertificateDto);
@@ -60,7 +56,6 @@ public class CertificateServiceImpl implements CertificateService {
             throw new RuntimeException("An unexpected error occurred while creating a new Certificate.");
         }
     }
-
 
     @Override
     @Transactional
@@ -79,7 +74,6 @@ public class CertificateServiceImpl implements CertificateService {
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
-
             final BankDetails bankDetails = findBankById(newCertificateDto.getBankDetailsId());
             certificateMapper.updateFromDto(newCertificateDto, existingCertificate);
             existingCertificate.setBankDetails(bankDetails);
@@ -92,7 +86,6 @@ public class CertificateServiceImpl implements CertificateService {
         }
     }
 
-
     @Override
     @Transactional
     public void deleteCertificate(Long CertificateId) {
@@ -102,7 +95,6 @@ public class CertificateServiceImpl implements CertificateService {
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
-
         try {
             final Certificate existingCertificate = certificateRepository.findById(CertificateId)
                     .orElseThrow(() -> {
@@ -119,7 +111,6 @@ public class CertificateServiceImpl implements CertificateService {
         }
     }
 
-
     @Override
     public List<CertificateDto> getCertificatesByBankDetails(Long bankDetailsId) {
         if (bankDetailsId == null) {
@@ -128,7 +119,6 @@ public class CertificateServiceImpl implements CertificateService {
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
-
         try {
             final BankDetails bankDetails = findBankById(bankDetailsId);
             final List<CertificateDto> certificates = certificateRepository
@@ -153,7 +143,6 @@ public class CertificateServiceImpl implements CertificateService {
         }
     }
 
-
     @Override
     public CertificateDto getCertificateById(Long certificateId) {
         if (certificateId == null) {
@@ -162,7 +151,6 @@ public class CertificateServiceImpl implements CertificateService {
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
-
         try {
             final CertificateDto certificateDto = certificateRepository.findById(certificateId)
                     .map(certificateMapper::toDto)
@@ -172,7 +160,6 @@ public class CertificateServiceImpl implements CertificateService {
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
-
             log.info("Successfully retrieved Certificate with ID: {}", certificateId);
             return certificateDto;
         } catch (Exception e) {
@@ -180,6 +167,4 @@ public class CertificateServiceImpl implements CertificateService {
             throw new RuntimeException("An unexpected error occurred while retrieving Certificate details.");
         }
     }
-
-
 }

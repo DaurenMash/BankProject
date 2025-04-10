@@ -12,19 +12,21 @@ import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.lang.Nullable;
-
+import lombok.Setter;
+import lombok.ToString;
 import java.time.LocalTime;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
 @Table(name = "atm", schema = "public_info")
 public class ATM {
-    private static final int MAX_ADDRESS_LENGTH = 370;
+
+    public static final int MAX_ADDRESS_LENGTH = 370;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,17 +39,16 @@ public class ATM {
     private String address;
 
     @Column(name = "start_of_work")
-    @Nullable
     private LocalTime startOfWork;
 
     @Column(name = "end_of_work")
-    @Nullable
     private LocalTime endOfWork;
 
     @NotNull
     @Column(name = "all_hours", nullable = false)
     private Boolean allHours;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.EAGER)
     @NotNull
     @JoinColumn(name = "branch_id", nullable = false)

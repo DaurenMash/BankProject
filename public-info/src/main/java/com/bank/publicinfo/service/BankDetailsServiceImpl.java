@@ -92,13 +92,12 @@ public class BankDetailsServiceImpl implements BankDetailsService {
             throw e;
         } catch (IllegalArgumentException e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new IllegalArgumentException("Illegal argument: " + e.getMessage());
+            throw new IllegalArgumentException("Illegal argument: " + e);
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
             throw new RuntimeException("An unexpected error occurred during updating bank details.");
         }
     }
-
 
     @Override
     @Transactional
@@ -126,7 +125,6 @@ public class BankDetailsServiceImpl implements BankDetailsService {
         }
     }
 
-
     @Override
     public List<BankDetailsDto> getAllBanksDetails(Pageable pageable) {
         if (pageable == null) {
@@ -148,7 +146,6 @@ public class BankDetailsServiceImpl implements BankDetailsService {
             throw new RuntimeException("An unexpected error occurred while retrieving all bank details.");
         }
     }
-
 
     @Override
     public BankDetailsDto getBankDetailsById(Long bankId) {
@@ -176,5 +173,4 @@ public class BankDetailsServiceImpl implements BankDetailsService {
             throw new RuntimeException("An unexpected error occurred while retrieving bank details.");
         }
     }
-
 }

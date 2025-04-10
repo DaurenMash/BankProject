@@ -9,22 +9,23 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+import lombok.Setter;
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
 @Table(name = "audit", schema = "public_info")
 public class Audit {
 
-    private static final int ENTITY_TYPE_MAX_LENGTH = 40;
-    private static final int OPERATION_TYPE_MAX_LENGTH = 255;
-    private static final int CREATED_BY_MAX_LENGTH = 255;
-    private static final int MODIFIED_BY_MAX_LENGTH = 255;
+    public static final int ENTITY_TYPE_MAX_LENGTH = 40;
+    public static final int OPERATION_TYPE_MAX_LENGTH = 255;
+    public static final int CREATED_BY_MAX_LENGTH = 255;
+    public static final int MODIFIED_BY_MAX_LENGTH = 255;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,6 +51,7 @@ public class Audit {
     @Column(name = "modified_by")
     private String modifiedBy;
 
+    @NotNull
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

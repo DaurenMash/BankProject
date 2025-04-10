@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Service;
 
-
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -27,7 +26,7 @@ public class BankDetailsConsumer {
             log.info("New bank details saved successfully with ID: {}", savedBankDetails.getId());
             return savedBankDetails;
         } catch (Exception e) {
-            log.error("Failed to save new bank details: {}", e.getMessage());
+            log.error("Failed to save new bank details: ", e);
             throw e;
         }
     }
@@ -47,7 +46,7 @@ public class BankDetailsConsumer {
             log.info("Bank details updated successfully with ID: {}", bankId);
             return updatedBankDetails;
         } catch (Exception e) {
-            log.error("Failed to update bank details: {}", e.getMessage());
+            log.error("Failed to update bank details: ", e);
             throw e;
         }
     }
@@ -81,7 +80,7 @@ public class BankDetailsConsumer {
                 final BankDetailsDto bankDetailsDtoToGet = this.service.getBankDetailsById(bankId);
                 log.info("Bank details retrieved successfully: {}", bankDetailsDtoToGet);
             } catch (Exception e) {
-                log.error("Error retrieving bank details for ID {}: {}", bankId, e.getMessage());
+                log.error("Error retrieving bank details for ID {}: ", bankId, e);
             }
         } else {
             log.error("Invalid bank details received: null");

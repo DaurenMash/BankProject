@@ -24,7 +24,7 @@ public class ATMConsumer {
             log.info("New ATM saved successfully with ID: {}", savedATM.getId());
             return savedATM;
         } catch (Exception e) {
-            log.error("Failed to save new ATM: {}", e.getMessage());
+            log.error("Failed to save new ATM: ", e);
             throw e;
         }
     }
@@ -44,7 +44,7 @@ public class ATMConsumer {
             log.info("ATM updated successfully with ID: {}", atmId);
             return updatedATM;
         } catch (Exception e) {
-            log.error("Failed to update ATM: {}", e.getMessage());
+            log.error("Failed to update ATM: ", e);
             throw e;
         }
     }
@@ -78,7 +78,7 @@ public class ATMConsumer {
                 final ATMDto retrievedATM = this.service.getATMById(atmId);
                 log.info("ATM retrieved successfully: {}", retrievedATM);
             } catch (Exception e) {
-                log.error("Error retrieving ATM for ID {}: {}", atmId, e.getMessage());
+                log.error("Error retrieving ATM for ID {}: ", atmId, e);
             }
         } else {
             log.error("Invalid ATM received: null");

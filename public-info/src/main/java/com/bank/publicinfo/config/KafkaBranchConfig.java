@@ -1,10 +1,8 @@
 package com.bank.publicinfo.config;
 
-
 import com.bank.publicinfo.dto.BranchDto;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,14 +20,13 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 @Configuration
 @EnableKafka
 @RequiredArgsConstructor
-public class BranchKafkaConfig {
+public class KafkaBranchConfig {
     private final Map<String, Object> producerConfigs;
 
     private final Map<String, Object> consumerConfigs;
 
     @Value("${spring.kafka.trusted-packages}")
     private String trustedPackage;
-
 
     @Bean
     public ConsumerFactory<String, BranchDto> branchConsumerFactory() {
@@ -64,31 +61,4 @@ public class BranchKafkaConfig {
         return new KafkaTemplate<>(branchDtoProducerFactory());
     }
 
-    @Bean
-    public NewTopic branchCreateTopic(@Value("${spring.kafka.topics.branch.create.name}") String topicName,
-                                      @Value("${spring.kafka.topics.branch.create.partitions}") int partitions,
-                                      @Value("${spring.kafka.topics.branch.create.replication-factor}") short factor) {
-        return new NewTopic(topicName, partitions, factor);
-    }
-
-    @Bean
-    public NewTopic branchUpdateTopic(@Value("${spring.kafka.topics.branch.update.name}") String topicName,
-                                      @Value("${spring.kafka.topics.branch.update.partitions}") int partitions,
-                                      @Value("${spring.kafka.topics.branch.update.replication-factor}") short factor) {
-        return new NewTopic(topicName, partitions, factor);
-    }
-
-    @Bean
-    public NewTopic branchDeleteTopic(@Value("${spring.kafka.topics.branch.delete.name}") String topicName,
-                                      @Value("${spring.kafka.topics.branch.delete.partitions}") int partitions,
-                                      @Value("${spring.kafka.topics.branch.delete.replication-factor}") short factor) {
-        return new NewTopic(topicName, partitions, factor);
-    }
-
-    @Bean
-    public NewTopic branchGetTopic(@Value("${spring.kafka.topics.branch.get.name}") String topicName,
-                                   @Value("${spring.kafka.topics.branch.get.partitions}") int partitions,
-                                   @Value("${spring.kafka.topics.branch.get.replication-factor}") short factor) {
-        return new NewTopic(topicName, partitions, factor);
-    }
 }

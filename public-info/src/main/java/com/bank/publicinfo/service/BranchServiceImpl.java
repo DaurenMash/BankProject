@@ -17,7 +17,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,7 +32,6 @@ public class BranchServiceImpl implements BranchService {
     private final BranchMapper branchMapper;
     private final AtmRepository atmRepository;
     private final GlobalExceptionHandler globalExceptionHandler;
-
 
     @Override
     @Transactional
@@ -54,7 +52,6 @@ public class BranchServiceImpl implements BranchService {
             throw new RuntimeException("An unexpected error occurred while creating a new branch.");
         }
     }
-
 
     @Override
     @Transactional
@@ -90,7 +87,6 @@ public class BranchServiceImpl implements BranchService {
         }
     }
 
-
     @Override
     @Transactional
     public void deleteBranchById(Long branchId) {
@@ -108,7 +104,6 @@ public class BranchServiceImpl implements BranchService {
                         globalExceptionHandler.handleException(e, errorTopic);
                         return e;
                     });
-
             final Set<ATM> atms = branch.getAtms();
             atmRepository.deleteAll(atms);
             branchRepository.delete(branch);
@@ -118,7 +113,6 @@ public class BranchServiceImpl implements BranchService {
             throw new RuntimeException("An unexpected error occurred while deleting branch.");
         }
     }
-
 
     @Override
     public List<BranchDto> getAllBranches(Pageable pageable) {
@@ -146,7 +140,6 @@ public class BranchServiceImpl implements BranchService {
         }
     }
 
-
     @Override
     public BranchDto getBranchById(Long branchId) {
         if (branchId == null) {
@@ -171,6 +164,4 @@ public class BranchServiceImpl implements BranchService {
             throw new RuntimeException("An unexpected error occurred while retrieving branch details.");
         }
     }
-
-
 }

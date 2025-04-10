@@ -1,10 +1,8 @@
 package com.bank.publicinfo.config;
 
-
 import com.bank.publicinfo.dto.ATMDto;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -22,7 +20,7 @@ import org.springframework.kafka.support.serializer.JsonDeserializer;
 @Configuration
 @EnableKafka
 @RequiredArgsConstructor
-public class ATMKafkaConfig {
+public class KafkaATMConfig {
 
     private final Map<String, Object> producerConfigs;
     private final Map<String, Object> consumerConfigs;
@@ -41,7 +39,6 @@ public class ATMKafkaConfig {
                 new StringDeserializer(), errorHandlingDeserializer);
     }
 
-
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, ATMDto> atmKafkaListenerContainerFactory() {
         final ConcurrentKafkaListenerContainerFactory<String, ATMDto> factory =
@@ -58,34 +55,6 @@ public class ATMKafkaConfig {
     @Bean
     public KafkaTemplate<String, ATMDto> atmDtoKafkaTemplate() {
         return new KafkaTemplate<>(atmDtoProducerFactory());
-    }
-
-    @Bean
-    public NewTopic atmCreateTopic(@Value("${spring.kafka.topics.atm.create.name}") String topicName,
-                                   @Value("${spring.kafka.topics.atm.create.partitions}") int partitions,
-                                   @Value("${spring.kafka.topics.atm.create.replication-factor}") short factor) {
-        return new NewTopic(topicName, partitions, factor);
-    }
-
-    @Bean
-    public NewTopic atmUpdateTopic(@Value("${spring.kafka.topics.atm.update.name}") String topicName,
-                                   @Value("${spring.kafka.topics.atm.update.partitions}") int partitions,
-                                   @Value("${spring.kafka.topics.atm.update.replication-factor}") short factor) {
-        return new NewTopic(topicName, partitions, factor);
-    }
-
-    @Bean
-    public NewTopic atmDeleteTopic(@Value("${spring.kafka.topics.atm.delete.name}") String topicName,
-                                   @Value("${spring.kafka.topics.atm.delete.partitions}") int partitions,
-                                   @Value("${spring.kafka.topics.atm.delete.replication-factor}") short factor) {
-        return new NewTopic(topicName, partitions, factor);
-    }
-
-    @Bean
-    public NewTopic atmGetTopic(@Value("${spring.kafka.topics.atm.get.name}") String topicName,
-                                @Value("${spring.kafka.topics.atm.get.partitions}") int partitions,
-                                @Value("${spring.kafka.topics.atm.get.replication-factor}") short factor) {
-        return new NewTopic(topicName, partitions, factor);
     }
 
 }

@@ -14,8 +14,7 @@ public class CertificateConsumer {
 
     private final CertificateService service;
 
-    @KafkaListener(
-            topics = {"${spring.kafka.topics.certificate.create.name}"},
+    @KafkaListener(topics = "${spring.kafka.topics.certificate.create.name}",
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public CertificateDto creatingCertificateListening(CertificateDto certificateDto) {
@@ -25,12 +24,12 @@ public class CertificateConsumer {
             log.info("New certificate saved successfully with ID: {}", savedCertificate.getId());
             return savedCertificate;
         } catch (Exception e) {
-            log.error("Failed to save new certificate: {}", e.getMessage());
+            log.error("Failed to save new certificate: ", e);
             throw e;
         }
     }
 
-    @KafkaListener(topics = {"${spring.kafka.topics.certificate.update.name}"},
+    @KafkaListener(topics = "${spring.kafka.topics.certificate.update.name}",
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public CertificateDto updatingCertificateListening(CertificateDto certificateDto) {
@@ -45,13 +44,12 @@ public class CertificateConsumer {
             log.info("Certificate updated successfully with ID: {}", certificateId);
             return updatedCertificate;
         } catch (Exception e) {
-            log.error("Failed to update certificate: {}", e.getMessage());
+            log.error("Failed to update certificate: ", e);
             throw e;
         }
     }
 
-    @KafkaListener(
-            topics = {"${spring.kafka.topics.certificate.delete.name}"},
+    @KafkaListener(topics = "${spring.kafka.topics.certificate.delete.name}",
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public void deletingCertificateListening(CertificateDto certificateDto) {
@@ -65,8 +63,7 @@ public class CertificateConsumer {
         log.info("Certificate deleted successfully with ID: {}", certificateId);
     }
 
-    @KafkaListener(
-            topics = {"${spring.kafka.topics.certificate.get.name}"},
+    @KafkaListener(topics = {"${spring.kafka.topics.certificate.get.name}"},
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public void gettingCertificateListening(CertificateDto certificateDto) {
@@ -81,7 +78,7 @@ public class CertificateConsumer {
                 final CertificateDto certificateToGet = this.service.getCertificateById(certificateId);
                 log.info("Certificate retrieved successfully: {}", certificateToGet);
             } catch (Exception e) {
-                log.error("Error retrieving certificate for ID {}: {}", certificateId, e.getMessage());
+                log.error("Error retrieving certificate for ID {}: ", certificateId, e);
             }
         } else {
             log.error("Invalid certificate details received: null");

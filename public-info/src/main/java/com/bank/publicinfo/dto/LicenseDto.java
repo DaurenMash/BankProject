@@ -1,18 +1,24 @@
 package com.bank.publicinfo.dto;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-
+import lombok.Setter;
 import java.io.Serializable;
 
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class LicenseDto implements Serializable {
 
     private Long id;
+
+    @NotNull
     private byte[] photo;
+
+    @NotNull
     private Long bankDetailsId;
 
 }

@@ -24,7 +24,7 @@ public class LicenseConsumer {
             log.info("New license saved successfully with ID: {}", savedLicense.getId());
             return savedLicense;
         } catch (Exception e) {
-            log.error("Failed to save new license: {}", e.getMessage());
+            log.error("Failed to save new license: ", e);
             throw e;
         }
     }
@@ -44,7 +44,7 @@ public class LicenseConsumer {
             log.info("License updated successfully with ID: {}", licenseId);
             return updatedLicense;
         } catch (Exception e) {
-            log.error("Failed to update license: {}", e.getMessage());
+            log.error("Failed to update license: ", e);
             throw e;
         }
     }
@@ -78,7 +78,7 @@ public class LicenseConsumer {
                 final LicenseDto licenseToGet = this.service.getLicenseById(licenseId);
                 log.info("License retrieved successfully: {}", licenseToGet);
             } catch (Exception e) {
-                log.error("Error retrieving license for ID {}: {}", licenseId, e.getMessage());
+                log.error("Error retrieving license for ID {}: ", licenseId, e);
             }
         } else {
             log.error("Invalid license details received: null");
