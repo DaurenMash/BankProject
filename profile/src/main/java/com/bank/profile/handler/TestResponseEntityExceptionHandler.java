@@ -6,8 +6,6 @@ import com.bank.profile.kafka.producer.ErrorProducer;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.KafkaException;
-import org.springframework.kafka.listener.ListenerExecutionFailedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -16,7 +14,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @Slf4j
 @ControllerAdvice
 @RequiredArgsConstructor
-public class KafkaResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
+public class TestResponseEntityExceptionHandler extends ResponseEntityExceptionHandler {
 
     private final ErrorProducer errorProducer;
 
@@ -29,20 +27,6 @@ public class KafkaResponseEntityExceptionHandler extends ResponseEntityException
     @ExceptionHandler(value = {EntityNotUniqueException.class })
     protected void handleNotUnique(EntityNotUniqueException ex) {
         String message = ex.className + " with the same " + ex.fieldName + " already exists";
-        log.warn(message);
-        errorProducer.sendError(ErrorDto.of(message));
-    }
-
-    @ExceptionHandler(value = {ListenerExecutionFailedException.class })
-    protected void handleKafkaListenerFail(ListenerExecutionFailedException ex) {
-        String message = ex.getMessage();
-        log.warn(message);
-        errorProducer.sendError(ErrorDto.of(message));
-    }
-
-    @ExceptionHandler(value = {KafkaException.class })
-    protected void handleGeneralKafkaFail(KafkaException ex) {
-        String message = ex.getMessage();
         log.warn(message);
         errorProducer.sendError(ErrorDto.of(message));
     }
