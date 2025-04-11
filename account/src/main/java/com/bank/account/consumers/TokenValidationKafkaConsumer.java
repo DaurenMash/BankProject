@@ -15,8 +15,9 @@ public class TokenValidationKafkaConsumer {
 
     @KafkaListener(topics = "${kafka.topics.auth-validate-response}")
     public void handleTokenValidationResponse(KafkaResponse response) {
-        if (response == null)
+        if (response == null) {
             return;
+        }
         log.info("Received token validation response for request ID: {}", response.getRequestId());
         responseHandler.handleValidationResponse(response);
     }

@@ -21,9 +21,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AccountQueryConsumer {
 
-    @Value("${spring.kafka.consumer.group-ids.account}")
-    private String accountGroup;
-
     @Value("${kafka.topics.error-logs}")
     private String topicError;
 
@@ -33,7 +30,7 @@ public class AccountQueryConsumer {
     private final KafkaTopicsConfig kafkaTopicsConfig;
     private final TokenValidationService tokenValidationService;
 
-    @KafkaListener(topics = "${kafka.topics.account-get}", groupId = "@accountQueryConsumer.accountGroup")
+    @KafkaListener(topics = "${kafka.topics.account-get}")
     public void handleGetAccounts(@Header("Authorization") String jwtToken) {
         try {
             tokenValidationService.validateJwtOrThrow(jwtToken);
@@ -48,7 +45,7 @@ public class AccountQueryConsumer {
         }
     }
 
-    @KafkaListener(topics = "${kafka.topics.account-get-by-id}", groupId = "@accountQueryConsumer.accountGroup",
+    @KafkaListener(topics = "${kafka.topics.account-get-by-id}",
             containerFactory = "longKafkaListenerContainerFactory")
     public void handleGetByIdAccount(@Payload Long accountId, @Header("Authorization") String jwtToken) {
         try {
