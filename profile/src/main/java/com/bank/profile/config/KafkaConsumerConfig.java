@@ -1,16 +1,12 @@
 package com.bank.profile.config;
 
 import com.bank.profile.dto.AccountDetailsDto;
-import com.bank.profile.dto.AuditDto;
-import com.bank.profile.dto.ErrorDto;
 import com.bank.profile.dto.ProfileDto;
 import org.springframework.boot.autoconfigure.kafka.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
-import org.springframework.kafka.core.DefaultKafkaProducerFactory;
-import org.springframework.kafka.core.KafkaTemplate;
 
 import java.util.Map;
 
