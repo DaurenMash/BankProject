@@ -7,6 +7,7 @@ import com.bank.authorization.service.UserService;
 import com.bank.authorization.utils.JwtValidator;
 import com.bank.authorization.utils.ResponseFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import io.micrometer.core.annotation.Timed;
 import org.springframework.beans.factory.annotation.Value;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -41,6 +42,7 @@ public class UserCommandHandler {
     private final ResponseFactory responseFactory;
     private final JwtValidator jwtValidator;
 
+    @Timed("kafka_hadleCreateUser")
     public void handleCreateUser(KafkaRequest request) {
         KafkaResponse response;
         try {
@@ -58,6 +60,7 @@ public class UserCommandHandler {
         kafkaTemplate.send(userCreateResponseTopic, response);
     }
 
+    @Timed("kafka_handleUpdateUser")
     public void handleUpdateUser(KafkaRequest request) {
         KafkaResponse response;
         try {
@@ -75,6 +78,7 @@ public class UserCommandHandler {
         kafkaTemplate.send(userUpdateResponseTopic, response);
     }
 
+    @Timed("kafka_handleDeleteUser")
     public void handleDeleteUser(KafkaRequest request) {
         KafkaResponse response;
         try {
@@ -89,6 +93,7 @@ public class UserCommandHandler {
         kafkaTemplate.send(userDeleteResponseTopic, response);
     }
 
+    @Timed("kafka_handleGetUser")
     public void handleGetUser(KafkaRequest request) {
         KafkaResponse response;
         try {
@@ -103,6 +108,7 @@ public class UserCommandHandler {
         kafkaTemplate.send(userGetResponseTopic, response);
     }
 
+    @Timed("kafka_handleGetAllUsers")
     public void handleGetAllUsers(KafkaRequest request) {
         KafkaResponse response;
         try {

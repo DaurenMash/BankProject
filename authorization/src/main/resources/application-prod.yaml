@@ -1,25 +1,30 @@
 server:
   port: 8087
-  servlet:
-    context-path: /api/authorization
-
+  error:
+    whitelabel:
+      enabled: false
 management:
   server:
-    port: 8187
-  endpoint:
-    shutdown:
-      enabled: true
+    base-path: /actuator
   endpoints:
     web:
       exposure:
         include: '*'
+      base-path: /actuator
+  endpoint:
+    prometheus:
+      enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
 
 spring:
   config:
     activate:
       on-profile: prod
   datasource:
-#    url: jdbc:postgresql://bank-db:5433/postgres
+#    url: jdbc:postgresql://localhost:5433/postgres
 #    username: postgres
 #    password: password
     url: ${SPRING_DATASOURCE_URL}
@@ -43,7 +48,7 @@ spring:
   application:
     name: authorization-app
   kafka:
-#    bootstrap-servers: kafka:9092
+#    bootstrap-servers: localhost:9092
     bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS}
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
@@ -72,6 +77,9 @@ logging:
     net.lbruun.springboot.preliquibase: TRACE
     org.springframework.jdbc.datasource.init: INFO
     org.springframework.boot.autoconfigure: INFO
+    org.springframework.security: DEBUG
+    org.springframework.aop: DEBUG
+    io.micrometer.core: DEBUG
   file:
     name: authorization.log
     path: logs
