@@ -39,8 +39,8 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Override
     @Transactional
-    public RegistrationDto update(RegistrationDto dto) {
-        if (dto.getId() == null || registrationRepository.findById(dto.getId()).isEmpty())
+    public RegistrationDto update(Long id, RegistrationDto dto) {
+        if (id == null || registrationRepository.findById(id).isEmpty())
             throw new EntityNotFoundException(Registration.class.getSimpleName());
 
         return registrationMapper.toDto(registrationRepository.save(registrationMapper.toRegistration(dto)));

@@ -51,8 +51,8 @@ public class PassportServiceImpl implements PassportService {
 
     @Override
     @Transactional
-    public PassportDto update(PassportDto dto) {
-        if (passportRepository.findById(dto.getId()).isEmpty())
+    public PassportDto update(Long id, PassportDto dto) {
+        if (passportRepository.findById(id).isEmpty())
             throw new EntityNotFoundException(Passport.class.getSimpleName());
 
         Passport passport = passportMapper.toEntity(dto);

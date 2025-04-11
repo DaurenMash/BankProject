@@ -39,8 +39,8 @@ public class ActualRegistrationServiceImpl implements ActualRegistrationService 
 
     @Override
     @Transactional
-    public RegistrationDto update(RegistrationDto dto) {
-        if (dto.getId() == null || actualRegistrationRepository.findById(dto.getId()).isEmpty())
+    public RegistrationDto update(Long id, RegistrationDto dto) {
+        if (id == null || actualRegistrationRepository.findById(id).isEmpty())
             throw new EntityNotFoundException(ActualRegistration.class.getSimpleName());
 
         return registrationMapper.toDto(actualRegistrationRepository.save(registrationMapper.toActualRegistration(dto)));

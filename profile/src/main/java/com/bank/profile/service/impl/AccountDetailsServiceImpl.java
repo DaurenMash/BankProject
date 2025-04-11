@@ -56,8 +56,8 @@ public class AccountDetailsServiceImpl implements AccountDetailsService {
 
     @Override
     @Transactional
-    public AccountDetailsDto update(AccountDetailsDto dto) {
-        if (dto.getId() == null || accountDetailsRepository.findById(dto.getId()).isEmpty())
+    public AccountDetailsDto update(Long id, AccountDetailsDto dto) {
+        if (id == null || accountDetailsRepository.findById(id).isEmpty())
             throw new EntityNotFoundException(AccountDetails.class.getSimpleName());
 
         return accountDetailsMapper

@@ -86,8 +86,8 @@ public class ProfileServiceImpl implements ProfileService {
 
     @Override
     @Transactional
-    public ProfileDto update(@Valid ProfileDto dto) {
-        profileRepository.findById(dto.getId())
+    public ProfileDto update(Long id, @Valid ProfileDto dto) {
+        profileRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(Profile.class.getSimpleName()));
 
 //        passportRepository.findById(dto.getPassportId())

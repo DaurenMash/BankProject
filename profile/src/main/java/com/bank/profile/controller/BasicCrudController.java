@@ -37,9 +37,9 @@ public class BasicCrudController<TService extends BasicCrudService<TDto>, TDto> 
     }
 
     @PutMapping("/{id}")
-    public TDto update(@Valid @RequestBody TDto dto)
+    public TDto update(@PathVariable Long id, @Valid @RequestBody TDto dto)
     {
-        return service.update(dto);
+        return service.update(id, dto);
     }
 
     @DeleteMapping("/{id}")
