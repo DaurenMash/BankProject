@@ -1,12 +1,16 @@
 server:
   port: 8087
+  error:
+    whitelabel:
+      enabled: false
 management:
   server:
-    base-path: /
+    base-path: /actuator
   endpoints:
     web:
       exposure:
         include: '*'
+      base-path: /actuator
   endpoint:
     prometheus:
       enabled: true
@@ -73,6 +77,9 @@ logging:
     net.lbruun.springboot.preliquibase: TRACE
     org.springframework.jdbc.datasource.init: INFO
     org.springframework.boot.autoconfigure: INFO
+    org.springframework.security: DEBUG
+    org.springframework.aop: DEBUG
+    io.micrometer.core: DEBUG
   file:
     name: authorization.log
     path: logs
