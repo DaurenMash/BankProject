@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.bank.antifraud.util.TransferType.*;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,7 +36,8 @@ class SuspiciousTransferConsumerTest {
     private SuspiciousTransferConsumer suspiciousTransferConsumer;
 
     private Map<String, Object> testMessage;
-    private final String amountHeader = "10000.00";
+    private final String AMOUNT_HEADER = "10000.00";
+    private final String UNKNOWN_FIELD = "some_value";
     private final Integer transferId = 1;
 
     @BeforeEach
@@ -47,7 +49,7 @@ class SuspiciousTransferConsumerTest {
     @Test
     void listenCard_ShouldProcessCardTransfer() throws JsonProcessingException {
         // Arrange
-        testMessage.put("card_number", "1234567890123456");
+        testMessage.put("card_number", CARD_NUMBER.getType());
         SuspiciousCardTransferDto cardDto = new SuspiciousCardTransferDto();
         cardDto.setSuspicious(true);
         cardDto.setCardTransferId(transferId);
@@ -58,10 +60,10 @@ class SuspiciousTransferConsumerTest {
         ).thenReturn(cardDto);
 
         // Act
-        suspiciousTransferConsumer.listenCard(testMessage, amountHeader);
+        listenCardForTest(testMessage, AMOUNT_HEADER);
 
         // Assert
-        verify(transferService).analyzeCardTransfer(new BigDecimal(amountHeader), transferId);
+        verify(transferService).analyzeCardTransfer(new BigDecimal(AMOUNT_HEADER), transferId);
         verify(kafkaProducer).eventResponse(ArgumentMatchers.argThat(response ->
                 response.get("isSuspicious").equals(true) &&
                         response.get("transfer_id").equals(transferId)
@@ -71,7 +73,7 @@ class SuspiciousTransferConsumerTest {
     @Test
     void listenCard_ShouldProcessPhoneTransfer() throws JsonProcessingException {
         // Arrange
-        testMessage.put("phone_number", "+79998887766");
+        testMessage.put("phone_number", PHONE_NUMBER);
         SuspiciousPhoneTransferDto phoneDto = new SuspiciousPhoneTransferDto();
         phoneDto.setSuspicious(false);
         phoneDto.setPhoneTransferId(transferId);
@@ -82,10 +84,10 @@ class SuspiciousTransferConsumerTest {
         ).thenReturn(phoneDto);
 
         // Act
-        suspiciousTransferConsumer.listenCard(testMessage, amountHeader);
+        listenCardForTest(testMessage, AMOUNT_HEADER);
 
         // Assert
-        verify(transferService).analyzePhoneTransfer(new BigDecimal(amountHeader), transferId);
+        verify(transferService).analyzePhoneTransfer(new BigDecimal(AMOUNT_HEADER), transferId);
         verify(kafkaProducer).eventResponse(ArgumentMatchers.argThat(response ->
                 response.get("isSuspicious").equals(false) &&
                         response.get("transfer_id").equals(transferId)
@@ -106,10 +108,10 @@ class SuspiciousTransferConsumerTest {
         ).thenReturn(accountDto);
 
         // Act
-        suspiciousTransferConsumer.listenCard(testMessage, amountHeader);
+        listenCardForTest(testMessage, AMOUNT_HEADER);
 
         // Assert
-        verify(transferService).analyzeAccountTransfer(new BigDecimal(amountHeader), transferId);
+        verify(transferService).analyzeAccountTransfer(new BigDecimal(AMOUNT_HEADER), transferId);
         verify(kafkaProducer).eventResponse(ArgumentMatchers.argThat(response ->
                 response.get("isSuspicious").equals(true) &&
                         response.get("transfer_id").equals(transferId)
@@ -117,19 +119,31 @@ class SuspiciousTransferConsumerTest {
     }
 
     @Test
-    void listenCard_ShouldHandleInvalidTransferId() throws  JsonProcessingException {
+    void listenCard_ShouldNotCallTransferService_WhenInvalidTransferId() throws JsonProcessingException {
         // Arrange
         testMessage.put("id", 0);
-        testMessage.put("card_number", "1234567890123456");
+        testMessage.put("card_number", CARD_NUMBER);
 
         // Act
-        suspiciousTransferConsumer.listenCard(testMessage, amountHeader);
+        listenCardForTest(testMessage, AMOUNT_HEADER);
 
         // Assert
         verify(transferService, never()).analyzeCardTransfer(
                 ArgumentMatchers.any(BigDecimal.class),
                 ArgumentMatchers.anyInt()
         );
+    }
+
+    @Test
+    void listenCard_ShouldNotProduceEvent_WhenInvalidTransferId() throws JsonProcessingException {
+        // Arrange
+        testMessage.put("id", 0);
+        testMessage.put("card_number", CARD_NUMBER);
+
+        // Act
+        listenCardForTest(testMessage, AMOUNT_HEADER);
+
+        // Assert
         verify(kafkaProducer, never()).eventResponse(ArgumentMatchers.anyMap());
     }
 
@@ -137,10 +151,10 @@ class SuspiciousTransferConsumerTest {
     void listenCard_ShouldHandleNullTransferId() throws JsonProcessingException {
         // Arrange
         testMessage.put("id", null);
-        testMessage.put("card_number", "1234567890123456");
+        testMessage.put("card_number", CARD_NUMBER);
 
         // Act
-        suspiciousTransferConsumer.listenCard(testMessage, amountHeader);
+        listenCardForTest(testMessage, AMOUNT_HEADER);
 
         // Assert
         verify(transferService, never()).analyzeCardTransfer(
@@ -153,27 +167,27 @@ class SuspiciousTransferConsumerTest {
     @Test
     void listenCard_ShouldHandleServiceReturnsNull() throws JsonProcessingException {
         // Arrange
-        testMessage.put("account_number", "40817810099910004321");
+        testMessage.put("account_number", ACCOUNT_NUMBER.getType());
         when(transferService.analyzeAccountTransfer(
                 ArgumentMatchers.any(BigDecimal.class),
                 ArgumentMatchers.eq(transferId))
         ).thenReturn(null);
 
         // Act
-        suspiciousTransferConsumer.listenCard(testMessage, amountHeader);
+        listenCardForTest(testMessage, AMOUNT_HEADER);
 
         // Assert
-        verify(transferService).analyzeAccountTransfer(new BigDecimal(amountHeader), transferId);
+        verify(transferService).analyzeAccountTransfer(new BigDecimal(AMOUNT_HEADER), transferId);
         verify(kafkaProducer, never()).eventResponse(ArgumentMatchers.anyMap());
     }
 
     @Test
     void listenCard_ShouldHandleUnknownTransferType() throws JsonProcessingException {
         // Arrange
-        testMessage.put("unknown_field", "some_value");
+        testMessage.put("unknown_field", UNKNOWN_FIELD);
 
         // Act
-        suspiciousTransferConsumer.listenCard(testMessage, amountHeader);
+        listenCardForTest(testMessage, AMOUNT_HEADER);
 
         // Assert
         verify(transferService, never()).analyzeCardTransfer(
@@ -189,5 +203,9 @@ class SuspiciousTransferConsumerTest {
                 ArgumentMatchers.anyInt()
         );
         verify(kafkaProducer, never()).eventResponse(ArgumentMatchers.anyMap());
+    }
+
+    private void listenCardForTest(Map<String, Object> testMessage, String head) throws JsonProcessingException {
+        suspiciousTransferConsumer.listenCard(testMessage, head);
     }
 }

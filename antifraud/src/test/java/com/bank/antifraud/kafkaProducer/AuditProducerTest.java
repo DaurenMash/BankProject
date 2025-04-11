@@ -28,6 +28,8 @@ class AuditProducerTest {
     @InjectMocks
     private AuditProducer auditProducer;
 
+    private final String TEST_TOPIC = "test-topic";
+
     @Test
     void sendAuditLog_shouldSendMessageToKafka() {
         // Arrange
@@ -52,7 +54,7 @@ class AuditProducerTest {
     @Test
     void sendAuditLogRequest_shouldSendMessageWithOperationTypeHeader() {
         // Arrange
-        Object payload = new Object();
+        Object payload = new AuditDto();
         String operationType = "CREATE";
         CompletableFuture<SendResult<String, Object>> future = CompletableFuture.completedFuture(mock(SendResult.class));
         when(kafkaTemplate.send(any(ProducerRecord.class))).thenReturn(future);
@@ -77,14 +79,13 @@ class AuditProducerTest {
     @Test
     void sendToKafka_shouldLogSuccess() {
         // Arrange
-        String topic = "test-topic";
-        Object payload = new Object();
+        Object payload = new AuditDto();
         String operationType = "UPDATE";
         CompletableFuture<SendResult<String, Object>> future = CompletableFuture.completedFuture(mock(SendResult.class));
         when(kafkaTemplate.send(any(ProducerRecord.class))).thenReturn(future);
 
         // Act
-        auditProducer.sendToKafka(topic, payload, null, operationType);
+        auditProducer.sendToKafka(TEST_TOPIC, payload, null, operationType);
 
         // Assert
         verify(kafkaTemplate).send(any(ProducerRecord.class));
@@ -93,15 +94,14 @@ class AuditProducerTest {
     @Test
     void sendToKafka_shouldLogErrorWhenSendingFails() {
         // Arrange
-        String topic = "test-topic";
-        Object payload = new Object();
+        Object payload = new AuditDto();
         String operationType = "UPDATE";
         CompletableFuture<SendResult<String, Object>> future = new CompletableFuture<>();
         future.completeExceptionally(new RuntimeException("Kafka error"));
         when(kafkaTemplate.send(any(ProducerRecord.class))).thenReturn(future);
 
         // Act
-        auditProducer.sendToKafka(topic, payload, null, operationType);
+        auditProducer.sendToKafka(TEST_TOPIC, payload, null, operationType);
 
         // Assert
         verify(kafkaTemplate).send(any(ProducerRecord.class));

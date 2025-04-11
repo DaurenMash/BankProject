@@ -34,9 +34,6 @@ class GlobalExceptionHandlerTest {
     private GlobalExceptionHandler exceptionHandler;
 
     @Mock
-    private MethodArgumentNotValidException methodArgNotValidException;
-
-    @Mock
     private BindingResult bindingResult;
 
     @Mock
@@ -53,10 +50,6 @@ class GlobalExceptionHandlerTest {
 
     @Mock
     private WebRequest webRequest;
-
-    @Mock
-    private FieldError fieldError;
-
     @Mock
     private ConstraintViolation<?> constraintViolation;
 
@@ -65,14 +58,10 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void handleValidationExceptions_shouldReturnValidationErrors() {
-        // 1. Создаем реальный FieldError
         FieldError fieldError = new FieldError("object", "amount", "must be positive");
 
-        // 2. Мокаем только BindingResult
-        BindingResult bindingResult = mock(BindingResult.class);
         when(bindingResult.getAllErrors()).thenReturn(Collections.singletonList(fieldError));
 
-        // 3. Создаем реальное исключение с моком BindingResult
         MethodArgumentNotValidException ex = new MethodArgumentNotValidException(null, bindingResult);
 
         // 4. Вызываем и проверяем
