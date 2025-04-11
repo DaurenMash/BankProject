@@ -2,6 +2,7 @@ package com.bank.account.config;
 
 import com.bank.account.dto.AccountDto;
 import com.bank.account.dto.AuditDto;
+import com.bank.account.dto.KafkaRequest;
 import com.bank.account.exception.error_dto.ErrorResponse;
 import lombok.Generated;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +51,12 @@ public class KafkaProducerConfig {
     }
 
     @Bean
+    public ProducerFactory<String, KafkaRequest> kafkaRequestProducerFactory() {
+        final Map<String, Object> configProps = setProducerProps();
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+
+    @Bean
     public ProducerFactory<String, List<AccountDto>> accountsListProducerFactory() {
         final Map<String, Object> configProps = setProducerProps();
         return new DefaultKafkaProducerFactory<>(configProps);
@@ -64,6 +71,11 @@ public class KafkaProducerConfig {
     @Bean
     public KafkaTemplate<String, String> stringKafkaTemplate() {
         return new KafkaTemplate<>(stringProducerFactory());
+    }
+
+    @Bean
+    public KafkaTemplate<String, KafkaRequest> kafkaRequestKafkaTemplate() {
+        return new KafkaTemplate<>(kafkaRequestProducerFactory());
     }
 
     @Bean

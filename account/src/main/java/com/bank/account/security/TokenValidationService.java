@@ -17,7 +17,7 @@ import java.util.concurrent.TimeoutException;
 @Service
 @RequiredArgsConstructor
 public class TokenValidationService {
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, KafkaRequest> kafkaTemplate;
     private final TokenValidationResponseHandler responseHandler;
 
     @Value("${kafka.topics.auth-validate}")
