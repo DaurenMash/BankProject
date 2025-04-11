@@ -7,7 +7,12 @@ import com.bank.profile.entity.Passport;
 import com.bank.profile.entity.Profile;
 import com.bank.profile.entity.Registration;
 import com.bank.profile.mapper.RegistrationMapper;
-import com.bank.profile.repository.*;
+import com.bank.profile.repository.AccountDetailsRepository;
+import com.bank.profile.repository.ActualRegistrationRepository;
+import com.bank.profile.repository.AuditRepository;
+import com.bank.profile.repository.PassportRepository;
+import com.bank.profile.repository.ProfileRepository;
+import com.bank.profile.repository.RegistrationRepository;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.LocalDate;
