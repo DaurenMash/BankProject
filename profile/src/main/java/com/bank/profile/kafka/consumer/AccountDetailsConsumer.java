@@ -19,8 +19,8 @@ public class AccountDetailsConsumer {
     }
 
     @KafkaListener(topics = "#{kafkaTopic.topicAccountDetailsUpdate}", groupId = "#{kafkaTopic.groupId}")
-    public void update(AccountDetailsDto dto) {
-        accountDetailsService.update(dto);
+    public void update(Long id, AccountDetailsDto dto) {
+        accountDetailsService.update(id, dto);
     }
 
     @KafkaListener(topics = "#{kafkaTopic.topicAccountDetailsDelete}", groupId = "#{kafkaTopic.groupId}")
