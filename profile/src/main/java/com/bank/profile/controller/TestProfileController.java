@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile("test")
 @RestController
 @RequestMapping("/profiles")
-public class ProfileController extends BasicCrudController<ProfileService, ProfileDto> {
-    public ProfileController(ProfileService profileService) {
+public class TestProfileController extends BasicCrudController<ProfileService, ProfileDto> {
+    public TestProfileController(ProfileService profileService) {
         super(profileService);
     }
 }

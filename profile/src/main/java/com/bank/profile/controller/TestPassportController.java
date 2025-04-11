@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RestController;
 @Profile("test")
 @RestController
 @RequestMapping("/passports")
-public class PassportController extends BasicCrudController<PassportService, PassportDto> {
-    public PassportController(PassportService service) {
+public class TestPassportController extends BasicCrudController<PassportService, PassportDto> {
+    public TestPassportController(PassportService service) {
         super(service);
     }
 }
