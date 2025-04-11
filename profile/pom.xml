@@ -28,6 +28,11 @@
             <artifactId>spring-kafka-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-runner</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -42,6 +47,39 @@
                 <configuration>
                     <mainClass>com.bank.profile.ProfileApplication</mainClass>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.7</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <excludes>
+                        <exclude>com/bank/profile/ProfileApplication.class</exclude>
+                        <exclude>com/bank/profile/config/*.class</exclude>
+                        <exclude>com/bank/profile/controller/*.class</exclude>
+                        <exclude>com/bank/profile/exception/*.class</exclude>
+                        <exclude>com/bank/profile/mapper/*.class</exclude>
+                        <exclude>com/bank/profile/dto/*.class</exclude>
+                        <exclude>com/bank/profile/entity/*.class</exclude>
+                        <exclude>com/bank/profile/util/**/*.class</exclude>
+                    </excludes>
+                </configuration>
+
             </plugin>
         </plugins>
     </build>
