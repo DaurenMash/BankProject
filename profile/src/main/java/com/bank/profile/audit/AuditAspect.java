@@ -21,11 +21,13 @@ public class AuditAspect {
 
     @AfterReturning(pointcut = "serviceCreate()", returning = "value")
     public void logCreate(Object value) {
+        if (value == null) return;
         auditService.create(value);
     }
 
     @AfterReturning(pointcut = "serviceUpdate()", returning = "value")
     public void logUpdate(Object value) {
+        if (value == null) return;
         auditService.update(value);
     }
 }
