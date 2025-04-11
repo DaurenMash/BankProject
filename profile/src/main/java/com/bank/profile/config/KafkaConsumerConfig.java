@@ -15,19 +15,15 @@ import org.springframework.kafka.core.KafkaTemplate;
 import java.util.Map;
 
 @Configuration
-public class KafkaConfig {
+public class KafkaConsumerConfig {
 
     private final Map<String, Object> builtKafkaProperties;
 
     @SuppressWarnings("removal")
-    public KafkaConfig(KafkaProperties kafkaProperties) {
-        builtKafkaProperties = kafkaProperties.buildProducerProperties();
+    public KafkaConsumerConfig(KafkaProperties kafkaProperties) {
+        builtKafkaProperties = kafkaProperties.buildConsumerProperties();
     }
 
-    @Bean
-    public KafkaTemplate<String, ProfileDto> kafkaTemplateProfile() {
-        return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(builtKafkaProperties));
-    }
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, ProfileDto> listenerFactoryProfile() {
         ConcurrentKafkaListenerContainerFactory<String, ProfileDto> factory =
@@ -37,29 +33,10 @@ public class KafkaConfig {
     }
 
     @Bean
-    public KafkaTemplate<String, AccountDetailsDto> kafkaTemplateAccountDetails() {
-        return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(builtKafkaProperties));
-    }
-    @Bean
     public ConcurrentKafkaListenerContainerFactory<String, AccountDetailsDto> listenerFactoryAccountDetails() {
         ConcurrentKafkaListenerContainerFactory<String, AccountDetailsDto> factory =
                 new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(new DefaultKafkaConsumerFactory<>(builtKafkaProperties));
         return factory;
-    }
-
-    @Bean
-    public KafkaTemplate<String, AuditDto> kafkaTemplateAudit() {
-        return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(builtKafkaProperties));
-    }
-
-    @Bean
-    public KafkaTemplate<String, ErrorDto> kafkaTemplateError() {
-        return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(builtKafkaProperties));
-    }
-
-    @Bean
-    public KafkaTemplate<String, Long> kafkaTemplateById() {
-        return new KafkaTemplate<>(new DefaultKafkaProducerFactory<>(builtKafkaProperties));
     }
 }
