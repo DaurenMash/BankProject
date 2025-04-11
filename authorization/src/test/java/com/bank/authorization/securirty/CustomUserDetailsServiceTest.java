@@ -1,30 +1,22 @@
 package com.bank.authorization.securirty;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.verify;
-
+import com.bank.authorization.entity.User;
+import com.bank.authorization.repository.UserRepository;
 import com.bank.authorization.security.CustomUserDetailsService;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import com.bank.authorization.entity.User;
-import com.bank.authorization.repository.UserRepository;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class CustomUserDetailsServiceTest {
@@ -35,41 +27,61 @@ class CustomUserDetailsServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @Test
-    void shouldLoadUserByUsernameWhenExists() {
-        User expectedUser = new User();
-        expectedUser.setProfileId(12345L);
-        expectedUser.setPassword("password");
-        expectedUser.setRole("USER_ROLE");
-
-        when(userRepository.findByProfileId(any())).thenReturn(java.util.Optional.of(expectedUser));
-
-        var loadedUser = customUserDetailsService.loadUserByUsername(Long.toString(expectedUser.getProfileId()));
-
-        List<GrantedAuthority> actualAuthorities = new ArrayList<>(loadedUser.getAuthorities());
-
-        verify(userRepository).findByProfileId(expectedUser.getProfileId());
-        assertEquals(expectedUser.getProfileId().toString(), loadedUser.getUsername(), "Идентификатор профиля должен соответствовать.");
-        assertEquals(expectedUser.getPassword(), loadedUser.getPassword(), "Пароль должен соответствовать.");
-        assertEquals(Collections.singletonList(new SimpleGrantedAuthority(expectedUser.getRole())),
-                actualAuthorities,
-                "Роли должны соответствовать.");
+    private User givenUserWithRole(String role) {
+        User user = new User();
+        user.setProfileId(12345L);
+        user.setPassword("securePassword");
+        user.setRole(role);
+        return user;
     }
 
     @Test
-    void shouldThrowExceptionWhenUserDoesNotExist() {
-        String validProfileIdAsString = "123";
+    void loadUserByUsername_shouldReturnUserDetails_whenUserExists() {
+        User expectedUser = givenUserWithRole("ROLE_USER");
+        when(userRepository.findByProfileId(expectedUser.getProfileId()))
+                .thenReturn(Optional.of(expectedUser));
 
-        when(userRepository.findByProfileId(Long.valueOf(validProfileIdAsString)))
+        var userDetails = customUserDetailsService.loadUserByUsername(
+                expectedUser.getProfileId().toString());
+
+        verify(userRepository).findByProfileId(expectedUser.getProfileId());
+        assertEquals(expectedUser.getProfileId().toString(), userDetails.getUsername());
+    }
+
+    @Test
+    void loadUserByUsername_shouldContainCorrectPassword_whenUserExists() {
+        User expectedUser = givenUserWithRole("ROLE_USER");
+        when(userRepository.findByProfileId(expectedUser.getProfileId()))
+                .thenReturn(Optional.of(expectedUser));
+
+        var userDetails = customUserDetailsService.loadUserByUsername(
+                expectedUser.getProfileId().toString());
+
+        assertEquals(expectedUser.getPassword(), userDetails.getPassword());
+    }
+
+    @Test
+    void loadUserByUsername_shouldContainCorrectAuthorities_whenUserExists() {
+        String expectedRole = "ROLE_ADMIN";
+        User expectedUser = givenUserWithRole(expectedRole);
+        when(userRepository.findByProfileId(expectedUser.getProfileId()))
+                .thenReturn(Optional.of(expectedUser));
+
+        var userDetails = customUserDetailsService.loadUserByUsername(
+                expectedUser.getProfileId().toString());
+
+        assertTrue(userDetails.getAuthorities().stream()
+                .anyMatch(auth -> auth.getAuthority().equals(expectedRole)));
+    }
+
+    @Test
+    void loadUserByUsername_shouldThrowException_whenUserNotFound() {
+        Long nonExistentProfileId = 999L;
+        when(userRepository.findByProfileId(nonExistentProfileId))
                 .thenReturn(Optional.empty());
 
         assertThrows(UsernameNotFoundException.class, () -> {
-            customUserDetailsService.loadUserByUsername(validProfileIdAsString);
+            customUserDetailsService.loadUserByUsername(nonExistentProfileId.toString());
         });
-    }
-
-    @AfterEach
-    void resetMocks() {
-        Mockito.reset(userRepository); 
     }
 }

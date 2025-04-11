@@ -1,45 +1,62 @@
 package com.bank.authorization.repository;
 
 import com.bank.authorization.entity.User;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+//import static org.junit.jupiter.api.Assertions.*;
+
+@ExtendWith(SpringExtension.class)
+@DataJpaTest
 class UserRepositoryTest {
 
-    @Mock
+    @Autowired
     private UserRepository userRepository;
-
-    private User user;
-
-    @BeforeEach
-    void setUp() {
-        user = new User();
-        user.setProfileId(123L);
-        user.setRole("ROLE_USER");
-        user.setPassword("password");
-    }
 
     @Test
     void testFindByProfileId() {
-        when(userRepository.findByProfileId(123L)).thenReturn(Optional.of(user));
+        User user = givenUserWithRole("ROLE_USER");
+        User savedUser = userRepository.save(user);
 
-        Optional<User> foundUser = userRepository.findByProfileId(123L);
+        Optional<User> foundUser = userRepository.findByProfileId(savedUser.getProfileId());
 
-        assertTrue(foundUser.isPresent());
-        assertEquals(123L, foundUser.get().getProfileId());
+        assertTrue(foundUser.isPresent(), "User should be found by profileId");
+        assertEquals(savedUser.getProfileId(), foundUser.get().getProfileId(), "Profile IDs should match");
+        assertEquals("ROLE_USER", foundUser.get().getRole(), "Roles should match");
+    }
 
-        verify(userRepository, times(1)).findByProfileId(123L);
+    @Test
+    void testFindByProfileId_NotFound() {
+        Optional<User> foundUser = userRepository.findByProfileId(999L);
+
+        assertFalse(foundUser.isPresent(), "User should not be found for non-existent profileId");
+    }
+
+    @Test
+    void testFindByProfileId_WithDifferentRole() {
+        User adminUser = givenUserWithRole("ROLE_ADMIN");
+        User savedAdmin = userRepository.save(adminUser);
+
+        Optional<User> foundUser = userRepository.findByProfileId(savedAdmin.getProfileId());
+
+        assertTrue(foundUser.isPresent(), "Admin user should be found");
+        assertEquals("ROLE_ADMIN", foundUser.get().getRole(), "Admin role should match");
+    }
+
+    private User givenUserWithRole(String role) {
+        User user = new User();
+        user.setProfileId((long) (Math.random() * 1000));
+        user.setRole(role);
+        user.setPassword("password");
+        return user;
     }
 }

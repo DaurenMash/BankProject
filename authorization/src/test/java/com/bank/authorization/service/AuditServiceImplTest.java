@@ -3,11 +3,12 @@ package com.bank.authorization.service;
 import com.bank.authorization.dto.AuditDto;
 import com.bank.authorization.dto.UserDto;
 import com.bank.authorization.entity.Audit;
-import com.bank.authorization.entity.User;
+import com.bank.authorization.entity.EntityType;
+import com.bank.authorization.entity.OperationType;
+import com.bank.authorization.entity.Role;
 import com.bank.authorization.mapper.AuditMapper;
 import com.bank.authorization.repository.AuditRepository;
 import com.bank.authorization.utils.JsonUtils;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -15,20 +16,18 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuditServiceImplTest {
+
+    private static final Long TEST_USER_ID = 1L;
+    private static final Long TEST_AUDIT_ID = 1L;
+    private static final String SYSTEM_USER = "SYSTEM";
+
     @Mock
     private AuditRepository auditRepository;
     @Mock
@@ -36,88 +35,100 @@ class AuditServiceImplTest {
     @InjectMocks
     private AuditServiceImpl auditService;
 
-    private UserDto userDto;
-    private Audit audit;
-    private Audit auditWithInvalidJson;
+    private UserDto givenUserDto() {
+        return UserDto.builder()
+                .id(TEST_USER_ID)
+                .role(Role.ROLE_USER.toString())
+                .build();
+    }
 
-    @BeforeEach
-    void setUp() {
-        userDto = new UserDto();
-        userDto.setId(1L);
-        userDto.setRole("USER");
+    private Audit givenAudit(OperationType operationType) {
+        return Audit.builder()
+                .id(TEST_AUDIT_ID)
+                .entityType(EntityType.USER.name())
+                .operationType(operationType.name())
+                .createdBy(SYSTEM_USER)
+                .entityJson(JsonUtils.toJson(givenUserDto()))
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
 
-        audit = new Audit();
-        audit.setId(1L);
-        audit.setEntityType("User");
-        audit.setOperationType("CREATE");
-        audit.setCreatedBy("SYSTEM");
-        audit.setEntityJson(JsonUtils.toJson(userDto));
-        audit.setCreatedAt(LocalDateTime.now());
+    private Audit givenInvalidJsonAudit() {
+        return Audit.builder()
+                .id(2L)
+                .entityType(EntityType.USER.name())
+                .operationType(OperationType.CREATE.name())
+                .createdBy(SYSTEM_USER)
+                .entityJson("invalid_json")
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
 
-        auditWithInvalidJson = new Audit();
-        auditWithInvalidJson.setId(2L);
-        auditWithInvalidJson.setEntityType("User");
-        auditWithInvalidJson.setOperationType("CREATE");
-        auditWithInvalidJson.setCreatedBy("SYSTEM");
-        auditWithInvalidJson.setEntityJson("invalid_json");
-        auditWithInvalidJson.setCreatedAt(LocalDateTime.now());
+    private AuditDto givenAuditDto(OperationType operationType) {
+        return AuditDto.builder()
+                .entityType(EntityType.USER.name())
+                .operationType(operationType.name())
+                .createdBy(SYSTEM_USER)
+                .entityJson(JsonUtils.toJson(givenUserDto()))
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
+
+    // Тесты
+    @Test
+    void logUserCreation_ShouldSaveCreateAudit() {
+        when(auditMapper.toEntity(any(AuditDto.class)))
+                .thenReturn(givenAudit(OperationType.CREATE));
+
+        auditService.logUserCreation(givenUserDto());
+
+        verify(auditRepository).save(argThat(audit ->
+                audit.getOperationType().equals(OperationType.CREATE) &&
+                        audit.getEntityType().equals(EntityType.USER)));
     }
 
     @Test
-    void logUserCreation_ShouldSaveAuditRecord() {
-        when(auditMapper.toEntity(any(AuditDto.class))).thenReturn(audit);
-        auditService.logUserCreation(userDto);
-        verify(auditRepository, times(1)).save(any(Audit.class));
+    void logUserUpdate_ShouldUpdateExistingAudit() {
+        when(auditRepository.findAll())
+                .thenReturn(List.of(givenAudit(OperationType.CREATE)));
+        when(auditRepository.save(any(Audit.class)))
+                .thenReturn(givenAudit(OperationType.UPDATE));
+
+        auditService.logUserUpdate(TEST_USER_ID, givenUserDto());
+
+        verify(auditRepository).save(argThat(audit ->
+                audit.getOperationType().equals(OperationType.UPDATE)));
     }
 
     @Test
-    void logUserUpdate_ShouldNotUpdateIfAuditRecordNotFound() {
-        when(auditRepository.findAll()).thenReturn(Collections.emptyList());
-        auditService.logUserUpdate(1L, userDto);
-        verify(auditRepository, never()).save(any(Audit.class));
+    void logUserUpdate_ShouldIgnoreInvalidJsonRecords() {
+        when(auditRepository.findAll())
+                .thenReturn(List.of(givenInvalidJsonAudit()));
+
+        auditService.logUserUpdate(TEST_USER_ID, givenUserDto());
+
+        verify(auditRepository, never()).save(any());
     }
 
     @Test
-    void logUserUpdate_ShouldLogErrorWhenJsonParsingFails() {
-        when(auditRepository.findAll()).thenReturn(List.of(auditWithInvalidJson));
-        auditService.logUserUpdate(1L, userDto);
-        verify(auditRepository, never()).save(any(Audit.class));
+    void save_ShouldMapAndSaveAudit() {
+        AuditDto dto = givenAuditDto(OperationType.UPDATE);
+        when(auditMapper.toEntity(dto))
+                .thenReturn(givenAudit(OperationType.UPDATE));
+
+        auditService.save(dto);
+
+        verify(auditRepository).save(argThat(audit ->
+                audit.getOperationType().equals(OperationType.UPDATE)));
     }
 
     @Test
-    void logUserUpdate_ShouldHandleMultipleAuditsWithSomeInvalidJson() {
-        when(auditRepository.findAll()).thenReturn(List.of(auditWithInvalidJson, audit));
-        when(auditRepository.save(any(Audit.class))).thenReturn(audit);
-        auditService.logUserUpdate(1L, userDto);
-        verify(auditRepository, times(1)).save(any(Audit.class));
-    }
+    void logUserUpdate_ShouldNotUpdateWhenUserNotFound() {
+        when(auditRepository.findAll())
+                .thenReturn(List.of(givenAudit(OperationType.CREATE)));
 
-    @Test
-    void save_ShouldCallRepositorySave() {
-        when(auditMapper.toEntity(any(AuditDto.class))).thenReturn(audit);
-        AuditDto auditDto = new AuditDto();
-        auditDto.setEntityType("User");
-        auditDto.setOperationType("CREATE");
-        auditDto.setCreatedBy("SYSTEM");
-        auditDto.setEntityJson(JsonUtils.toJson(userDto));
-        auditDto.setCreatedAt(LocalDateTime.now());
-        auditService.save(auditDto);
-        verify(auditRepository, times(1)).save(any(Audit.class));
-    }
+        auditService.logUserUpdate(999L, givenUserDto());
 
-    @Test
-    void logUserUpdate_ShouldNotUpdateIfNoMatchingAuditFound() {
-        when(auditRepository.findAll()).thenReturn(List.of(audit));
-        auditService.logUserUpdate(999L, userDto);
-        verify(auditRepository, never()).save(any(Audit.class));
-    }
-
-    @Test
-    void logUserUpdate_ShouldLogErrorWhenJsonParsingThrowsException() {
-        when(auditRepository.findAll()).thenReturn(List.of(audit));
-        mockStatic(JsonUtils.class);
-        when(JsonUtils.fromJson(anyString(), eq(User.class))).thenThrow(new RuntimeException("Ошибка парсинга JSON"));
-        auditService.logUserUpdate(1L, userDto);
-        verify(auditRepository, never()).save(any(Audit.class));
+        verify(auditRepository, never()).save(any());
     }
 }

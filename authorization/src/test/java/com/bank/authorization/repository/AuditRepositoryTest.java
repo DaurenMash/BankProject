@@ -4,32 +4,29 @@ import com.bank.authorization.entity.Audit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith(SpringExtension.class)
+@DataJpaTest
 class AuditRepositoryTest {
 
-    @Mock
+    @Autowired
     private AuditRepository auditRepository;
 
-    private Audit audit;
+    private Audit savedAudit;
 
     @BeforeEach
     void setUp() {
-        audit = new Audit();
-        audit.setId(1L);
+        Audit audit = new Audit();
         audit.setEntityType("User");
         audit.setCreatedAt(LocalDateTime.parse("2025-03-24T14:11:56"));
         audit.setOperationType("CREATE");
@@ -37,44 +34,46 @@ class AuditRepositoryTest {
         audit.setModifiedBy("system");
         audit.setEntityJson("{}");
         audit.setNewEntityJson("{}");
+
+        savedAudit = auditRepository.save(audit);
     }
 
     @Test
-    void testSaveAudit() {
-        when(auditRepository.save(any(Audit.class))).thenReturn(audit);
+    void testSaveAndFindAudit() {
+        Optional<Audit> foundAudit = auditRepository.findById(savedAudit.getId());
 
-        Audit savedAudit = auditRepository.save(audit);
-
-        assertNotNull(savedAudit);
-        assertEquals("admin", savedAudit.getCreatedBy());
-
-        verify(auditRepository, times(1)).save(audit);
+        assertTrue(foundAudit.isPresent());
+        assertEquals("User", foundAudit.get().getEntityType());
+        assertEquals("admin", foundAudit.get().getCreatedBy());
     }
 
     @Test
     void testFindById() {
-        when(auditRepository.findById(1L)).thenReturn(Optional.of(audit));
+        Optional<Audit> foundAudit = auditRepository.findById(savedAudit.getId());
 
-        Optional<Audit> foundAudit = auditRepository.findById(1L);
+        assertTrue(foundAudit.isPresent(), "Audit should be found");
+        assertEquals(savedAudit.getId(), foundAudit.get().getId(), "IDs should match");
+        assertEquals("User", foundAudit.get().getEntityType(), "Entity types should match");
+        assertEquals("CREATE", foundAudit.get().getOperationType(), "Operation types should match");
+    }
 
-        assertTrue(foundAudit.isPresent());
-        assertEquals("User", foundAudit.get().getEntityType());
+    @Test
+    void testFindById_NotFound() {
+        Optional<Audit> foundAudit = auditRepository.findById(999L);
 
-        verify(auditRepository, times(1)).findById(1L);
+        assertFalse(foundAudit.isPresent(), "Audit should not be found for non-existent ID");
     }
 
     @Test
     void testUpdateAudit() {
-        audit.setOperationType("UPDATE");
-        audit.setModifiedBy("system2");
+        savedAudit.setOperationType("UPDATE");
+        savedAudit.setModifiedBy("system2");
 
-        when(auditRepository.save(any(Audit.class))).thenReturn(audit);
+        Audit updatedAudit = auditRepository.save(savedAudit);
+        Optional<Audit> foundAudit = auditRepository.findById(updatedAudit.getId());
 
-        Audit updatedAudit = auditRepository.save(audit);
-
-        assertEquals("UPDATE", updatedAudit.getOperationType());
-        assertEquals("system2", updatedAudit.getModifiedBy());
-
-        verify(auditRepository, times(1)).save(audit);
+        assertTrue(foundAudit.isPresent());
+        assertEquals("UPDATE", foundAudit.get().getOperationType());
+        assertEquals("system2", foundAudit.get().getModifiedBy());
     }
 }
