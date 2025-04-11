@@ -69,5 +69,5 @@ app:
         get: "profile.account.get"
         get-response: "profile.account.get-response"
       audit: "profile.audit"
-      error: "profile.error"
+      error: "profile.error-dlt"
 
