@@ -60,14 +60,6 @@ public class ProfileServiceImpl implements ProfileService {
     @Override
     @Transactional
     public ProfileDto create(@Valid ProfileDto dto) {
-//        passportRepository.findById(dto.getPassportId())
-//                .orElseThrow(() -> new EntityNotFoundException(Passport.class.getSimpleName()));
-//
-//        if (dto.getActualRegistrationId() != null) {
-//            actualRegistrationRepository.findById(dto.getActualRegistrationId())
-//                    .orElseThrow(() -> new EntityNotFoundException(ActualRegistration.class.getSimpleName()));
-//        }
-
         if (dto.getSnils() != null && profileRepository.findBySnils(dto.getSnils()).isPresent()) {
             throw new EntityNotUniqueException(Profile.class.getName(), "snils");
         }
@@ -77,10 +69,6 @@ public class ProfileServiceImpl implements ProfileService {
 
         Profile profile = profileMapper.toEntity(dto);
 
-//        if (dto.getActualRegistrationId() == null) {
-//            profile.setActualRegistration(null);
-//        }
-
         return profileMapper.toDto( profileRepository.save( profile ) );
     }
 
@@ -89,14 +77,6 @@ public class ProfileServiceImpl implements ProfileService {
     public ProfileDto update(Long id, @Valid ProfileDto dto) {
         profileRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(Profile.class.getSimpleName()));
-
-//        passportRepository.findById(dto.getPassportId())
-//                .orElseThrow(() -> new EntityNotFoundException(Passport.class.getSimpleName()));
-//
-//        if (dto.getActualRegistrationId() != null) {
-//            actualRegistrationRepository.findById(dto.getActualRegistrationId())
-//                    .orElseThrow(() -> new EntityNotFoundException(ActualRegistration.class.getSimpleName()));
-//        }
 
         profileRepository.findBySnils(dto.getSnils()).ifPresent(entity -> {
             if (!entity.getId().equals(dto.getId()))
@@ -109,10 +89,6 @@ public class ProfileServiceImpl implements ProfileService {
         });
 
         Profile profile = profileMapper.toEntity(dto);
-
-//        if (dto.getActualRegistrationId() == null) {
-//            profile.setActualRegistration(null);
-//        }
 
         return profileMapper.toDto( profileRepository.save(profile) );
     }
