@@ -13,22 +13,22 @@ public class AccountDetailsConsumer {
     private final AccountDetailsService accountDetailsService;
     private final AccountDetailsProducer accountDetailsProducer;
 
-    @KafkaListener(topics = "#{kafkaTopicsConfig.topicAccountDetailsCreate}", groupId = "#{kafkaTopicsConfig.groupId}")
+    @KafkaListener(topics = "#{kafkaTopic.topicAccountDetailsCreate}", groupId = "#{kafkaTopic.groupId}")
     public void create(AccountDetailsDto dto) {
         accountDetailsService.create(dto);
     }
 
-    @KafkaListener(topics = "#{kafkaTopicsConfig.topicAccountDetailsUpdate}", groupId = "#{kafkaTopicsConfig.groupId}")
+    @KafkaListener(topics = "#{kafkaTopic.topicAccountDetailsUpdate}", groupId = "#{kafkaTopic.groupId}")
     public void update(AccountDetailsDto dto) {
         accountDetailsService.update(dto);
     }
 
-    @KafkaListener(topics = "#{kafkaTopicsConfig.topicAccountDetailsDelete}", groupId = "#{kafkaTopicsConfig.groupId}")
+    @KafkaListener(topics = "#{kafkaTopic.topicAccountDetailsDelete}", groupId = "#{kafkaTopic.groupId}")
     public void delete(Long id) {
         accountDetailsService.delete(id);
     }
 
-    @KafkaListener(topics = "#{kafkaTopicsConfig.topicAccountDetailsGet}", groupId = "#{kafkaTopicsConfig.groupId}")
+    @KafkaListener(topics = "#{kafkaTopic.topicAccountDetailsGet}", groupId = "#{kafkaTopic.groupId}")
     public void get(Long id) {
         accountDetailsProducer.sendGetResponse(accountDetailsService.get(id));
     }

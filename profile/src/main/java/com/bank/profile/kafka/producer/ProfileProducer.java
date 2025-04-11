@@ -1,7 +1,7 @@
 package com.bank.profile.kafka.producer;
 
-import com.bank.profile.config.KafkaTopicsConfig;
 import com.bank.profile.dto.ProfileDto;
+import com.bank.profile.util.KafkaTopic;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ProfileProducer {
-    private final KafkaTopicsConfig topicsConfig;
+    private final KafkaTopic topicsConfig;
     private final KafkaTemplate<String, ProfileDto> kafkaTemplateProfile;
     private final KafkaTemplate<String, Long> kafkaTemplateById;
 

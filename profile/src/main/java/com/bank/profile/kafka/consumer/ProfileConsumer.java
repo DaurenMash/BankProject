@@ -13,22 +13,22 @@ public class ProfileConsumer {
     private final ProfileService profileService;
     private final ProfileProducer profileProducer;
 
-    @KafkaListener(topics = "#{kafkaTopicsConfig.topicProfileCreate}", groupId = "#{kafkaTopicsConfig.groupId}")
+    @KafkaListener(topics = "#{kafkaTopic.topicProfileCreate}", groupId = "#{kafkaTopic.groupId}")
     public void create(ProfileDto dto) {
         profileService.create(dto);
     }
 
-    @KafkaListener(topics = "#{kafkaTopicsConfig.topicProfileUpdate}", groupId = "#{kafkaTopicsConfig.groupId}")
+    @KafkaListener(topics = "#{kafkaTopic.topicProfileUpdate}", groupId = "#{kafkaTopic.groupId}")
     public void update(ProfileDto dto) {
         profileService.update(dto);
     }
 
-    @KafkaListener(topics = "#{kafkaTopicsConfig.topicProfileDelete}", groupId = "#{kafkaTopicsConfig.groupId}")
+    @KafkaListener(topics = "#{kafkaTopic.topicProfileDelete}", groupId = "#{kafkaTopic.groupId}")
     public void delete(Long id) {
         profileService.delete(id);
     }
 
-    @KafkaListener(topics = "#{kafkaTopicsConfig.topicProfileGet}", groupId = "#{kafkaTopicsConfig.groupId}")
+    @KafkaListener(topics = "#{kafkaTopic.topicProfileGet}", groupId = "#{kafkaTopic.groupId}")
     public void get(Long id) {
         profileProducer.sendGetResponse(profileService.get(id));
     }

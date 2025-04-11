@@ -1,7 +1,7 @@
 package com.bank.profile.kafka.producer;
 
-import com.bank.profile.config.KafkaTopicsConfig;
 import com.bank.profile.dto.ErrorDto;
+import com.bank.profile.util.KafkaTopic;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class ErrorProducer {
-    private final KafkaTopicsConfig topicsConfig;
+    private final KafkaTopic topicsConfig;
     private final KafkaTemplate<String, ErrorDto> kafkaTemplate;
 
     public void sendError(ErrorDto dto) {
