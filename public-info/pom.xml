@@ -40,6 +40,64 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>LINE</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.80</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+
+                <configuration>
+                    <excludes>
+                        <exclude>com/bank/publicinfo/ATMService.class</exclude>
+                        <exclude>com/bank/publicinfo/BankDetailsService.class</exclude>
+                        <exclude>com/bank/publicinfo/BranchService.class</exclude>
+                        <exclude>com/bank/publicinfo/CertificateService.class</exclude>
+                        <exclude>com/bank/publicinfo/LicenseService.class</exclude>
+                        <exclude>com/bank/publicinfo/ATMservice.class</exclude>
+                        <exclude>com/bank/publicinfo/config/*.class</exclude>
+                        <exclude>com/bank/publicinfo/exception/*.class</exclude>
+                        <exclude>com/bank/publicinfo/PublicInfoApplication.class</exclude>
+                        <exclude>com/bank/publicinfo/mapper/*.class</exclude>
+                        <exclude>com/bank/publicinfo/dto/*.class</exclude>
+                        <exclude>com/bank/publicinfo/entity/*.class</exclude>
+                        <exclude>com/bank/publicinfo/enumtype/*.class</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
