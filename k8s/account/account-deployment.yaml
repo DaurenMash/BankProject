@@ -1,0 +1,137 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: account-app
+  namespace: default
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: account-app
+  template:
+    metadata:
+      labels:
+        app: account-app
+    spec:
+      containers:
+        - name: account-app
+          image: darpru/account-app:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8085
+              protocol: TCP
+            - containerPort: 8185
+              protocol: TCP
+          env:
+            - name: SPRING_KAFKA_CONSUMER_GROUP_IDS_ACCOUNT
+              value: "account-group"
+            - name: SPRING_KAFKA_CONSUMER_GROUP_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: account-app-config
+                  key: SPRING_KAFKA_CONSUMER_GROUP_ID
+            - name: SPRING_KAFKA_CONSUMER_GROUP_IDS_AUDIT
+              value: "audit-group"
+            - name: KAFKA_TOPICS_ERROR_LOGS
+              value: "error.logs"
+            - name: KAFKA_TOPICS_ACCOUNT_CREATE
+              value: "account.create"
+            - name: KAFKA_TOPICS_ACCOUNT_UPDATE
+              value: "account.update"
+            - name: KAFKA_TOPICS_ACCOUNT_DELETE
+              value: "account.delete"
+            - name: KAFKA_TOPICS_ACCOUNT_GET
+              value: "account.get"
+            - name: KAFKA_TOPICS_ACCOUNT_GET_BY_ID
+              value: "account.getById"
+            - name: KAFKA_TOPICS_EXTERNAL_ACCOUNT_CREATE
+              value: "external.account.create"
+            - name: KAFKA_TOPICS_EXTERNAL_ACCOUNT_UPDATE
+              value: "external.account.update"
+            - name: KAFKA_TOPICS_EXTERNAL_ACCOUNT_DELETE
+              value: "external.account.delete"
+            - name: KAFKA_TOPICS_EXTERNAL_ACCOUNT_GET
+              value: "external.account.get"
+            - name: KAFKA_TOPICS_EXTERNAL_ACCOUNT_GET_BY_ID
+              value: "external.account.getById"
+            - name: KAFKA_TOPICS_AUTH_VALIDATE
+              value: "auth.validate"
+            - name: KAFKA_TOPICS_AUTH_VALIDATE_RESPONSE
+              value: "auth.validate.response"
+            - name: KAFKA_HEADER
+              value: "Authorization"
+            - name: AUDIT_DEFAULT_USER
+              value: "SYSTEM"
+            - name: AUDIT_ENTITY_TYPE
+              value: "ACCOUNT"
+            - name: SPRING_KAFKA_PARTITIONS
+              value: "3"
+            - name: SPRING_KAFKA_REPLICAS
+              value: "1"
+            - name: SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET
+              valueFrom:
+                configMapKeyRef:
+                  name: account-app-config
+                  key: SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET
+            - name: JAVA_OPTS
+              value: "-Dspring.liquibase.change-log=classpath:/db.changelog/db.changelog-master.yaml"
+            - name: KAFKA_TOPICS_AUDIT_LOGS
+              valueFrom:
+                configMapKeyRef:
+                  name: account-app-config
+                  key: kafka.topics.audit-logs
+            - name: KAFKA_TOPICS_EXTERNAL_AUDIT_LOGS
+              valueFrom:
+                configMapKeyRef:
+                  name: account-app-config
+                  key: kafka.topics.external-audit-logs
+            - name: SPRING_PROFILES_ACTIVE
+              value: "kubernetes"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              valueFrom:
+                configMapKeyRef:
+                  name: account-app-config
+                  key: kafka-bootstrap-servers
+            - name: SPRING_DATASOURCE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: account-app-config
+                  key: datasource-url
+            - name: SPRING_DATASOURCE_USERNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: account-app-config
+                  key: datasource-username
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: account-secret
+                  key: datasource-password
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+      restartPolicy: Always
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: account-app-autoscaling
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: account-app
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
