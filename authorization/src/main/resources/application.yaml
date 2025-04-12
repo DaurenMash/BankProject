@@ -2,4 +2,4 @@ spring:
   application:
     name: authorization-app
   profiles:
-    active: local
+    active: test

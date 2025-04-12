@@ -11,6 +11,7 @@ import com.bank.authorization.repository.AuditRepository;
 import com.bank.authorization.utils.JsonUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -18,8 +19,12 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class AuditServiceImplTest {
@@ -74,7 +79,6 @@ class AuditServiceImplTest {
                 .build();
     }
 
-    // Тесты
     @Test
     void logUserCreation_ShouldSaveCreateAudit() {
         when(auditMapper.toEntity(any(AuditDto.class)))
@@ -82,22 +86,29 @@ class AuditServiceImplTest {
 
         auditService.logUserCreation(givenUserDto());
 
-        verify(auditRepository).save(argThat(audit ->
-                audit.getOperationType().equals(OperationType.CREATE) &&
-                        audit.getEntityType().equals(EntityType.USER)));
+        ArgumentCaptor<Audit> auditCaptor = ArgumentCaptor.forClass(Audit.class);
+        verify(auditRepository).save(auditCaptor.capture());
+
+        Audit savedAudit = auditCaptor.getValue();
+        assertThat(savedAudit.getOperationType()).isEqualTo(OperationType.CREATE.name());
+        assertThat(savedAudit.getEntityType()).isEqualTo(EntityType.USER.name());
+        assertThat(savedAudit.getCreatedBy()).isEqualTo("SYSTEM");
+        assertThat(savedAudit.getCreatedAt()).isNotNull();
+        assertThat(savedAudit.getEntityJson()).isNotNull();
     }
 
     @Test
     void logUserUpdate_ShouldUpdateExistingAudit() {
         when(auditRepository.findAll())
                 .thenReturn(List.of(givenAudit(OperationType.CREATE)));
-        when(auditRepository.save(any(Audit.class)))
-                .thenReturn(givenAudit(OperationType.UPDATE));
 
         auditService.logUserUpdate(TEST_USER_ID, givenUserDto());
 
-        verify(auditRepository).save(argThat(audit ->
-                audit.getOperationType().equals(OperationType.UPDATE)));
+        ArgumentCaptor<Audit> auditCaptor = ArgumentCaptor.forClass(Audit.class);
+        verify(auditRepository).save(auditCaptor.capture());
+
+        Audit savedAudit = auditCaptor.getValue();
+        assertThat(savedAudit.getOperationType()).isEqualTo(OperationType.UPDATE.name());
     }
 
     @Test
@@ -113,13 +124,22 @@ class AuditServiceImplTest {
     @Test
     void save_ShouldMapAndSaveAudit() {
         AuditDto dto = givenAuditDto(OperationType.UPDATE);
-        when(auditMapper.toEntity(dto))
-                .thenReturn(givenAudit(OperationType.UPDATE));
+        Audit expectedAudit = givenAudit(OperationType.UPDATE);
+
+        when(auditMapper.toEntity(dto)).thenReturn(expectedAudit);
 
         auditService.save(dto);
 
         verify(auditRepository).save(argThat(audit ->
-                audit.getOperationType().equals(OperationType.UPDATE)));
+                audit.getOperationType().equals(OperationType.UPDATE.name()) &&
+                        audit.getEntityType().equals(EntityType.USER.name()) &&
+                        audit.getCreatedBy().equals(SYSTEM_USER) &&
+                        audit.getEntityJson().contains("\"id\":1") &&
+                        audit.getEntityJson().contains("\"role\":\"ROLE_USER\"") &&
+                        audit.getModifiedBy() == null &&
+                        audit.getModifiedAt() == null &&
+                        audit.getNewEntityJson() == null
+        ));
     }
 
     @Test
