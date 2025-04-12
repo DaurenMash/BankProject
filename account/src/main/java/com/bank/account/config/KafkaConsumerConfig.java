@@ -40,10 +40,10 @@ public class KafkaConsumerConfig {
     @Value("${spring.kafka.consumer.auto-offset-reset}")
     private String autoOffsetReset;
 
-    @Value("${spring.kafka.consumer.group-ids.account}")
+    @Value("${kafka.groups.account}")
     private String accountGroupId;
 
-    @Value("${spring.kafka.consumer.group-ids.audit}")
+    @Value("${kafka.groups.audit}")
     private String auditGroupId;
     
     @Value("${kafka.topics.error-logs}")
@@ -116,6 +116,7 @@ public class KafkaConsumerConfig {
         props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
         props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class.getName());
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "com.bank.account.dto");
+        log.info("Creating consumer properties groupId: {}", groupId);
         return props;
     }
 

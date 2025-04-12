@@ -1,3 +1,0 @@
-spring:
-  liquibase:
-    default-schema: public_bank_information

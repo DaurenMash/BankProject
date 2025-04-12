@@ -1,7 +1,7 @@
 package com.bank.authorization.utils;
 
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import com.bank.authorization.entity.User;
 import com.bank.authorization.repository.UserRepository;
@@ -10,9 +10,9 @@ import com.bank.authorization.repository.UserRepository;
 public class TestDataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
 
-    public TestDataInitializer(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public TestDataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -41,6 +41,5 @@ public class TestDataInitializer implements CommandLineRunner {
             userRepository.save(userUser);
             System.out.println("Test USER user created.");
         }
-
     }
 }

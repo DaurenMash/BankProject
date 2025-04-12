@@ -1,3 +1,0 @@
-spring:
-  liquibase:
-    default-schema: anti_fraud

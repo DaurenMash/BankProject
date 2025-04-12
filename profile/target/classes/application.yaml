@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: profile-app
-  profiles:
-    active: local

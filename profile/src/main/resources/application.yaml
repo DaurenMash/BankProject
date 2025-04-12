@@ -2,4 +2,4 @@ spring:
   application:
     name: profile-app
   profiles:
-    active: local
+    active: local, mock-data, kafka-auto-topics

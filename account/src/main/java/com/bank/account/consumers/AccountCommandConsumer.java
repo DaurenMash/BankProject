@@ -19,9 +19,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AccountCommandConsumer {
 
-    @Value("${spring.kafka.consumer.group-ids.account}")
-    private String accountGroup;
-
     @Value("${kafka.topics.error-logs}")
     private String topicError;
 
@@ -31,7 +28,7 @@ public class AccountCommandConsumer {
     private final KafkaTopicsConfig kafkaTopicsConfig;
     private final TokenValidationService tokenValidationService;
 
-    @KafkaListener (topics = "${kafka.topics.account-create}", groupId = "@accountCommandConsumer.accountGroup",
+    @KafkaListener (topics = "${kafka.topics.account-create}",
             containerFactory = "accountKafkaListenerContainerFactory")
     public void handleCreateAccount(@Payload AccountDto accountDto, @Header("Authorization") String jwtToken) {
         try {
@@ -48,7 +45,7 @@ public class AccountCommandConsumer {
         }
     }
 
-    @KafkaListener(topics = "${kafka.topics.account-update}", groupId = "@accountCommandConsumer.accountGroup",
+    @KafkaListener(topics = "${kafka.topics.account-update}",
             containerFactory = "accountKafkaListenerContainerFactory")
     public void handleUpdateAccount(@Payload AccountDto accountDto, @Header("Authorization") String jwtToken) {
         try {
@@ -65,7 +62,7 @@ public class AccountCommandConsumer {
         }
     }
 
-    @KafkaListener(topics = "${kafka.topics.account-delete}", groupId = "@accountCommandConsumer.accountGroup",
+    @KafkaListener(topics = "${kafka.topics.account-delete}",
             containerFactory = "longKafkaListenerContainerFactory")
     public void handleDeleteAccount(@Payload Long accountId, @Header("Authorization") String jwtToken) {
         try {
