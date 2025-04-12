@@ -6,6 +6,7 @@ import com.bank.authorization.dto.KafkaRequest;
 import com.bank.authorization.dto.KafkaResponse;
 import com.bank.authorization.utils.JwtTokenUtil;
 import com.bank.authorization.utils.ResponseFactory;
+import io.micrometer.core.annotation.Timed;
 import org.springframework.beans.factory.annotation.Value;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,7 +35,9 @@ public class AuthCommandHandler {
     private final KafkaTemplate<String, KafkaResponse> kafkaTemplate;
     private final ResponseFactory responseFactory;
 
+    @Timed("kafka_handleLogin")
     public void handleLogin(AuthRequest request) {
+        log.info(">>> handleLogin called for profileId: {}", request.getProfileId());
         KafkaResponse response;
         try {
             Authentication authentication = authenticationManager.authenticate(
@@ -61,6 +64,7 @@ public class AuthCommandHandler {
         kafkaTemplate.send(authLoginResponseTopic, response);
     }
 
+    @Timed("kafka_handleTokenValidation")
     public void handleTokenValidation(KafkaRequest request) {
         KafkaResponse response;
         try {

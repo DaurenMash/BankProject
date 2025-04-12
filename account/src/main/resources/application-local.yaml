@@ -14,14 +14,13 @@ management:
         include: '*'
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5433/postgres
+    url: jdbc:postgresql://host.docker.internal:5433/postgres
     username: postgres
     password: password
   liquibase:
     default-schema: account
-    change-log: db.changelog/db.changelog-master.yaml
-    enabled: ${LIQUIBASE_ENABLED:true}
-    drop-first: ${LIQUIBASE_DROP_FIRST:false}
+    change-log: classpath:/db/changelog/db.changelog-master.yaml
+    enabled: true
   application:
     name: account-app
   cloud:
@@ -33,36 +32,12 @@ spring:
       reload:
         enabled: true
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: 192.168.1.115:9092
     partitions: 3
     replicas: 1
     consumer:
-      group-ids:
-        account: account-group
-        audit: audit-group
       auto-offset-reset: earliest
+      group-id: account-app-group
     producer:
       key-serializer: org.apache.kafka.common.serialization.StringSerializer
       value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
-kafka:
-  topics:
-    account-create: account.create
-    account-update: account.update
-    account-delete: account.delete
-    account-get: account.get
-    account-get-by-id: account.getById
-    error-logs: error.logs
-    audit-logs: audit.logs
-    external-account-create: external.account.create
-    external-account-update: external.account.update
-    external-account-delete: external.account.delete
-    external-account-get: external.account.get
-    external-account-get-by-id: external.account.getById
-    external-audit-logs: external.audit.logs
-    auth-validate: auth.validate
-    auth-validate-response: auth.validate.response
-  header: Authorization
-audit:
-  default-user: SYSTEM
-  entity-type: ACCOUNT
-
