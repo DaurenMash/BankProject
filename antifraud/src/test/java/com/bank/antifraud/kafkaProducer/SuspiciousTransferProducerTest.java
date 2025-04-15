@@ -12,6 +12,7 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static com.bank.antifraud.util.TopicTestUtil.*;
 
 @ExtendWith(MockitoExtension.class)
 class SuspiciousTransferProducerTest {
@@ -25,13 +26,14 @@ class SuspiciousTransferProducerTest {
     @Test
     void createEvent_ShouldSendToCreateTopic() {
         // Arrange
-        Map<String, Object> transferData = Map.of("id", 1, "status", "suspicious");
+        Map<String, Object> transferData = Map.of("id", 1,
+                "status", "suspicious");
 
         // Act
         suspiciousTransferProducer.createEvent(transferData);
 
         // Assert
-        verify(kafkaTemplate).send(eq("suspicious-transfers.create"), any());
+        verify(kafkaTemplate).send(eq(CREATE_TOPIC.getType()), any());
     }
 
     @Test
@@ -43,7 +45,7 @@ class SuspiciousTransferProducerTest {
         suspiciousTransferProducer.updateEvent(transferData);
 
         // Assert
-        verify(kafkaTemplate).send(eq("suspicious-transfers.update"), any());
+        verify(kafkaTemplate).send(eq(UPDATE_TOPIC.getType()), any());
     }
 
     @Test
@@ -55,7 +57,7 @@ class SuspiciousTransferProducerTest {
         suspiciousTransferProducer.deleteEvent(transferData);
 
         // Assert
-        verify(kafkaTemplate).send(eq("suspicious-transfers.delete"), any());
+        verify(kafkaTemplate).send(eq(DELETE_TOPIC.getType()), any());
     }
 
     @Test
@@ -67,7 +69,7 @@ class SuspiciousTransferProducerTest {
         suspiciousTransferProducer.getEvent(transferData);
 
         // Assert
-        verify(kafkaTemplate).send(eq("suspicious-transfers.get"), any());
+        verify(kafkaTemplate).send(eq(GET_TOPIC.getType()), any());
     }
 
     @Test
@@ -79,7 +81,7 @@ class SuspiciousTransferProducerTest {
         suspiciousTransferProducer.eventResponse(transferData);
 
         // Assert
-        verify(kafkaTemplate).send(eq("suspicious-transfers.Response"), any());
+        verify(kafkaTemplate).send(eq(RESPONSE_TOPIC.getType()), any());
     }
 
     @Test
@@ -93,18 +95,18 @@ class SuspiciousTransferProducerTest {
 
         // Act & Assert for each method
         suspiciousTransferProducer.createEvent(testData);
-        verify(kafkaTemplate).send(eq("suspicious-transfers.create"), eq(testData));
+        verify(kafkaTemplate).send(eq(CREATE_TOPIC.getType()), eq(testData));
 
         suspiciousTransferProducer.updateEvent(testData);
-        verify(kafkaTemplate).send(eq("suspicious-transfers.update"), eq(testData));
+        verify(kafkaTemplate).send(eq(UPDATE_TOPIC.getType()), eq(testData));
 
         suspiciousTransferProducer.deleteEvent(testData);
-        verify(kafkaTemplate).send(eq("suspicious-transfers.delete"), eq(testData));
+        verify(kafkaTemplate).send(eq(DELETE_TOPIC.getType()), eq(testData));
 
         suspiciousTransferProducer.getEvent(testData);
-        verify(kafkaTemplate).send(eq("suspicious-transfers.get"), eq(testData));
+        verify(kafkaTemplate).send(eq(GET_TOPIC.getType()), eq(testData));
 
         suspiciousTransferProducer.eventResponse(testData);
-        verify(kafkaTemplate).send(eq("suspicious-transfers.Response"), eq(testData));
+        verify(kafkaTemplate).send(eq(RESPONSE_TOPIC.getType()), eq(testData));
     }
 }

@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static com.bank.antifraud.util.AuditUtil.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuditProducerTest {
@@ -27,8 +28,6 @@ class AuditProducerTest {
 
     @InjectMocks
     private AuditProducer auditProducer;
-
-    private final String TEST_TOPIC = "test-topic";
 
     @Test
     void sendAuditLog_shouldSendMessageToKafka() {
@@ -55,12 +54,11 @@ class AuditProducerTest {
     void sendAuditLogRequest_shouldSendMessageWithOperationTypeHeader() {
         // Arrange
         Object payload = new AuditDto();
-        String operationType = "CREATE";
         CompletableFuture<SendResult<String, Object>> future = CompletableFuture.completedFuture(mock(SendResult.class));
         when(kafkaTemplate.send(any(ProducerRecord.class))).thenReturn(future);
 
         // Act
-        auditProducer.sendAuditLogRequest(payload, operationType);
+        auditProducer.sendAuditLogRequest(payload, CREATE_OPERATOR.getType());
 
         // Assert
         ArgumentCaptor<ProducerRecord<String, Object>> recordCaptor =
@@ -73,19 +71,18 @@ class AuditProducerTest {
         assertNull(sentRecord.key());
 
         RecordHeader header = (RecordHeader) sentRecord.headers().headers("operationType").iterator().next();
-        assertEquals(operationType, new String(header.value(), StandardCharsets.UTF_8));
+        assertEquals(CREATE_OPERATOR.getType(), new String(header.value(), StandardCharsets.UTF_8));
     }
 
     @Test
     void sendToKafka_shouldLogSuccess() {
         // Arrange
         Object payload = new AuditDto();
-        String operationType = "UPDATE";
         CompletableFuture<SendResult<String, Object>> future = CompletableFuture.completedFuture(mock(SendResult.class));
         when(kafkaTemplate.send(any(ProducerRecord.class))).thenReturn(future);
 
         // Act
-        auditProducer.sendToKafka(TEST_TOPIC, payload, null, operationType);
+        auditProducer.sendToKafka(TEST_TOPIC.getType(), payload, null, UPDATE_OPERATOR.getType());
 
         // Assert
         verify(kafkaTemplate).send(any(ProducerRecord.class));
@@ -95,13 +92,12 @@ class AuditProducerTest {
     void sendToKafka_shouldLogErrorWhenSendingFails() {
         // Arrange
         Object payload = new AuditDto();
-        String operationType = "UPDATE";
         CompletableFuture<SendResult<String, Object>> future = new CompletableFuture<>();
         future.completeExceptionally(new RuntimeException("Kafka error"));
         when(kafkaTemplate.send(any(ProducerRecord.class))).thenReturn(future);
 
         // Act
-        auditProducer.sendToKafka(TEST_TOPIC, payload, null, operationType);
+        auditProducer.sendToKafka(TEST_TOPIC.getType(), payload, null, UPDATE_OPERATOR.getType());
 
         // Assert
         verify(kafkaTemplate).send(any(ProducerRecord.class));
