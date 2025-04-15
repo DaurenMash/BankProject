@@ -92,11 +92,11 @@
                 <configuration>
                     <excludes>
                         <exclude>com/bank/publicinfo/ATMService.class</exclude>
+                        <exclude>com/bank/publicinfo/AuditService.class</exclude>
                         <exclude>com/bank/publicinfo/BankDetailsService.class</exclude>
                         <exclude>com/bank/publicinfo/BranchService.class</exclude>
                         <exclude>com/bank/publicinfo/CertificateService.class</exclude>
                         <exclude>com/bank/publicinfo/LicenseService.class</exclude>
-                        <exclude>com/bank/publicinfo/ATMservice.class</exclude>
                         <exclude>com/bank/publicinfo/config/*.class</exclude>
                         <exclude>com/bank/publicinfo/exception/*.class</exclude>
                         <exclude>com/bank/publicinfo/PublicInfoApplication.class</exclude>

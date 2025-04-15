@@ -45,5 +45,4 @@ class BankDetailsProducerTest {
         assertThrows(RuntimeException.class, () -> producer.sendBankDetails(topic, bankDetailsDto));
         verify(kafkaTemplate, times(1)).send(topic, bankDetailsDto);
     }
-
 }

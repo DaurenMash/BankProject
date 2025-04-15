@@ -21,7 +21,7 @@ class BranchProducerTest {
     private BranchProducer producer;
 
     @Test
-    void sendBranchToKafkaTest() {
+    void testSendBranchToKafka() {
         BranchDto branchDto = BranchDto.builder().id(1L).build();
         String topic = "branchTopicTest";
         producer.sendBranch(topic, branchDto);

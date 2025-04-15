@@ -28,8 +28,6 @@ public class ATM {
 
     public static final int MAX_ADDRESS_LENGTH = 370;
 
-    public static final int MAX_ADDRESS_LENGTH = 370;
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)

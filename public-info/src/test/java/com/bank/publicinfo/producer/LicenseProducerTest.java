@@ -21,7 +21,7 @@ class LicenseProducerTest {
     private LicenseProducer producer;
 
     @Test
-    void sendLicenseToKafkaTest() {
+    void testSendLicenseToKafka() {
         String topic = "licenseTopicTest";
         LicenseDto licenseDto = LicenseDto.builder().id(1L).build();
         producer.sendLicense(topic, licenseDto);

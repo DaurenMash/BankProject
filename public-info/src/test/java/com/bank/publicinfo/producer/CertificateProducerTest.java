@@ -21,7 +21,7 @@ class CertificateProducerTest {
     private CertificateProducer producer;
 
     @Test
-    public void sendCertificateToKafkaTest() {
+    public void testSendCertificateToKafka() {
         CertificateDto certificateDto = CertificateDto.builder().id(1L).build();
         String topic = "testTopic";
         producer.sendCertificate(topic, certificateDto);

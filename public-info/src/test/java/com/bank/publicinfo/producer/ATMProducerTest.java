@@ -21,7 +21,7 @@ class ATMProducerTest {
     private ATMProducer producer;
 
     @Test
-    void sendATMToKafkaTest() {
+    void testSendATMToKafka() {
         ATMDto atmDto = ATMDto.builder().id(1L).build();
         String topic = "ATMTopicTest";
         producer.sendATM(topic, atmDto);

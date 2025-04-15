@@ -20,7 +20,6 @@ public class BankDetailsConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory")
     public BankDetailsDto creatingBankListening(BankDetailsDto bankDetailsDto) throws ValidationException {
-        log.info("Received bankDetailsDto to create: {}", bankDetailsDto.toString());
         try {
             final BankDetailsDto savedBankDetails = this.service.createNewBankDetails(bankDetailsDto);
             log.info("New bank details saved successfully with ID: {}", savedBankDetails.getId());
@@ -35,7 +34,6 @@ public class BankDetailsConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory")
     public BankDetailsDto updatingBankListening(BankDetailsDto bankDetailsDto) throws ValidationException {
-        log.info("Received bankDetailsDto to update: {}", bankDetailsDto.toString());
         final Long bankId = bankDetailsDto.getId();
         if (bankId == null) {
             log.warn("Bank ID is null, cannot update bank details.");
@@ -55,7 +53,6 @@ public class BankDetailsConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory")
     public void deletingBankListening(BankDetailsDto bankDetailsDto) throws ValidationException {
-        log.info("Received bankDetailsDto to delete: {}", bankDetailsDto.toString());
         final Long bankId = bankDetailsDto.getId();
         if (bankId == null) {
             log.warn("Bank ID is null, cannot delete bank details.");
@@ -69,7 +66,6 @@ public class BankDetailsConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory")
     public void gettingBankListening(BankDetailsDto bankDetailsDto) throws ValidationException {
-        log.info("Received bankDetailsDto to get: {}", bankDetailsDto);
         if (bankDetailsDto != null) {
             final Long bankId = bankDetailsDto.getId();
             if (bankId == null) {

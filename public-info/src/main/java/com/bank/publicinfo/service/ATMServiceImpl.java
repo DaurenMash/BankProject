@@ -34,7 +34,6 @@ public class ATMServiceImpl implements ATMService {
     @Transactional
     public ATMDto createNewATM(ATMDto atmDto) {
         if (atmDto == null) {
-            log.error("Attempt to create null ATM");
             final IllegalArgumentException e = new IllegalArgumentException("It is impossible to create null ATM");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -51,7 +50,7 @@ public class ATMServiceImpl implements ATMService {
             return savedAtmDto;
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("An unexpected error occurred while creating a new ATM.");
+            throw e;
         }
     }
 
@@ -59,7 +58,6 @@ public class ATMServiceImpl implements ATMService {
     @Transactional
     public ATMDto updateATM(ATMDto atmDto) {
         if (atmDto == null) {
-            log.error("Attempt to update ATM with null DTO");
             final IllegalArgumentException e = new IllegalArgumentException("ATM DTO must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -87,7 +85,7 @@ public class ATMServiceImpl implements ATMService {
             return savedAtmDto;
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("An unexpected error occurred while updating branch details.");
+            throw e;
         }
     }
 
@@ -95,7 +93,6 @@ public class ATMServiceImpl implements ATMService {
     @Transactional
     public void deleteATMById(Long atmId) {
         if (atmId == null) {
-            log.error("Attempt to delete ATM with null ID");
             final IllegalArgumentException e = new IllegalArgumentException("ATM ID can't be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -112,14 +109,13 @@ public class ATMServiceImpl implements ATMService {
             log.info("Successfully deleted ATM with ID: {}", atmId);
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("An unexpected error occurred while deleting ATM.");
+            throw e;
         }
     }
 
     @Override
     public List<ATMDto> getATMs(Long branchId) {
         if (branchId == null) {
-            log.error("Attempt to get ATMs with null branch ID");
             final IllegalArgumentException e = new IllegalArgumentException("Branch ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -138,14 +134,13 @@ public class ATMServiceImpl implements ATMService {
         } catch (Exception e) {
             log.error("An unexpected error occurred while retrieving ATMs for branch ID: {}", branchId, e);
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("An unexpected error occurred while retrieving ATMs.", e);
+            throw e;
         }
     }
 
     @Override
     public ATMDto getATMById(Long atmId) {
         if (atmId == null) {
-            log.error("Attempt to get ATM details with null ID");
             final IllegalArgumentException e = new IllegalArgumentException("ATM ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -163,7 +158,7 @@ public class ATMServiceImpl implements ATMService {
             return atmDto;
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("An unexpected error occurred while retrieving ATM details.");
+            throw e;
         }
     }
 }

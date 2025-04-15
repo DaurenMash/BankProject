@@ -21,7 +21,7 @@ class ErrorProducerTest {
     private ErrorProducer producer;
 
     @Test
-    void sendErrorToKafkaTest() {
+    void testSendErrorToKafka() {
         ErrorResponseDto errorResponseDto =
                 new ErrorResponseDto("testErrorCode","testMessage");
         String topic = "testErrorTopic";
