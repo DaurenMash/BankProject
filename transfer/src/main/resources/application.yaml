@@ -3,3 +3,33 @@ spring:
     name: transfer-app
   profiles:
     active: local
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    security:
+      protocol: ${KAFKA_SECURITY_PROTOCOL:SASL_SSL}
+    properties:
+      sasl.mechanism: ${KAFKA_SASL_MECHANISM:PLAIN}
+      sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required username="${KAFKA_USERNAME:admin}" password="${KAFKA_PASSWORD:admin-secret}";
+      spring.json.trusted.packages: com.bank.transfer.dto
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      auto-offset-reset: earliest
+    consumer-groups:
+      transfer: transfer-group
+      audit: audit-group
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/auth/realms/your-realm
+          jwk-set-uri: http://localhost:8080/auth/realms/your-realm/protocol/openid-connect/certs
+
+  # Account service URL
+  account:
+    service:
+      url: ${ACCOUNT_SERVICE_URL:http://localhost:8081}
+
