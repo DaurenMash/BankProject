@@ -42,6 +42,7 @@ public class LicenseServiceImpl implements LicenseService {
     @Transactional
     public LicenseDto createNewLicense(LicenseDto licenseDto) {
         if (licenseDto == null) {
+            log.error(NULL_LICENSE_MESSAGE);
             final IllegalArgumentException e = new IllegalArgumentException(NULL_LICENSE_MESSAGE);
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -55,7 +56,7 @@ public class LicenseServiceImpl implements LicenseService {
             return licenseMapper.toDto(savedLicense);
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw e;
+            throw new RuntimeException("An unexpected error occurred while creating a new License.");
         }
     }
 
@@ -63,6 +64,7 @@ public class LicenseServiceImpl implements LicenseService {
     @Transactional
     public LicenseDto updateLicense(LicenseDto newLicenseDto) {
         if (newLicenseDto == null) {
+            log.error("Attempt to update License with null DTO");
             final IllegalArgumentException e = new IllegalArgumentException("License DTO must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -83,7 +85,7 @@ public class LicenseServiceImpl implements LicenseService {
             return licenseMapper.toDto(savedLicense);
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw e;
+            throw new RuntimeException("An unexpected error occurred while updating the License.");
         }
     }
 
@@ -91,6 +93,7 @@ public class LicenseServiceImpl implements LicenseService {
     @Transactional
     public void deleteLicense(Long licenseId) {
         if (licenseId == null) {
+            log.error("Attempt to delete License with null ID");
             final IllegalArgumentException e = new IllegalArgumentException(NULL_LICENSE_ID_MESSAGE);
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -107,13 +110,14 @@ public class LicenseServiceImpl implements LicenseService {
             log.info("Successfully deleted License with ID: {}", licenseId);
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw e;
+            throw new RuntimeException("An unexpected error occurred while deleting the License.");
         }
     }
 
     @Override
     public List<LicenseDto> getLicensesByBankDetails(Long bankDetailsId) {
         if (bankDetailsId == null) {
+            log.error("Attempt to get Licenses with null bankDetails ID");
             final IllegalArgumentException e = new IllegalArgumentException("BankDetails ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -134,13 +138,14 @@ public class LicenseServiceImpl implements LicenseService {
         } catch (Exception e) {
             log.error("An unexpected error while retrieving Licenses for BankDetails ID: {}", bankDetailsId, e);
             globalExceptionHandler.handleException(e, errorTopic);
-            throw e;
+            throw new RuntimeException("An unexpected error occurred while retrieving Licenses.");
         }
     }
 
     @Override
     public LicenseDto getLicenseById(Long licenseId) {
         if (licenseId == null) {
+            log.error("Attempt to get License details with null ID");
             final IllegalArgumentException e = new IllegalArgumentException(NULL_LICENSE_ID_MESSAGE);
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -158,7 +163,7 @@ public class LicenseServiceImpl implements LicenseService {
             return licenseDto;
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw e;
+            throw new RuntimeException("An unexpected error occurred while retrieving License details.");
         }
     }
 }

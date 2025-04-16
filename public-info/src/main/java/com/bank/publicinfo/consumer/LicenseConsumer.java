@@ -18,6 +18,7 @@ public class LicenseConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public LicenseDto creatingLicenseListening(LicenseDto licenseDto) {
+        log.info("Received licenseDto to create: {}", licenseDto);
         try {
             final LicenseDto savedLicense = this.service.createNewLicense(licenseDto);
             log.info("New license saved successfully with ID: {}", savedLicense.getId());
@@ -32,6 +33,7 @@ public class LicenseConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public LicenseDto updatingLicenseListening(LicenseDto licenseDto) {
+        log.info("Received licenseDto to update: {}", licenseDto);
         final Long licenseId = licenseDto.getId();
         if (licenseId == null) {
             log.warn("License ID is null, cannot update license.");
@@ -51,6 +53,7 @@ public class LicenseConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public void deletingLicenseListening(LicenseDto licenseDto) {
+        log.info("Received licenseDto to delete: {}", licenseDto);
         final Long licenseId = licenseDto.getId();
         if (licenseId == null) {
             log.warn("License ID is null, cannot delete license.");
@@ -64,6 +67,7 @@ public class LicenseConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public void gettingLicenseListening(LicenseDto licenseDto) {
+        log.info("Received licenseDto to get: {}", licenseDto);
         if (licenseDto != null) {
             final Long licenseId = licenseDto.getId();
             if (licenseId == null) {
