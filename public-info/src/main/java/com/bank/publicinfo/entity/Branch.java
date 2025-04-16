@@ -13,7 +13,6 @@ import jakarta.persistence.FetchType;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,7 +24,6 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Entity
 @Table(name = "branch", schema = "public_info", uniqueConstraints = {
         @UniqueConstraint(name = "branch_pk_2", columnNames = {"phone_number"})

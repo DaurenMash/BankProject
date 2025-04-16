@@ -13,13 +13,9 @@ public class ErrorLogsConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "errorLogsKafkaListenerContainerFactory")
     public void listen(ErrorResponseDto errorResponse) {
-        if (errorResponse == null) {
-            log.warn("Received null error response");
-            return;
-        }
-        log.info("Received error log: Code: {}, Message: {}, Timing: {}",
-                errorResponse.getErrorCode(),
-                errorResponse.getMessage(),
-                errorResponse.getTimestamp());
+        log.info("Received error log: Code: {}, Message: {}, Timing: {}", errorResponse
+                .getErrorCode(), errorResponse
+                .getMessage(), errorResponse
+                .getTimestamp());
     }
 }

@@ -9,7 +9,6 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @NoArgsConstructor
-
 public class ErrorResponseDto {
 
     private String errorCode;

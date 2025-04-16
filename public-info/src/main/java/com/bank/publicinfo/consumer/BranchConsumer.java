@@ -18,7 +18,8 @@ public class BranchConsumer {
     @KafkaListener(topics = {"${spring.kafka.topics.branch.create.name}"},
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "branchKafkaListenerContainerFactory")
-    public BranchDto creatingBranchListening(BranchDto branchDto) throws ValidationException {
+    public BranchDto creatingBranchListening(BranchDto branchDto) throws javax.xml.bind.ValidationException {
+        log.info("Received branch to create: {}", branchDto.toString());
         try {
             final BranchDto savedBranch = this.service.createNewBranch(branchDto);
             log.info("New branch saved successfully with ID: {}", savedBranch.getId());
@@ -33,6 +34,7 @@ public class BranchConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "branchKafkaListenerContainerFactory")
     public BranchDto updatingBranchListening(BranchDto branchDto) {
+        log.info("Received branch to update: {}", branchDto.toString());
         final Long branchId = branchDto.getId();
         if (branchId == null) {
             log.warn("Branch is null, cannot update Branch.");
@@ -52,6 +54,7 @@ public class BranchConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "branchKafkaListenerContainerFactory")
     public void deletingBranchListening(BranchDto branchDto) {
+        log.info("Received Branch to delete: {}", branchDto.toString());
         final Long branchId = branchDto.getId();
         if (branchId == null) {
             log.warn("Branch ID is null, cannot delete bank details.");
@@ -65,6 +68,7 @@ public class BranchConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "branchKafkaListenerContainerFactory")
     public void gettingBranchListening(BranchDto branchDto) throws ValidationException {
+        log.info("Received bankDetailsDto to get: {}", branchDto);
         if (branchDto != null) {
             final Long branchId = branchDto.getId();
             if (branchId == null) {

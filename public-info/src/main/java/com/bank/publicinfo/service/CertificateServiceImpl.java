@@ -39,6 +39,7 @@ public class CertificateServiceImpl implements CertificateService {
     @Transactional
     public CertificateDto createNewCertificate(CertificateDto CertificateDto) {
         if (CertificateDto == null) {
+            log.error("Attempt to create null certificate");
             final IllegalArgumentException e = new IllegalArgumentException("Attempt to create null Certificate");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -52,7 +53,7 @@ public class CertificateServiceImpl implements CertificateService {
             return certificateMapper.toDto(savedCertificate);
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw e;
+            throw new RuntimeException("An unexpected error occurred while creating a new Certificate.");
         }
     }
 
@@ -60,6 +61,7 @@ public class CertificateServiceImpl implements CertificateService {
     @Transactional
     public CertificateDto updateCertificate(CertificateDto newCertificateDto) {
         if (newCertificateDto == null) {
+            log.error("Attempt to update Certificate with null DTO");
             final IllegalArgumentException e = new IllegalArgumentException("Certificate DTO must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -80,7 +82,7 @@ public class CertificateServiceImpl implements CertificateService {
             return certificateMapper.toDto(savedCertificate);
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw e;
+            throw new RuntimeException("An unexpected error occurred while updating the Certificate.");
         }
     }
 
@@ -88,6 +90,7 @@ public class CertificateServiceImpl implements CertificateService {
     @Transactional
     public void deleteCertificate(Long CertificateId) {
         if (CertificateId == null) {
+            log.error("Attempt to delete Certificate with null ID");
             final IllegalArgumentException e = new IllegalArgumentException("Certificate id must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -104,13 +107,14 @@ public class CertificateServiceImpl implements CertificateService {
             log.info("Successfully deleted Certificate with ID: {}", CertificateId);
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw e;
+            throw new RuntimeException("An unexpected error occurred while deleting the Certificate.");
         }
     }
 
     @Override
     public List<CertificateDto> getCertificatesByBankDetails(Long bankDetailsId) {
         if (bankDetailsId == null) {
+            log.error("Attempt to get Certificates with null bankDetails ID");
             final IllegalArgumentException e = new IllegalArgumentException("BankDetails ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -135,13 +139,14 @@ public class CertificateServiceImpl implements CertificateService {
             log.error("An unexpected error occurred while retrieving Certificates for BankDetails ID: {}",
                     bankDetailsId, e);
             globalExceptionHandler.handleException(e, errorTopic);
-            throw e;
+            throw new RuntimeException("An unexpected error occurred while retrieving Certificates.");
         }
     }
 
     @Override
     public CertificateDto getCertificateById(Long certificateId) {
         if (certificateId == null) {
+            log.error("Attempt to get Certificate details with null ID");
             final IllegalArgumentException e = new IllegalArgumentException("Certificate ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -159,7 +164,7 @@ public class CertificateServiceImpl implements CertificateService {
             return certificateDto;
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw e;
+            throw new RuntimeException("An unexpected error occurred while retrieving Certificate details.");
         }
     }
 }

@@ -11,7 +11,6 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import jakarta.persistence.FetchType;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,7 +20,6 @@ import lombok.ToString;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
 @Entity
 @Table(name = "certificate", schema = "public_info")
 public class Certificate {
