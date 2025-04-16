@@ -18,7 +18,6 @@ public class ATMConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "atmKafkaListenerContainerFactory")
     public ATMDto creatingATMListening(ATMDto atmDto) {
-        log.info("Received ATM to create: {}", atmDto.toString());
         try {
             final ATMDto savedATM = this.service.createNewATM(atmDto);
             log.info("New ATM saved successfully with ID: {}", savedATM.getId());
@@ -33,7 +32,6 @@ public class ATMConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "atmKafkaListenerContainerFactory")
     public ATMDto updatingATMListening(ATMDto atmDto) {
-        log.info("Received ATM to update: {}", atmDto);
         final Long atmId = atmDto.getId();
         if (atmId == null) {
             log.warn("ATM ID is null, cannot update ATM.");
@@ -53,7 +51,6 @@ public class ATMConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "atmKafkaListenerContainerFactory")
     public void deletingATMListening(ATMDto atmDto) {
-        log.info("Received ATM to delete: {}", atmDto);
         final Long atmId = atmDto.getId();
         if (atmId == null) {
             log.warn("ATM ID is null, cannot delete ATM.");
@@ -67,7 +64,6 @@ public class ATMConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "atmKafkaListenerContainerFactory")
     public void gettingATMListening(ATMDto atmDto) {
-        log.info("Received ATM request to get: {}", atmDto);
         if (atmDto != null) {
             final Long atmId = atmDto.getId();
             if (atmId == null) {
