@@ -18,7 +18,6 @@ public class CertificateConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public CertificateDto creatingCertificateListening(CertificateDto certificateDto) {
-        log.info("Received certificateDto to create: {}", certificateDto);
         try {
             final CertificateDto savedCertificate = this.service.createNewCertificate(certificateDto);
             log.info("New certificate saved successfully with ID: {}", savedCertificate.getId());
@@ -33,7 +32,6 @@ public class CertificateConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public CertificateDto updatingCertificateListening(CertificateDto certificateDto) {
-        log.info("Received certificateDto to update: {}", certificateDto);
         final Long certificateId = certificateDto.getId();
         if (certificateId == null) {
             log.warn("Certificate ID is null, cannot update certificate.");
@@ -53,7 +51,6 @@ public class CertificateConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public void deletingCertificateListening(CertificateDto certificateDto) {
-        log.info("Received certificateDto to delete: {}", certificateDto);
         final Long certificateId = certificateDto.getId();
         if (certificateId == null) {
             log.warn("Certificate ID is null, cannot delete certificate.");
@@ -67,7 +64,6 @@ public class CertificateConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "certificateKafkaListenerContainerFactory")
     public void gettingCertificateListening(CertificateDto certificateDto) {
-        log.info("Received certificateDto to get: {}", certificateDto);
         if (certificateDto != null) {
             final Long certificateId = certificateDto.getId();
             if (certificateId == null) {

@@ -3,6 +3,7 @@ package com.bank.publicinfo.dto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -17,6 +18,7 @@ import static com.bank.publicinfo.entity.Audit.OPERATION_TYPE_MAX_LENGTH;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class AuditDto implements Serializable {
 
     private Long id;

@@ -37,7 +37,6 @@ public class BranchServiceImpl implements BranchService {
     @Transactional
     public BranchDto createNewBranch(BranchDto branchDto) {
         if (branchDto == null) {
-            log.error("Attempt to create null branch");
             final IllegalArgumentException e = new IllegalArgumentException("Branch must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -49,7 +48,7 @@ public class BranchServiceImpl implements BranchService {
             return branchMapper.toDto(savedBranch);
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("An unexpected error occurred while creating a new branch.");
+            throw e;
         }
     }
 
@@ -57,13 +56,11 @@ public class BranchServiceImpl implements BranchService {
     @Transactional
     public BranchDto updateBranch(Long branchId, BranchDto branchDto) {
         if (branchId == null) {
-            log.error("Attempt to update branch with null ID");
             final IllegalArgumentException e = new IllegalArgumentException("Branch ID must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
         }
         if (branchDto == null) {
-            log.error("Attempt to update branch with null DTO");
             final IllegalArgumentException e = new IllegalArgumentException("Branch DTO must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -83,7 +80,7 @@ public class BranchServiceImpl implements BranchService {
             return branchMapper.toDto(updatedBranch);
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("An unexpected error occurred while updating branch details.");
+            throw e;
         }
     }
 
@@ -91,7 +88,6 @@ public class BranchServiceImpl implements BranchService {
     @Transactional
     public void deleteBranchById(Long branchId) {
         if (branchId == null) {
-            log.error("Attempt to delete branch with null ID");
             final IllegalArgumentException e = new IllegalArgumentException("Branch ID can't be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -110,14 +106,13 @@ public class BranchServiceImpl implements BranchService {
             log.info("Successfully deleted branch with ID: {}", branchId);
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("An unexpected error occurred while deleting branch.");
+            throw e;
         }
     }
 
     @Override
     public List<BranchDto> getAllBranches(Pageable pageable) {
         if (pageable == null) {
-            log.error("Attempt to get all branches with null Pageable");
             final IllegalArgumentException e = new IllegalArgumentException("Pageable must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -136,14 +131,13 @@ public class BranchServiceImpl implements BranchService {
         } catch (Exception e) {
             log.error("An unexpected error occurred while retrieving all branches", e);
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("An unexpected error occurred while retrieving all branches.", e);
+            throw e;
         }
     }
 
     @Override
     public BranchDto getBranchById(Long branchId) {
         if (branchId == null) {
-            log.error("Attempt to get branch details with null ID");
             final IllegalArgumentException e = new IllegalArgumentException("Branch id must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -161,7 +155,7 @@ public class BranchServiceImpl implements BranchService {
             return branchDto;
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("An unexpected error occurred while retrieving branch details.");
+            throw e;
         }
     }
 }
