@@ -127,7 +127,6 @@ public class AuditServiceImpl implements AuditService {
     @Transactional(readOnly = true)
     public Page<AuditDto> getAllAudits(Pageable pageable) {
         if (pageable == null) {
-            log.error("Attempt to get all audits with null Pageable");
             final IllegalArgumentException e =
                     new IllegalArgumentException("Page parameters cannot be null");
             globalExceptionHandler.handleException(e, errorTopic);
@@ -140,7 +139,6 @@ public class AuditServiceImpl implements AuditService {
     @Transactional(readOnly = true)
     public AuditDto getAuditById(Long auditId) {
         if (auditId == null) {
-            log.error("Attempt to get audit details with null ID");
             final IllegalArgumentException e = new IllegalArgumentException(AUDIT_ID_NULL_MESSAGE);
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -156,12 +154,9 @@ public class AuditServiceImpl implements AuditService {
                     });
             log.info("Successfully retrieved audit with ID: {}", auditId);
             return auditDto;
-        } catch (DataAccessException e) {
-            globalExceptionHandler.handleException(e, errorTopic);
-            throw e;
         } catch (Exception e) {
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("An unexpected error occurred while retrieving audit details.");
+            throw e;
         }
     }
 
@@ -169,7 +164,6 @@ public class AuditServiceImpl implements AuditService {
     @Transactional
     public void deleteAuditById(Long auditId) {
         if (auditId == null) {
-            log.error("Attempt to delete audit with null ID");
             final IllegalArgumentException e = new IllegalArgumentException(AUDIT_ID_NULL_MESSAGE);
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -189,7 +183,7 @@ public class AuditServiceImpl implements AuditService {
         } catch (Exception e) {
             log.error("Unexpected error occurred while deleting audit with ID: {}", auditId, e);
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("Failed to delete audit: " + e);
+            throw e;
         }
     }
 
@@ -197,7 +191,6 @@ public class AuditServiceImpl implements AuditService {
     @Transactional(readOnly = true)
     public BankDetails findBankDetailsByBik(Long bik) {
         if (bik == null) {
-            log.error("Attempt to find bank details with null BIK");
             final IllegalArgumentException e = new IllegalArgumentException("BIK must not be null");
             globalExceptionHandler.handleException(e, errorTopic);
             throw e;
@@ -218,7 +211,7 @@ public class AuditServiceImpl implements AuditService {
         } catch (Exception e) {
             log.error("Unexpected error occurred while finding bank details for BIK: {}", bik, e);
             globalExceptionHandler.handleException(e, errorTopic);
-            throw new RuntimeException("Failed to find bank details: " + e);
+            throw e;
         }
     }
 

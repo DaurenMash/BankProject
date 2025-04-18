@@ -1,9 +1,10 @@
 package com.bank.publicinfo.service;
 
 import com.bank.publicinfo.dto.BranchDto;
+import com.bank.publicinfo.exception.ValidationException;
 import org.springframework.data.domain.Pageable;
 
-import javax.xml.bind.ValidationException;
+
 import java.util.List;
 
 public interface BranchService {
