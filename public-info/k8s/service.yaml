@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: public-info-app-service
+  namespace: default
+spec:
+  selector:
+    app: public-info-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8091
+  type: ClusterIP
