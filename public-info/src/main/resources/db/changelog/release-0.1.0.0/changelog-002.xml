@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd">
 
-    <changeSet author="Author" id="1672955251679-15">
+    <changeSet author="DaurenMash" id="1672955251679-15">
         <comment>Изменение типа данных у корреспондентского счета</comment>
         <modifyDataType
                 schemaName="public_info"
