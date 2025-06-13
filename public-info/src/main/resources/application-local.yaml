@@ -15,7 +15,7 @@ management:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://bank-db:5432/postgres  # <-- Исправлено!
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver
@@ -28,7 +28,8 @@ spring:
     name: public-info-app
   kafka:
     trusted-packages: com.bank.publicinfo.dto
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: kafka:29092
+#    bootstrap-servers: host.docker.internal:9092  # с локального хоста
     topics:
       error-log:
         name: public-info.error-logs
@@ -133,3 +134,15 @@ logging:
   level:
     root: INFO
     org.springframework.web: DEBUG
+
+springdoc:
+  swagger-ui:
+    path: /api-docs/swagger-ui.html  # Изменить URL, если нужно
+    tags-sorter: alpha               # Сортировка тегов по алфавиту
+    operations-sorter: alpha         # Сортировка операций
+  api-docs:
+    path: /api-docs                  # Путь к JSON-документации
+  show-actuator: true                # Показывать эндпоинты Actuator
+
+
+  #    http://localhost:8091/api-docs/swagger-ui.html
