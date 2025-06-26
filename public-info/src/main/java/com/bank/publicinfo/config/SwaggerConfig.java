@@ -15,9 +15,9 @@ public class SwaggerConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Habit Service API")
+                        .title("Public Info API")
                         .version("1.0")
-                        .description("API для управления привычками пользователей"))
+                        .description("API для управления публичной информацией банков"))
                 .servers(List.of(new Server().url("http://localhost:8091").description("Local server")));
     }
 }

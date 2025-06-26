@@ -59,4 +59,14 @@ public class KafkaBankDetailsConfig {
         return new KafkaTemplate<>(bankDetailsDtoProducerFactory());
     }
 
+    @Bean
+    public ProducerFactory<String, Long> bankDetailsIdProducerFactory() {
+        return new DefaultKafkaProducerFactory<>(this.producerConfigs);
+    }
+
+    @Bean
+    public KafkaTemplate<String, Long> bankDetailsIdKafkaTemplate() {
+        return new KafkaTemplate<>(bankDetailsIdProducerFactory());
+    }
+
 }

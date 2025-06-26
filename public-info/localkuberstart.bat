@@ -1,18 +1,25 @@
-rem docker-compose down
+@echo off
+REM .\localkuberstart.bat
+kubectl scale deployment/public-info-deployment --replicas=0
+docker-compose down
+kubectl delete -f k8s
 
-rem docker exec -it p_ss_bank_3180-bank-db-1 psql -U postgres -d postgres -c "CREATE SCHEMA IF NOT EXISTS public_info"
+REM Собираем образ и отправляем его в репозиторий Docker Hub
+rem mvn clean package
+
+docker-compose up -d
+docker build -t doxa80/public-info-app:latest .
+docker login
+docker push doxa80/public-info-app:latest
+
+REM kubectl port-forward pod/public-info-deployment-64cbb5cc48-xg7b4 8091:8091
+
+REM Очищаем пространство имен и применяем новые манифесты
+kubectl apply -f k8s
+
+REM Проверка текущего состояния подов
+docker exec -it p_ss_bank_3180-bank-db-1 psql -U postgres -d postgres -c "CREATE SCHEMA IF NOT EXISTS public_info"
+kubectl get pods
+kubectl port-forward svc/public-info-app-service 8091:8091
 
 
-
-rem docker build -t doxa80/public-info-app:latest .
-rem docker login
-rem docker push doxa80/public-info-app:latest
-rem docker pull doxa80/public-info-app:latest
-
-
-
-rem kubectl apply -f public-info/k8s          применить манифесты
-
-rem kubectl get pods         проверить поды
-
-rem minikube start --driver=docker --force       принудительно запустить minikube с докер драйвером

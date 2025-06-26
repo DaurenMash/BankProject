@@ -11,11 +11,17 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class BankDetailsProducer {
 
-    private final KafkaTemplate<String, BankDetailsDto> kafkaTemplate;
+    private final KafkaTemplate<String, BankDetailsDto> kafkaTemplateDto;
+    private final KafkaTemplate<String, Long> kafkaTemplateLong;
 
     public void sendBankDetails(String topic, BankDetailsDto bankDetailsDto) {
-        kafkaTemplate.send(topic, bankDetailsDto);
+        kafkaTemplateDto.send(topic, bankDetailsDto);
         log.info("Bank details sent to topic: {}", topic);
+    }
+
+    public void sendLongValue(String topic, Long value) {
+        kafkaTemplateLong.send(topic, value);
+        log.info("Sent long value {} to topic: {}", value, topic);
     }
 
 }

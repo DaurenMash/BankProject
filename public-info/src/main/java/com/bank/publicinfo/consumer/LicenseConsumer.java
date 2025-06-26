@@ -16,7 +16,7 @@ public class LicenseConsumer {
 
     @KafkaListener(topics = {"${spring.kafka.topics.license.create.name}"},
             groupId = "${spring.kafka.consumer.group-id}",
-            containerFactory = "certificateKafkaListenerContainerFactory")
+            containerFactory = "licenseKafkaListenerContainerFactory")
     public LicenseDto creatingLicenseListening(LicenseDto licenseDto) {
         try {
             final LicenseDto savedLicense = this.service.createNewLicense(licenseDto);

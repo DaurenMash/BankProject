@@ -38,7 +38,7 @@ import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
-public class BankDetailsServiceImplTest {
+class BankDetailsServiceImplTest {
 
     @Mock
     private BankDetailsRepository bankDetailsRepository;

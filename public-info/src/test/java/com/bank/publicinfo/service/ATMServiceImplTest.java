@@ -34,7 +34,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalTime;
 
 @ExtendWith(MockitoExtension.class)
-public class ATMServiceImplTest {
+class ATMServiceImplTest {
 
     @Mock
     private AtmRepository atmRepository;

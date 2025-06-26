@@ -37,7 +37,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalTime;
 
 @ExtendWith(MockitoExtension.class)
-public class BranchServiceImplTest {
+class BranchServiceImplTest {
 
     @Mock
     private BranchRepository branchRepository;

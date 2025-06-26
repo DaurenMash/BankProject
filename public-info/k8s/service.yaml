@@ -8,6 +8,6 @@ spec:
     app: public-info-app
   ports:
     - protocol: TCP
-      port: 80
+      port: 8091
       targetPort: 8091
   type: ClusterIP

@@ -14,9 +14,9 @@ spec:
         app: public-info-app
     spec:
       containers:
-        - name: public-info-app
+        - name: container
           image: doxa80/public-info-app:latest
-          imagePullPolicy: Always
+          imagePullPolicy: Never
           ports:
             - containerPort: 8091
           resources:
@@ -63,7 +63,7 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: public-info-app-deployment
-  minReplicas: 2
+  minReplicas: 1
   maxReplicas: 5
   metrics:
     - type: Resource
