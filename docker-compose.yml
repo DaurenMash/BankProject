@@ -1,4 +1,4 @@
-version: '3.7'
+#version: '3.7'
 networks:
   kafka-net:
     name: kafka-net
@@ -44,18 +44,23 @@ services:
     depends_on:
       - zookeeper
 
-#  kafdrop:
-#    image: obsidiandynamics/kafdrop
-#    container_name: kafdrop
-#    restart: "no"
-#    networks:
-#      - kafka-net
-#    ports:
-#      - "9000:9000"
-#    environment:
-#      KAFKA_BROKERCONNECT: "kafka:29092"
-#    depends_on:
-#      - kafka
+
+  jenkins:
+    image: jenkins/jenkins
+    container_name: jenkins
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - JENKINS_ADMIN_ID=admin
+      - JENKINS_ADMIN_PASSWORD=password
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    restart: unless-stopped
+
+
 
   bank-db:
     image: postgres
@@ -64,11 +69,17 @@ services:
       - "5432:5432"
     networks:
       - kafka-net
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_HOST_AUTH_METHOD: trust
 
+
+volumes:
+  jenkins_home:
+  postgres_data:
 #  public-info-app:
 #    image: doxa80/public-info-app:latest
 #    container_name: info_public_114

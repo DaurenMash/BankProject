@@ -1,0 +1,19 @@
+pipeline {
+    agent any
+    tools {
+        maven 'Maven' // имя Maven из настроек Tools
+        jdk 'JDK' // имя JDK из настроек Tools
+    }
+    stages {
+        stage('Build') {
+            steps {
+                sh 'mvn clean install'
+            }
+        }
+        stage('Test') {
+            steps {
+                sh 'mvn test'
+            }
+        }
+    }
+}

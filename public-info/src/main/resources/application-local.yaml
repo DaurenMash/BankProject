@@ -138,6 +138,7 @@ logging:
   level:
     root: INFO
     org.springframework.web: DEBUG
+    liquibase: DEBUG
 
 springdoc:
   swagger-ui:

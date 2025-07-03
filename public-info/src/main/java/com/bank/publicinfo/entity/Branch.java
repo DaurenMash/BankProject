@@ -19,6 +19,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import java.time.LocalTime;
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Getter
@@ -65,6 +67,22 @@ public class Branch {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "branch",
             cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
-    private Set<ATM> atms;
+    private Set<ATM> atms = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Branch branch = (Branch) o;
+        return Objects.equals(id, branch.id) &&
+                Objects.equals(address, branch.address) &&
+                Objects.equals(phoneNumber, branch.phoneNumber) &&
+                Objects.equals(city, branch.city);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, address, phoneNumber, city);
+    }
 
 }

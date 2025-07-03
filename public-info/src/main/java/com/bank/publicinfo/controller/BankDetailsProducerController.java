@@ -48,7 +48,7 @@ public class BankDetailsProducerController {
     @PostMapping
     public ResponseEntity<BankDetailsDto> createBankDetails(
             @RequestBody @Valid BankDetailsDto bankDetailsDto) throws ValidationException {
-        BankDetailsDto createdDetails = service.createNewBankDetails(bankDetailsDto);
+        final BankDetailsDto createdDetails = service.createNewBankDetails(bankDetailsDto);
         bankDetailsProducer.sendBankDetails(createTopic, createdDetails);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdDetails);
     }
@@ -57,7 +57,7 @@ public class BankDetailsProducerController {
     @PutMapping
     public ResponseEntity<BankDetailsDto> updateBankDetails(
             @RequestBody @Valid BankDetailsDto bankDetailsDto) throws ValidationException {
-        BankDetailsDto updatedDetails = service.updateBankDetails(bankDetailsDto);
+        final BankDetailsDto updatedDetails = service.updateBankDetails(bankDetailsDto);
         bankDetailsProducer.sendBankDetails(updateTopic, updatedDetails);
         return ResponseEntity.ok(updatedDetails);
     }
@@ -73,7 +73,7 @@ public class BankDetailsProducerController {
     @Operation(summary = "Получить банковские данные по ID")
     @GetMapping("/{id}")
     public ResponseEntity<BankDetailsDto> getBankDetails(@PathVariable Long id) throws ValidationException {
-        BankDetailsDto details = service.getBankDetailsById(id);
+        final BankDetailsDto details = service.getBankDetailsById(id);
         bankDetailsProducer.sendLongValue(getTopic, id);
         return ResponseEntity.ok(details);
     }

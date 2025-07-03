@@ -1,0 +1,6 @@
+.idea
+target
+localkuberstart.bat
+Dockerfile
+public-info.iml
+*.md
